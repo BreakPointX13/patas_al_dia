@@ -1,0 +1,65 @@
+CREATE TABLE usuarios (
+    id UUID PRIMARY KEY,
+    email VARCHAR(255) UNIQUE,
+    es_invitado BOOLEAN DEFAULT TRUE,
+    fecha_registro TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    ultima_sincronizacion TIMESTAMP,
+    dispositivo_id VARCHAR(255)
+);
+
+CREATE TABLE mascotas (
+    id UUID PRIMARY KEY,
+    usuario_id UUID NOT NULL REFERENCES usuarios(id) ON DELETE CASCADE,
+    nombre VARCHAR(100) NOT NULL,
+    rut_mascota VARCHAR(20),
+    especie VARCHAR(50),
+    sexo VARCHAR(20),
+    raza VARCHAR(100),
+    esterilizado BOOLEAN DEFAULT FALSE,
+    colores VARCHAR(100),    
+    numero_chip VARCHAR(50), 
+    fecha_nacimiento DATE,
+    peso_actual DECIMAL(5,2),
+    foto_url TEXT
+);
+
+CREATE TABLE agenda_eventos (
+    id UUID PRIMARY KEY,
+    mascota_id UUID NOT NULL REFERENCES mascotas(id) ON DELETE CASCADE,
+    tipo_evento VARCHAR(50),
+    titulo VARCHAR(200) NOT NULL,
+    medicamento_prescrito VARCHAR(255),
+    observaciones TEXT,
+    fecha_programada TIMESTAMP NOT NULL,
+    fecha_realizada TIMESTAMP,
+    repetir_cada_meses INTEGER,
+    notificaciones_activas BOOLEAN DEFAULT TRUE
+);
+
+CREATE TABLE documentos (
+    id UUID PRIMARY KEY,
+    mascota_id UUID NOT NULL REFERENCES mascotas(id) ON DELETE CASCADE,
+    evento_id UUID REFERENCES agenda_eventos(id) ON DELETE SET NULL,
+    titulo VARCHAR(200) NOT NULL, 
+    tipo_documento VARCHAR(50) NOT NULL,
+    tipo_documento_personalizado VARCHAR(100), 
+    file_path TEXT NOT NULL,       
+    file_extension VARCHAR(10),    
+    fecha_emision DATE,           
+    fecha_vencimiento DATE,
+    recordatorio_vencimiento BOOLEAN DEFAULT FALSE, 
+    fecha_subida TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    notas_asociadas TEXT,         
+    sincronizado_nube BOOLEAN DEFAULT FALSE
+);
+
+CREATE TABLE mascotas_extraviadas (
+    id UUID PRIMARY KEY,
+    mascota_id UUID NOT NULL REFERENCES mascotas(id) ON DELETE CASCADE,
+    ubicacion_lat DECIMAL(10, 8),
+    ubicacion_lng DECIMAL(11, 8),
+    recompensa DECIMAL(12, 2) DEFAULT 0,
+    estado VARCHAR(20) DEFAULT 'perdido',
+    contacto_emergencia VARCHAR(100),
+    descripcion TEXT
+);
