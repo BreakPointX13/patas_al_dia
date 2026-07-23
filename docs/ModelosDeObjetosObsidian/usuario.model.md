@@ -32,6 +32,10 @@ El modelo de usuario implementa conversiones estrictas debido a las limitaciones
   * En la salida, el operador de navegación segura `fechaRegistro?.toIso8601String()` previene errores si la fecha es nula.
   * En la entrada, controlamos la existencia del dato antes de forzar el parseo dinámico mediante `DateTime.parse()`.
 
+### 3. Copia Inmutable (`copyWith()`)
+* **El Problema:** Todas las propiedades del modelo son `final`, así que no se puede hacer `usuario.email = "nuevo@mail.com"` una vez creado el objeto.
+* **La Solución:** `copyWith()` recibe los mismos campos que el constructor, todos opcionales, y usa `??` para conservar el valor original (`this.campo`) si no se pasa uno nuevo. Por ejemplo, cuando un invitado se registra, `usuario.copyWith(email: "nuevo@mail.com", esInvitado: false)` genera un usuario nuevo con esos dos campos actualizados y el resto (`id`, `fechaRegistro`, etc.) intacto.
+
 ---
 
 ## 🔄 Nivel 3: Comparativa Visual y Ventajas Técnicas

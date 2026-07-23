@@ -91,4 +91,41 @@ class DocumentoModel {
       'sincronizado_nube': sincronizadoNube ? 1 : 0,
     };
   }
+
+  // Crea una copia de este objeto reemplazando solo los campos que se pasen
+  DocumentoModel copyWith({
+    String? id,
+    String? mascotaId,
+    String? eventoId,
+    String? titulo,
+    String? tipoDocumento,
+    String? tipoDocumentoPersonalizado,
+    String? filePath,
+    String? fileExtension,
+    DateTime? fechaEmision,
+    DateTime? fechaVencimiento,
+    bool? recordatorioVencimiento,
+    DateTime? fechaSubida,
+    String? notasAsociadas,
+    bool? sincronizadoNube,
+  }) {
+    return DocumentoModel(
+      id: id ?? this.id,
+      mascotaId: mascotaId ?? this.mascotaId,
+      eventoId: eventoId ?? this.eventoId,
+      titulo: titulo ?? this.titulo,
+      tipoDocumento: tipoDocumento ?? this.tipoDocumento,
+      tipoDocumentoPersonalizado:
+          tipoDocumentoPersonalizado ?? this.tipoDocumentoPersonalizado,
+      filePath: filePath ?? this.filePath,
+      fileExtension: fileExtension ?? this.fileExtension,
+      fechaEmision: fechaEmision ?? this.fechaEmision,
+      fechaVencimiento: fechaVencimiento ?? this.fechaVencimiento,
+      recordatorioVencimiento:
+          recordatorioVencimiento ?? this.recordatorioVencimiento,
+      fechaSubida: fechaSubida ?? this.fechaSubida,
+      notasAsociadas: notasAsociadas ?? this.notasAsociadas,
+      sincronizadoNube: sincronizadoNube ?? this.sincronizadoNube,
+    );
+  }
 }

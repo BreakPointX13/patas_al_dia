@@ -1,4 +1,4 @@
-# Nota de Obsidian: `MascotaModel`
+c# Nota de Obsidian: `MascotaModel`
 
 ## 📁 Ubicación en el Proyecto
 
@@ -76,3 +76,9 @@ Para evitar la sobrecarga que un ORM pesado implicaría en un dispositivo móvil
 - **Lógicas Complejas y Comparativa:**
     
     - **Truncado de Fechas:** Al guardar la fecha de nacimiento, ejecutamos `fechaNacimiento?.toIso8601String().split('T')[0]`. El estándar ISO8601 genera una cadena completa con hora y zona horaria (ej. `2023-05-17T06:41:00Z`). Como para el nacimiento de un animal solo nos importa el día, nuestra lógica divide el texto en la letra `T` y se queda solo con la primera parte (`YYYY-MM-DD`). Esto optimiza el espacio de almacenamiento en el móvil y estandariza las búsquedas por fecha en la base de datos.
+
+### 4. Copia Inmutable (`copyWith()`)
+
+- **Definición Estándar:** Como todas las propiedades son `final`, una vez creado el objeto no se puede modificar (ver punto 1). El patrón `copyWith` es el estándar de la industria para "actualizar" un objeto inmutable: en vez de mutarlo, se construye uno nuevo idéntico salvo por los campos que se le indiquen explícitamente.
+- **En Nuestro Proyecto:** `copyWith()` recibe los mismos campos que el constructor pero todos opcionales. Cada campo usa el operador `??` para decidir: si se pasó un valor nuevo, lo usa; si no, conserva el valor del objeto original (`this.campo`).
+- **Comparativa:** Sin este método, un repository que necesite actualizar solo el `pesoActual` de una mascota (por ejemplo, tras pesarla en un control) tendría que reconstruir manualmente los 13 campos del objeto cada vez. Con `copyWith`, esa actualización se reduce a `mascota.copyWith(pesoActual: 6.5)`, manteniendo la inmutabilidad y evitando errores de copiado manual.

@@ -51,3 +51,8 @@ Los sistemas que gestionan archivos adjuntos (gestores documentales, historiales
 - **Lógicas Complejas:**
     - **Conversión de Booleanos:** `recordatorioVencimiento` y `sincronizadoNube` usan la misma técnica tolerante que el resto de los modelos: `map['campo'] == 1 || map['campo'] == true`.
     - **`sincronizadoNube`:** Este campo es clave para la futura sincronización con Supabase — permite saber qué documentos ya se subieron a Storage y cuáles siguen pendientes, sin necesitar una tabla de cola aparte.
+
+### 5. Copia Inmutable (`copyWith()`)
+
+- **En Nuestro Proyecto:** Como todos los campos son `final`, actualizar el estado de sincronización de un documento (por ejemplo, después de subirlo exitosamente a Supabase Storage) se hace con `documento.copyWith(sincronizadoNube: true)`, generando un objeto nuevo con ese único campo cambiado y el resto (`filePath`, `titulo`, `tipoDocumento`, etc.) igual al original.
+- **Caso de uso típico:** Además de `sincronizadoNube`, este método sirve para activar `recordatorioVencimiento` sobre un documento ya existente sin tener que reconstruir manualmente los 14 campos del modelo.

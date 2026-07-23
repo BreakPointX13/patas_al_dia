@@ -46,3 +46,8 @@ Los sistemas de agenda o calendario en producción (Google Calendar, apps de sal
 ### 3. Método de Serialización (`toMap()`)
 
 - **En Nuestro Proyecto:** Empaqueta el objeto de vuelta a las columnas exactas de `agenda_eventos`, incluyendo el truco `fechaRealizada?.toIso8601String()` — el operador `?.` evita lanzar un error si el evento aún no fue realizado, guardando `null` directamente en la columna.
+
+### 4. Copia Inmutable (`copyWith()`)
+
+- **En Nuestro Proyecto:** Como todos los campos son `final`, "completar" un evento (pasar de agendado a realizado) no se puede hacer mutando el objeto — se genera uno nuevo con `evento.copyWith(fechaRealizada: DateTime.now())`. El resto de los campos (`titulo`, `fechaProgramada`, `repetirCadaMeses`, etc.) se conservan automáticamente gracias al operador `??` dentro del método, que solo reemplaza el campo que se le pasa explícitamente.
+- **Caso de uso típico:** Este es probablemente el modelo que más va a usar `copyWith()` en la práctica, ya que marcar un evento como cumplido (llenar `fechaRealizada`) o desactivar sus notificaciones (`notificacionesActivas: false`) son operaciones de actualización parcial muy frecuentes en la agenda.

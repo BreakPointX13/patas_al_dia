@@ -68,4 +68,32 @@ class AgendaEventoModel {
           : 0, // SQLite almacena booleanos como 0 o 1
     };
   }
+
+  // Crea una copia de este objeto reemplazando solo los campos que se pasen
+  AgendaEventoModel copyWith({
+    String? id,
+    String? mascotaId,
+    String? tipoEvento,
+    String? titulo,
+    String? medicamentoPrescrito,
+    String? observaciones,
+    DateTime? fechaProgramada,
+    DateTime? fechaRealizada,
+    int? repetirCadaMeses,
+    bool? notificacionesActivas,
+  }) {
+    return AgendaEventoModel(
+      id: id ?? this.id,
+      mascotaId: mascotaId ?? this.mascotaId,
+      tipoEvento: tipoEvento ?? this.tipoEvento,
+      titulo: titulo ?? this.titulo,
+      medicamentoPrescrito: medicamentoPrescrito ?? this.medicamentoPrescrito,
+      observaciones: observaciones ?? this.observaciones,
+      fechaProgramada: fechaProgramada ?? this.fechaProgramada,
+      fechaRealizada: fechaRealizada ?? this.fechaRealizada,
+      repetirCadaMeses: repetirCadaMeses ?? this.repetirCadaMeses,
+      notificacionesActivas:
+          notificacionesActivas ?? this.notificacionesActivas,
+    );
+  }
 }

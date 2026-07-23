@@ -78,4 +78,37 @@ class MascotaModel {
       'foto_url': fotoUrl,
     };
   }
+
+  // Crea una copia de este objeto reemplazando solo los campos que se pasen
+  MascotaModel copyWith({
+    String? id,
+    String? usuarioId,
+    String? nombre,
+    String? rutMascota,
+    String? especie,
+    String? sexo,
+    String? raza,
+    bool? esterilizado,
+    String? colores,
+    String? numeroChip,
+    DateTime? fechaNacimiento,
+    double? pesoActual,
+    String? fotoUrl,
+  }) {
+    return MascotaModel(
+      id: id ?? this.id,
+      usuarioId: usuarioId ?? this.usuarioId,
+      nombre: nombre ?? this.nombre,
+      rutMascota: rutMascota ?? this.rutMascota,
+      especie: especie ?? this.especie,
+      sexo: sexo ?? this.sexo,
+      raza: raza ?? this.raza,
+      esterilizado: esterilizado ?? this.esterilizado,
+      colores: colores ?? this.colores,
+      numeroChip: numeroChip ?? this.numeroChip,
+      fechaNacimiento: fechaNacimiento ?? this.fechaNacimiento,
+      pesoActual: pesoActual ?? this.pesoActual,
+      fotoUrl: fotoUrl ?? this.fotoUrl,
+    );
+  }
 }

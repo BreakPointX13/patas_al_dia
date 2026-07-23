@@ -42,4 +42,23 @@ class UsuarioModel {
       'dispositivo_id': dispositivoId,
     };
   }
+
+  // Crea una copia de este objeto reemplazando solo los campos que se pasen
+  UsuarioModel copyWith({
+    String? id,
+    String? email,
+    bool? esInvitado,
+    DateTime? fechaRegistro,
+    DateTime? ultimaSincronizacion,
+    String? dispositivoId,
+  }) {
+    return UsuarioModel(
+      id: id ?? this.id,
+      email: email ?? this.email,
+      esInvitado: esInvitado ?? this.esInvitado,
+      fechaRegistro: fechaRegistro ?? this.fechaRegistro,
+      ultimaSincronizacion: ultimaSincronizacion ?? this.ultimaSincronizacion,
+      dispositivoId: dispositivoId ?? this.dispositivoId,
+    );
+  }
 }
