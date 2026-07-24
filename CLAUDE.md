@@ -18,7 +18,6 @@ flutter build apk        # build Android release
 ```
 
 ## Architecture
-
 El proyecto sigue una arquitectura por capas. La capa de datos está implementada; la UI y la gestión de estado están pendientes.
 
 ### Estructura objetivo de `lib/`
@@ -29,15 +28,17 @@ lib/
 └── data/
     ├── database/
     │   └── database_helper.dart     # Singleton SQLite — punto de acceso único a la DB
-    └── models/
-        ├── usuario_model.dart        # Modelo Usuario con soporte híbrido invitado/registrado
-        ├── mascota_model.dart        # Modelo Mascota con conversiones SQLite↔Dart
-        ├── agenda_evento_model.dart  # Modelo de eventos de agenda veterinaria (vacunas, controles)
-        └── documento_model.dart      # Modelo de documentos adjuntos (carnet, exámenes, recetas)
+    ├── models/
+    │   ├── usuario_model.dart        # Modelo Usuario con soporte híbrido invitado/registrado
+    │   ├── mascota_model.dart        # Modelo Mascota con conversiones SQLite↔Dart
+    │   ├── agenda_evento_model.dart  # Modelo de eventos de agenda veterinaria (vacunas, controles)
+    │   └── documento_model.dart      # Modelo de documentos adjuntos (carnet, exámenes, recetas)
+    └── repositories/
+        └── mascota_repository.dart  # CRUD de Mascota sobre DatabaseHelper (en construcción)
 ```
 
 Las capas faltantes que se añadirán son:
-- `lib/data/repositories/` — operaciones CRUD que consumen `DatabaseHelper`
+- `lib/data/repositories/` — en construcción; `mascota_repository.dart` tiene `crearMascota`, faltan lectura/actualización/borrado y repositories de agenda/documentos/usuario
 - `lib/presentation/` — Screens y Widgets
 - `lib/providers/` o `lib/bloc/` — gestión de estado (por definir)
 
@@ -86,7 +87,7 @@ Funcionalidades y modelos que quedan **fuera del alcance de la v1** y se retoman
 
 1. **Cross-platform iOS + Android**: La app debe compilar y funcionar en ambas plataformas. No usar código o paquetes exclusivos de una plataforma sin alternativa para la otra.
 2. **UX y facilidad de uso como prioridad**: Todas las decisiones de diseño priorizan la simplicidad para el usuario final. Ninguna funcionalidad core debe requerir registro obligatorio — el login híbrido (invitado sin cuenta) es la expresión de este principio.
-3. **Documentación companion por módulo**: Todo archivo Dart significativo (models, repositories, providers, screens complejas) debe tener un `.md` en `docs/ModelosDeObjetosObsidian/` siguiendo el patrón existente: ubicación en el proyecto, propósito, mapa conceptual y glosario de funciones complejas.
+3. **Documentación companion por módulo**: Todo archivo Dart significativo (models, repositories, providers, screens complejas) debe tener un `.md` en `docs/ModelosDeObjetos/`, en la subcarpeta que espeja su ubicación en `lib/` (`models/`, `repositories/`, `database/`, etc.), siguiendo el patrón existente: ubicación en el proyecto, propósito, mapa conceptual y glosario de funciones complejas.
 4. **Idioma español en todo el código**: Variables, funciones, clases, comentarios y textos de UI en español. El estándar actual lo refleja: `usuarioId`, `fechaNacimiento`, `esterilizado`, `esInvitado`.
 5. **Local-first siempre**: La app debe ser 100% funcional offline antes de implementar cualquier feature de sync cloud. Un usuario invitado nunca debe ver errores por falta de conexión.
 6. **Dependencias mínimas**: No añadir paquetes externos si la funcionalidad puede cubrirse con los ya presentes (`sqflite`, `uuid`, `path`) o con código nativo de Dart/Flutter.
