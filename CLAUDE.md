@@ -36,11 +36,12 @@ lib/
     └── repositories/
         ├── mascota_repository.dart        # CRUD de Mascota sobre DatabaseHelper
         ├── usuario_repository.dart        # CRUD de Usuario sobre DatabaseHelper
-        └── agenda_evento_repository.dart  # CRUD de AgendaEvento sobre DatabaseHelper (en construcción)
+        ├── agenda_evento_repository.dart  # CRUD de AgendaEvento sobre DatabaseHelper
+        └── documento_repository.dart      # CRUD de Documento sobre DatabaseHelper
 ```
 
 Las capas faltantes que se añadirán son:
-- `lib/data/repositories/` — en construcción; `mascota_repository.dart`, `usuario_repository.dart` y `agenda_evento_repository.dart` tienen el CRUD completo (crear, leer, actualizar, eliminar), falta el repository de documentos
+- `lib/data/repositories/` — completa; los 4 repositories del core (`mascota_repository.dart`, `usuario_repository.dart`, `agenda_evento_repository.dart`, `documento_repository.dart`) tienen el CRUD completo (crear, leer, actualizar, eliminar)
 - `lib/presentation/` — Screens y Widgets
 - `lib/providers/` o `lib/bloc/` — gestión de estado (por definir)
 
