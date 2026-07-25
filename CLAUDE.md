@@ -34,11 +34,12 @@ lib/
     │   ├── agenda_evento_model.dart  # Modelo de eventos de agenda veterinaria (vacunas, controles)
     │   └── documento_model.dart      # Modelo de documentos adjuntos (carnet, exámenes, recetas)
     └── repositories/
-        └── mascota_repository.dart  # CRUD de Mascota sobre DatabaseHelper (en construcción)
+        ├── mascota_repository.dart  # CRUD de Mascota sobre DatabaseHelper
+        └── usuario_repository.dart  # CRUD de Usuario sobre DatabaseHelper (en construcción)
 ```
 
 Las capas faltantes que se añadirán son:
-- `lib/data/repositories/` — en construcción; `mascota_repository.dart` tiene el CRUD completo (crear, leer por usuario, leer por id, actualizar, eliminar), faltan los repositories de agenda/documentos/usuario
+- `lib/data/repositories/` — en construcción; `mascota_repository.dart` y `usuario_repository.dart` tienen el CRUD completo (crear, leer, actualizar, eliminar), faltan los repositories de agenda/documentos
 - `lib/presentation/` — Screens y Widgets
 - `lib/providers/` o `lib/bloc/` — gestión de estado (por definir)
 
