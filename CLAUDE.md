@@ -38,7 +38,7 @@ lib/
 ```
 
 Las capas faltantes que se añadirán son:
-- `lib/data/repositories/` — en construcción; `mascota_repository.dart` tiene `crearMascota`, faltan lectura/actualización/borrado y repositories de agenda/documentos/usuario
+- `lib/data/repositories/` — en construcción; `mascota_repository.dart` tiene el CRUD completo (crear, leer por usuario, leer por id, actualizar, eliminar), faltan los repositories de agenda/documentos/usuario
 - `lib/presentation/` — Screens y Widgets
 - `lib/providers/` o `lib/bloc/` — gestión de estado (por definir)
 
