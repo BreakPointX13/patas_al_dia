@@ -18,7 +18,7 @@ flutter build apk        # build Android release
 ```
 
 ## Architecture
-El proyecto sigue una arquitectura por capas. La capa de datos está implementada; la UI y la gestión de estado están pendientes.
+El proyecto sigue una arquitectura por capas. Las capas de datos (`lib/data/`) y de gestión de estado (`lib/providers/`) están implementadas; solo la UI (`lib/presentation/`) está pendiente.
 
 ### Estructura objetivo de `lib/`
 
@@ -40,14 +40,14 @@ lib/
 │       └── documento_repository.dart      # CRUD de Documento sobre DatabaseHelper
 └── providers/                          # Gestión de estado con Riverpod (capa propia, hermana de data/)
     ├── mascota_provider.dart           # mascotaRepositoryProvider + MascotasNotifier/mascotasProvider (estado de la lista)
-    ├── usuario_provider.dart           # Expone UsuarioRepository vía Provider (aún sin NotifierProvider)
+    ├── usuario_provider.dart           # usuarioRepositoryProvider + UsuarioNotifier/usuarioProvider (estado de un único usuario)
     ├── agenda_evento_provider.dart     # agendaEventoRepositoryProvider + AgendaEventoNotifier/agendaEventosProvider
     └── documento_provider.dart         # documentoRepositoryProvider + DocumentoNotifier/documentosProvider
 ```
 
 Las capas faltantes que se añadirán son:
 - `lib/data/repositories/` — completa; los 4 repositories del core (`mascota_repository.dart`, `usuario_repository.dart`, `agenda_evento_repository.dart`, `documento_repository.dart`) tienen el CRUD completo (crear, leer, actualizar, eliminar)
-- `lib/providers/` — en construcción; los 4 repositories están expuestos (DI simple vía `Provider`), y `mascota_provider.dart`/`agenda_evento_provider.dart`/`documento_provider.dart` ya tienen su `NotifierProvider` con CRUD completo sobre el estado (lista en memoria); falta el de `usuario_provider.dart`, que va a manejar un único usuario en vez de una lista
+- `lib/providers/` — completa; los 4 repositories están expuestos (DI simple vía `Provider`), y `mascota_provider.dart`/`agenda_evento_provider.dart`/`documento_provider.dart`/`usuario_provider.dart` ya tienen su `NotifierProvider` con CRUD completo sobre el estado
 - `lib/presentation/` — Screens y Widgets
 
 ### Capa de datos
