@@ -40,14 +40,14 @@ lib/
 │       └── documento_repository.dart      # CRUD de Documento sobre DatabaseHelper
 └── providers/                          # Gestión de estado con Riverpod (capa propia, hermana de data/)
     ├── mascota_provider.dart           # mascotaRepositoryProvider + MascotasNotifier/mascotasProvider (estado de la lista)
-    ├── usuario_provider.dart           # Expone UsuarioRepository vía Provider
-    ├── agenda_evento_provider.dart     # Expone AgendaEventoRepository vía Provider
-    └── documento_provider.dart         # Expone DocumentoRepository vía Provider
+    ├── usuario_provider.dart           # Expone UsuarioRepository vía Provider (aún sin NotifierProvider)
+    ├── agenda_evento_provider.dart     # agendaEventoRepositoryProvider + AgendaEventoNotifier/agendaEventosProvider
+    └── documento_provider.dart         # documentoRepositoryProvider + DocumentoNotifier/documentosProvider
 ```
 
 Las capas faltantes que se añadirán son:
 - `lib/data/repositories/` — completa; los 4 repositories del core (`mascota_repository.dart`, `usuario_repository.dart`, `agenda_evento_repository.dart`, `documento_repository.dart`) tienen el CRUD completo (crear, leer, actualizar, eliminar)
-- `lib/providers/` — en construcción; los 4 repositories están expuestos (DI simple vía `Provider`), y `mascota_provider.dart` ya tiene su `NotifierProvider` (`MascotasNotifier`/`mascotasProvider`) con CRUD completo sobre el estado; falta el mismo `NotifierProvider` para usuario/agenda/documento
+- `lib/providers/` — en construcción; los 4 repositories están expuestos (DI simple vía `Provider`), y `mascota_provider.dart`/`agenda_evento_provider.dart`/`documento_provider.dart` ya tienen su `NotifierProvider` con CRUD completo sobre el estado (lista en memoria); falta el de `usuario_provider.dart`, que va a manejar un único usuario en vez de una lista
 - `lib/presentation/` — Screens y Widgets
 
 ### Capa de datos
