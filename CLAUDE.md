@@ -33,17 +33,22 @@ lib/
     │   ├── mascota_model.dart        # Modelo Mascota con conversiones SQLite↔Dart
     │   ├── agenda_evento_model.dart  # Modelo de eventos de agenda veterinaria (vacunas, controles)
     │   └── documento_model.dart      # Modelo de documentos adjuntos (carnet, exámenes, recetas)
-    └── repositories/
-        ├── mascota_repository.dart        # CRUD de Mascota sobre DatabaseHelper
-        ├── usuario_repository.dart        # CRUD de Usuario sobre DatabaseHelper
-        ├── agenda_evento_repository.dart  # CRUD de AgendaEvento sobre DatabaseHelper
-        └── documento_repository.dart      # CRUD de Documento sobre DatabaseHelper
+    ├── repositories/
+    │   ├── mascota_repository.dart        # CRUD de Mascota sobre DatabaseHelper
+    │   ├── usuario_repository.dart        # CRUD de Usuario sobre DatabaseHelper
+    │   ├── agenda_evento_repository.dart  # CRUD de AgendaEvento sobre DatabaseHelper
+    │   └── documento_repository.dart      # CRUD de Documento sobre DatabaseHelper
+    └── providers/                          # Gestión de estado con Riverpod (fuera de data/, es su propia capa)
+        ├── mascota_provider.dart           # Expone MascotaRepository vía Provider
+        ├── usuario_provider.dart           # Expone UsuarioRepository vía Provider
+        ├── agenda_evento_provider.dart     # Expone AgendaEventoRepository vía Provider
+        └── documento_provider.dart         # Expone DocumentoRepository vía Provider
 ```
 
 Las capas faltantes que se añadirán son:
 - `lib/data/repositories/` — completa; los 4 repositories del core (`mascota_repository.dart`, `usuario_repository.dart`, `agenda_evento_repository.dart`, `documento_repository.dart`) tienen el CRUD completo (crear, leer, actualizar, eliminar)
+- `lib/providers/` — en construcción; ya expone los 4 repositories (DI simple vía `Provider`), falta el `NotifierProvider` que maneje estado real (listas que cambian) para cada entidad
 - `lib/presentation/` — Screens y Widgets
-- `lib/providers/` o `lib/bloc/` — gestión de estado (por definir)
 
 ### Capa de datos
 
@@ -94,7 +99,7 @@ Funcionalidades y modelos que quedan **fuera del alcance de la v1** y se retoman
 4. **Idioma español en todo el código**: Variables, funciones, clases, comentarios y textos de UI en español. El estándar actual lo refleja: `usuarioId`, `fechaNacimiento`, `esterilizado`, `esInvitado`.
 5. **Local-first siempre**: La app debe ser 100% funcional offline antes de implementar cualquier feature de sync cloud. Un usuario invitado nunca debe ver errores por falta de conexión.
 6. **Dependencias mínimas**: No añadir paquetes externos si la funcionalidad puede cubrirse con los ya presentes (`sqflite`, `uuid`, `path`) o con código nativo de Dart/Flutter.
-7. **Gestión de estado consistente**: Una vez elegida la solución de estado (Riverpod/BLoC/Provider), usarla en todos los módulos sin mezclar enfoques.
+7. **Gestión de estado consistente**: Se eligió **Riverpod** (sin generación de código, ver `flutter_riverpod` en `pubspec.yaml`) como solución de estado. Usarla en todos los módulos sin mezclar con otros enfoques (Provider, BLoC).
 
 ## Key decisions
 
