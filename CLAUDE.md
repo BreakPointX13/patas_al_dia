@@ -25,29 +25,29 @@ El proyecto sigue una arquitectura por capas. La capa de datos está implementad
 ```
 lib/
 ├── main.dart                        # Entry point (actualmente template, pendiente conectar)
-└── data/
-    ├── database/
-    │   └── database_helper.dart     # Singleton SQLite — punto de acceso único a la DB
-    ├── models/
-    │   ├── usuario_model.dart        # Modelo Usuario con soporte híbrido invitado/registrado
-    │   ├── mascota_model.dart        # Modelo Mascota con conversiones SQLite↔Dart
-    │   ├── agenda_evento_model.dart  # Modelo de eventos de agenda veterinaria (vacunas, controles)
-    │   └── documento_model.dart      # Modelo de documentos adjuntos (carnet, exámenes, recetas)
-    ├── repositories/
-    │   ├── mascota_repository.dart        # CRUD de Mascota sobre DatabaseHelper
-    │   ├── usuario_repository.dart        # CRUD de Usuario sobre DatabaseHelper
-    │   ├── agenda_evento_repository.dart  # CRUD de AgendaEvento sobre DatabaseHelper
-    │   └── documento_repository.dart      # CRUD de Documento sobre DatabaseHelper
-    └── providers/                          # Gestión de estado con Riverpod (fuera de data/, es su propia capa)
-        ├── mascota_provider.dart           # Expone MascotaRepository vía Provider
-        ├── usuario_provider.dart           # Expone UsuarioRepository vía Provider
-        ├── agenda_evento_provider.dart     # Expone AgendaEventoRepository vía Provider
-        └── documento_provider.dart         # Expone DocumentoRepository vía Provider
+├── data/
+│   ├── database/
+│   │   └── database_helper.dart     # Singleton SQLite — punto de acceso único a la DB
+│   ├── models/
+│   │   ├── usuario_model.dart        # Modelo Usuario con soporte híbrido invitado/registrado
+│   │   ├── mascota_model.dart        # Modelo Mascota con conversiones SQLite↔Dart
+│   │   ├── agenda_evento_model.dart  # Modelo de eventos de agenda veterinaria (vacunas, controles)
+│   │   └── documento_model.dart      # Modelo de documentos adjuntos (carnet, exámenes, recetas)
+│   └── repositories/
+│       ├── mascota_repository.dart        # CRUD de Mascota sobre DatabaseHelper
+│       ├── usuario_repository.dart        # CRUD de Usuario sobre DatabaseHelper
+│       ├── agenda_evento_repository.dart  # CRUD de AgendaEvento sobre DatabaseHelper
+│       └── documento_repository.dart      # CRUD de Documento sobre DatabaseHelper
+└── providers/                          # Gestión de estado con Riverpod (capa propia, hermana de data/)
+    ├── mascota_provider.dart           # mascotaRepositoryProvider + MascotasNotifier/mascotasProvider (estado de la lista)
+    ├── usuario_provider.dart           # Expone UsuarioRepository vía Provider
+    ├── agenda_evento_provider.dart     # Expone AgendaEventoRepository vía Provider
+    └── documento_provider.dart         # Expone DocumentoRepository vía Provider
 ```
 
 Las capas faltantes que se añadirán son:
 - `lib/data/repositories/` — completa; los 4 repositories del core (`mascota_repository.dart`, `usuario_repository.dart`, `agenda_evento_repository.dart`, `documento_repository.dart`) tienen el CRUD completo (crear, leer, actualizar, eliminar)
-- `lib/providers/` — en construcción; ya expone los 4 repositories (DI simple vía `Provider`), falta el `NotifierProvider` que maneje estado real (listas que cambian) para cada entidad
+- `lib/providers/` — en construcción; los 4 repositories están expuestos (DI simple vía `Provider`), y `mascota_provider.dart` ya tiene su `NotifierProvider` (`MascotasNotifier`/`mascotasProvider`) con CRUD completo sobre el estado; falta el mismo `NotifierProvider` para usuario/agenda/documento
 - `lib/presentation/` — Screens y Widgets
 
 ### Capa de datos

@@ -49,7 +49,7 @@ final mascotaRepositoryProvider = Provider<MascotaRepository>((ref) {
 
 ### 1. `Provider<T>((ref) => ...)`
 
-- **Definición Estándar:** Es el tipo de provider más básico de Riverpod: expone un valor u objeto que se calcula una sola vez (la primera vez que alguien lo pide) y se reutiliza después. No tiene métodos para "cambiar" ese valor — para eso existen otros tipos de provider (`NotifierProvider`, que se usará más adelante para listas que cambian, como la lista de mascotas en pantalla).
+- **Definición Estándar:** Es el tipo de provider más básico de Riverpod: expone un valor u objeto que se calcula una sola vez (la primera vez que alguien lo pide) y se reutiliza después. No tiene métodos para "cambiar" ese valor — para eso existen otros tipos de provider (`NotifierProvider`, ya implementado para la lista de mascotas — ver `mascotasNotifier.md`).
 - **En Nuestro Proyecto:** Cada uno de los 4 archivos declara exactamente un `Provider` de este tipo, envolviendo el constructor sin argumentos de su repository correspondiente (`MascotaRepository()`, `UsuarioRepository()`, etc.).
 
 ### 2. El parámetro `ref`
@@ -82,4 +82,4 @@ Como estos cuatro providers no cambian con el tiempo (siempre devuelven la misma
 
 ### 4. Por qué son 4 archivos y no 1
 
-- **En Nuestro Proyecto:** Se mantiene la convención de "un archivo por entidad" ya usada en `models/` y `repositories/`, en vez de agrupar los cuatro providers en un solo archivo genérico. La razón es que, más adelante, cada uno de estos archivos va a crecer: por ejemplo, `mascota_provider.dart` va a sumar el `NotifierProvider` que mantenga la lista de mascotas en memoria y notifique a la UI cuando cambie — ese código pertenece naturalmente junto al `mascotaRepositoryProvider`, no en un archivo separado.
+- **En Nuestro Proyecto:** Se mantiene la convención de "un archivo por entidad" ya usada en `models/` y `repositories/`, en vez de agrupar los cuatro providers en un solo archivo genérico. La razón es que cada uno de estos archivos crece con el tiempo: `mascota_provider.dart` ya sumó el `NotifierProvider` que mantiene la lista de mascotas en memoria y notifica a la UI cuando cambia (`MascotasNotifier`/`mascotasProvider`, documentado en detalle en `mascotasNotifier.md`) — ese código vive naturalmente junto al `mascotaRepositoryProvider`, no en un archivo separado. Los otros tres providers sumarán su propio `NotifierProvider` de la misma forma cuando se necesiten.
