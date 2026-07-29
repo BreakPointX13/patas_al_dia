@@ -1,0 +1,86 @@
+# Nota de Obsidian: `LoginScreen`
+
+## 📁 Ubicación en el Proyecto
+
+`lib/presentation/screens/login_screen.dart`
+
+Es la primera pantalla de `lib/presentation/`, y la que arranca la app (`main.dart` la usa como `home` de `MaterialApp`).
+
+## 🎯 Propósito del Archivo
+
+Pantalla de bienvenida con dos caminos, coherente con el login híbrido que `UsuarioModel` ya soporta (regla 2 de `CLAUDE.md`: ninguna funcionalidad core debe requerir registro obligatorio):
+
+- **"Continuar como invitado"** (botón principal, relleno): crea un `UsuarioModel` con `esInvitado = true` vía `UsuarioNotifier.crearUsuario`, y navega a `HomeScreen` reemplazando esta pantalla (no se puede volver atrás).
+- **"Iniciar sesión"** (botón secundario, con borde): por ahora solo muestra un aviso ("no disponible todavía") porque el backend de Supabase aún no existe — ver sección "Backend cloud (pendiente)" de `CLAUDE.md`. Se conectará a autenticación real cuando ese backend esté listo.
+
+---
+
+## 🗺️ Mapa de Conexión Conceptual
+
+### 🏛️ En un Proyecto Estándar de la Industria
+
+Es común que apps con backend opcional muestren primero una pantalla de decisión (login vs. modo invitado/demo) en vez de forzar un formulario de credenciales antes de dejar entrar al usuario — reduce fricción de onboarding.
+
+### 🐾 En Nuestro Proyecto "Patas al día"
+
+`LoginScreen` es un `ConsumerWidget`: no maneja su propio estado interno, pero necesita `ref` para hablar con `usuarioProvider` (crear el usuario invitado). Es la primera pantalla de la app que consume un provider.
+
+### 🔄 Comparativa y Ventajas Técnicas
+
+- **Proyecto Estándar:** muchas apps usan paquetes de routing dedicados (`go_router`, `auto_route`) desde el día uno.
+- **Nuestro Enfoque:** usamos el `Navigator` incluido en Flutter (`Navigator.of(context).pushReplacement(...)`) — coherente con la regla 6 de dependencias mínimas. Para el tamaño actual de la app alcanza sin problema.
+
+---
+
+## ⚙️ Glosario de Funciones y Componentes Complejos
+
+### 1. `ConsumerWidget` en vez de `StatelessWidget`
+
+```dart
+class LoginScreen extends ConsumerWidget {
+  @override
+  Widget build(BuildContext context, WidgetRef ref) { ... }
+}
+```
+
+Es la versión de un widget sin estado propio que Riverpod provee para poder leer/llamar providers desde la UI — `build` recibe un `WidgetRef ref` extra, el mismo tipo de `ref` que ya se usa dentro de los Notifiers.
+
+### 2. `_continuarComoInvitado`
+
+```dart
+Future<void> _continuarComoInvitado(BuildContext context, WidgetRef ref) async {
+  final usuarioInvitado = UsuarioModel(id: const Uuid().v4());
+  await ref.read(usuarioProvider.notifier).crearUsuario(usuarioInvitado);
+
+  if (!context.mounted) {
+    return;
+  }
+
+  Navigator.of(context).pushReplacement(
+    MaterialPageRoute(builder: (context) => const HomeScreen()),
+  );
+}
+```
+
+- **`Uuid().v4()`**: genera el id único del nuevo usuario. Primer uso real del paquete `uuid` en el proyecto.
+- **`ref.read(usuarioProvider.notifier)`**: `.notifier` da acceso a la clase `UsuarioNotifier` en sí (sus métodos), no solo a su estado actual.
+- **`if (!context.mounted) return;`**: guarda de seguridad obligatoria después de un `await` que usa `context` — la pantalla pudo haberse cerrado mientras se esperaba la operación asíncrona; usar `context` en ese caso puede crashear la app.
+- **`pushReplacement` en vez de `push`**: reemplaza la pantalla actual en vez de apilarla, para que no se pueda volver a la bienvenida con el botón "atrás" una vez que ya se entró.
+
+### 3. `_mostrarLoginNoDisponible`
+
+```dart
+void _mostrarLoginNoDisponible(BuildContext context) {
+  ScaffoldMessenger.of(context).showSnackBar(
+    const SnackBar(
+      content: Text('Inicio de sesión no disponible todavía: estamos en fase de desarrollo.'),
+    ),
+  );
+}
+```
+
+`SnackBar` es el mensaje flotante que aparece abajo de la pantalla y desaparece solo — se usa acá en vez de bloquear con un diálogo porque es solo informativo, no requiere una decisión del usuario.
+
+### 4. `OutlinedButton` vs. `ElevatedButton`
+
+El botón con borde (`Outlined`) se usa para la acción secundaria ("Iniciar sesión"), el relleno (`Elevated`) para la principal ("Continuar como invitado") — jerarquía visual que prioriza el camino sin fricción, según el wireframe acordado antes de programar la pantalla.

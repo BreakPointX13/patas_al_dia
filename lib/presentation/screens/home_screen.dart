@@ -1,0 +1,55 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:patas_al_dia/providers/mascota_provider.dart';
+import 'package:patas_al_dia/providers/usuario_provider.dart';
+
+class HomeScreen extends ConsumerStatefulWidget {
+  const HomeScreen({super.key});
+
+  @override
+  ConsumerState<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends ConsumerState<HomeScreen> {
+  @override
+  void initState() {
+    super.initState();
+    final usuarioId = ref.read(usuarioProvider)!.id;
+    ref.read(mascotasProvider.notifier).cargarMascotas(usuarioId);
+  }
+
+  void _mostrarAgregarNoDisponible() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Pantalla de agregar mascota: próximamente.'),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final mascotas = ref.watch(mascotasProvider);
+
+    return Scaffold(
+      appBar: AppBar(title: const Text('Mis Mascotas')),
+      body: mascotas.isEmpty
+          ? const Center(child: Text('Aún no tienes mascotas registradas'))
+          : ListView.builder(
+              itemCount: mascotas.length,
+              itemBuilder: (context, index) {
+                final mascota = mascotas[index];
+                return ListTile(
+                  leading: const Icon(Icons.pets),
+                  title: Text(mascota.nombre),
+                  subtitle: Text(mascota.especie ?? 'Especie no especificada'),
+                );
+              },
+            ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: _mostrarAgregarNoDisponible,
+        tooltip: 'Agregar mascota',
+        child: const Icon(Icons.add),
+      ),
+    );
+  }
+}
