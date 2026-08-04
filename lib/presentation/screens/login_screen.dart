@@ -8,7 +8,10 @@ import 'package:patas_al_dia/providers/usuario_provider.dart';
 class LoginScreen extends ConsumerWidget {
   const LoginScreen({super.key});
 
-  Future<void> _continuarComoInvitado(BuildContext context, WidgetRef ref) async {
+  Future<void> _continuarComoInvitado(
+    BuildContext context,
+    WidgetRef ref,
+  ) async {
     final usuarioInvitado = UsuarioModel(id: const Uuid().v4());
     await ref.read(usuarioProvider.notifier).crearUsuario(usuarioInvitado);
 
@@ -24,7 +27,9 @@ class LoginScreen extends ConsumerWidget {
   void _mostrarLoginNoDisponible(BuildContext context) {
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
-        content: Text('Inicio de sesión no disponible todavía: estamos en fase de desarrollo.'),
+        content: Text(
+          'Inicio de sesión no disponible todavía: estamos en fase de desarrollo.',
+        ),
       ),
     );
   }
