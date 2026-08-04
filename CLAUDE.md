@@ -18,7 +18,7 @@ flutter build apk        # build Android release
 ```
 
 ## Architecture
-El proyecto sigue una arquitectura por capas. Las capas de datos (`lib/data/`) y de gestión de estado (`lib/providers/`) están completas; la UI (`lib/presentation/`) está en construcción — primera pantalla (`LoginScreen`) implementada.
+El proyecto sigue una arquitectura por capas. Las capas de datos (`lib/data/`) y de gestión de estado (`lib/providers/`) están completas; la UI (`lib/presentation/`) está en construcción — `LoginScreen`, `HomeScreen` y `AgregarMascotaScreen` implementadas.
 
 ### Estructura objetivo de `lib/`
 
@@ -28,7 +28,8 @@ lib/
 ├── presentation/
 │   └── screens/
 │       ├── login_screen.dart        # Bienvenida: iniciar sesión (no disponible aún) o continuar como invitado
-│       └── home_screen.dart         # "Mis Mascotas" — lista real conectada a mascotasProvider, estado vacío, FAB (agregar mascota pendiente)
+│       ├── home_screen.dart         # "Mis Mascotas" — lista real conectada a mascotasProvider, estado vacío, FAB abre AgregarMascotaScreen
+│       └── agregar_mascota_screen.dart  # Formulario: nombre, especie, raza, sexo, fecha de nacimiento, peso — guarda vía mascotasProvider.agregarMascota
 ├── data/
 │   ├── database/
 │   │   └── database_helper.dart     # Singleton SQLite — punto de acceso único a la DB
@@ -52,7 +53,7 @@ lib/
 Estado de las capas:
 - `lib/data/repositories/` — completa; los 4 repositories del core (`mascota_repository.dart`, `usuario_repository.dart`, `agenda_evento_repository.dart`, `documento_repository.dart`) tienen el CRUD completo (crear, leer, actualizar, eliminar)
 - `lib/providers/` — completa; los 4 repositories están expuestos (DI simple vía `Provider`), y `mascota_provider.dart`/`agenda_evento_provider.dart`/`documento_provider.dart`/`usuario_provider.dart` ya tienen su `NotifierProvider` con CRUD completo sobre el estado
-- `lib/presentation/` — en construcción; `LoginScreen` completa (crea usuario invitado y navega, o avisa que el login real no está disponible aún) y `HomeScreen` completa (lista real de mascotas vía `mascotasProvider`, estado vacío). Pendiente: formulario de agregar/editar mascota (el FAB de `HomeScreen` hoy solo avisa "próximamente"), y pantallas de detalle (agenda, documentos)
+- `lib/presentation/` — en construcción; `LoginScreen` completa (crea usuario invitado y navega, o avisa que el login real no está disponible aún), `HomeScreen` completa (lista real de mascotas vía `mascotasProvider`, estado vacío) y `AgregarMascotaScreen` completa (formulario con nombre obligatorio + especie, raza, sexo, fecha de nacimiento y peso opcionales; guarda vía `mascotasProvider.agregarMascota`). Pendiente: edición de mascota existente, y pantallas de detalle (agenda, documentos)
 
 ### Capa de datos
 

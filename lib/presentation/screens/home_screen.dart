@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:patas_al_dia/presentation/screens/agregar_mascota_screen.dart';
 import 'package:patas_al_dia/providers/mascota_provider.dart';
 import 'package:patas_al_dia/providers/usuario_provider.dart';
 
@@ -18,11 +19,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     ref.read(mascotasProvider.notifier).cargarMascotas(usuarioId);
   }
 
-  void _mostrarAgregarNoDisponible() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Pantalla de agregar mascota: próximamente.'),
-      ),
+  void _irAAgregarMascota() {
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (context) => const AgregarMascotaScreen()),
     );
   }
 
@@ -46,7 +45,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               },
             ),
       floatingActionButton: FloatingActionButton(
-        onPressed: _mostrarAgregarNoDisponible,
+        onPressed: _irAAgregarMascota,
         tooltip: 'Agregar mascota',
         child: const Icon(Icons.add),
       ),
