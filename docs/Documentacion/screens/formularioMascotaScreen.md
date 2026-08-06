@@ -81,7 +81,7 @@ validator: (valor) {
 }
 ```
 
-Función que corre cuando se llama `validate()` sobre el `Form`. Si devuelve un `String`, ese texto se muestra como error bajo el campo; si devuelve `null`, el campo pasa la validación. Solo el campo "nombre" lo usa, porque es el único obligatorio.
+Función que corre cuando se llama `validate()` sobre el `Form`. Si devuelve un `String`, ese texto se muestra como error bajo el campo; si devuelve `null`, el campo pasa la validación. Además del "nombre" (obligatorio), también validan **peso** (si se llena, debe ser un número positivo) y **edad estimada** (obligatoria mientras el switch de fecha estimada esté activo, entero entre 1 y 30). El resto de los campos (especie, raza, rut, colores, número de chip) quedan como texto libre a propósito: RUT y número de chip no tienen un formato validado porque, aunque la app está pensada inicialmente para Chile, no se quiere cerrar la puerta a formatos de identificación de otros países.
 
 ### 6. `DropdownButtonFormField` y `SwitchListTile`
 

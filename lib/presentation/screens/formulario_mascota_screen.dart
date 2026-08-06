@@ -240,6 +240,16 @@ class _FormularioMascotaScreenState
               keyboardType: const TextInputType.numberWithOptions(
                 decimal: true,
               ),
+              validator: (valor) {
+                if (valor == null || valor.trim().isEmpty) {
+                  return null;
+                }
+                final peso = double.tryParse(valor.trim());
+                if (peso == null || peso <= 0) {
+                  return 'Ingresa un peso válido';
+                }
+                return null;
+              },
             ),
             const SizedBox(height: 16),
             SwitchListTile(
@@ -263,6 +273,16 @@ class _FormularioMascotaScreenState
                   labelText: 'Edad estimada (años)',
                 ),
                 keyboardType: TextInputType.number,
+                validator: (valor) {
+                  if (valor == null || valor.trim().isEmpty) {
+                    return 'Ingresa la edad estimada';
+                  }
+                  final anios = int.tryParse(valor.trim());
+                  if (anios == null || anios <= 0 || anios > 30) {
+                    return 'Ingresa una edad válida (1 a 30 años)';
+                  }
+                  return null;
+                },
               )
             else
               ListTile(
