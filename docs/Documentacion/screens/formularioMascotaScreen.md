@@ -8,7 +8,7 @@ Se abre de dos formas: desde el botón flotante (`+`) de `HomeScreen` (modo **cr
 
 ## 🎯 Propósito del Archivo
 
-Formulario único que sirve tanto para **crear** una mascota nueva como para **editar** una existente — evita duplicar el formulario cuando crece. Campos: foto, nombre (obligatorio), especie, raza, RUT de la mascota, colores, número de chip, sexo, esterilizado, fecha de nacimiento y peso. Al guardar, crea o actualiza un `MascotaModel` según corresponda y lo pasa a `mascotasProvider.notifier` (`agregarMascota` o `actualizarMascota`), que escribe en SQLite y actualiza el estado en memoria. Las pantallas que escuchan ese estado (`HomeScreen`, `DetalleMascotaScreen`) se refrescan solas, porque ya usan `ref.watch`.
+Formulario único que sirve tanto para **crear** una mascota nueva como para **editar** una existente — evita duplicar el formulario cuando crece. Campos: foto, nombre (obligatorio), especie, raza, RUT de la mascota, colores, número de chip, sexo, esterilizado, fecha de nacimiento (o edad estimada) y peso. Al guardar, crea o actualiza un `MascotaModel` según corresponda y lo pasa a `mascotasProvider.notifier` (`agregarMascota` o `actualizarMascota`), que escribe en SQLite y actualiza el estado en memoria. Las pantallas que escuchan ese estado (`HomeScreen`, `DetalleMascotaScreen`) se refrescan solas, porque ya usan `ref.watch`.
 
 ---
 
@@ -136,3 +136,14 @@ Si estamos editando, reutiliza el `id` de la mascota existente (`widget.mascotaE
 ### 10. `mounted` vs. `context.mounted`
 
 En `LoginScreen` (un `ConsumerWidget`, sin estado propio) se usa `context.mounted` tras un `await`. Acá, al ser un `ConsumerState` (tiene estado propio), existe la propiedad `mounted` directamente en el `State` — es la forma preferida por el analizador cuando está disponible, en vez de `context.mounted`.
+
+### 11. `_fechaEstimada` — edad aproximada en vez de fecha exacta
+
+```dart
+if (_fechaEstimada)
+  TextFormField(controller: _edadEstimadaController, ...)
+else
+  ListTile(..., trailing: TextButton(onPressed: _seleccionarFecha, ...)),
+```
+
+No todos los dueños conocen la fecha de nacimiento exacta de su mascota (rescates, adopciones, etc.). El `SwitchListTile` "No sé la fecha exacta de nacimiento" reemplaza el selector de fecha por un campo numérico de años cuando está activo. Al guardar, en vez de duplicar el modelo con un campo de "edad" separado, se sigue usando `fechaNacimiento` como única fuente de verdad: se calcula como `hoy menos esos años` (`DateTime(DateTime.now().year - anios, ...)`), y el flag `fechaEstimada` (bool, nueva columna en SQLite) queda guardado en el `MascotaModel` para que el resto de la app (por ejemplo `DetalleMascotaScreen`) sepa que ese dato es una aproximación y no una fecha real. En `initState()`, si se está editando una mascota con `fechaEstimada == true`, se recalculan los años a partir de esa fecha aproximada para precargar el campo.

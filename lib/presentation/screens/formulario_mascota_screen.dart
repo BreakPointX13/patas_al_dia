@@ -27,10 +27,12 @@ class _FormularioMascotaScreenState
   final _rutController = TextEditingController();
   final _coloresController = TextEditingController();
   final _numeroChipController = TextEditingController();
+  final _edadEstimadaController = TextEditingController();
 
   String? _sexo;
   DateTime? _fechaNacimiento;
   bool _esterilizado = false;
+  bool _fechaEstimada = false;
 
   final ImagePicker _picker = ImagePicker();
   String? _fotoPath;
@@ -60,6 +62,11 @@ class _FormularioMascotaScreenState
       _fechaNacimiento = mascota.fechaNacimiento;
       _esterilizado = mascota.esterilizado;
       _fotoPath = mascota.fotoUrl;
+      _fechaEstimada = mascota.fechaEstimada;
+      if (_fechaEstimada && mascota.fechaNacimiento != null) {
+        final anios = DateTime.now().year - mascota.fechaNacimiento!.year;
+        _edadEstimadaController.text = anios.toString();
+      }
     }
   }
 
@@ -72,6 +79,7 @@ class _FormularioMascotaScreenState
     _rutController.dispose();
     _coloresController.dispose();
     _numeroChipController.dispose();
+    _edadEstimadaController.dispose();
     super.dispose();
   }
 
@@ -97,6 +105,14 @@ class _FormularioMascotaScreenState
 
     final usuarioId = ref.read(usuarioProvider)!.id;
     final peso = double.tryParse(_pesoController.text.trim());
+    final fechaNacimientoFinal = _fechaEstimada
+        ? DateTime(
+            DateTime.now().year -
+                (int.tryParse(_edadEstimadaController.text.trim()) ?? 0),
+            DateTime.now().month,
+            DateTime.now().day,
+          )
+        : _fechaNacimiento;
 
     final mascota = MascotaModel(
       id: widget.mascotaExistente?.id ?? const Uuid().v4(),
@@ -119,7 +135,8 @@ class _FormularioMascotaScreenState
           : _numeroChipController.text.trim(),
       sexo: _sexo,
       esterilizado: _esterilizado,
-      fechaNacimiento: _fechaNacimiento,
+      fechaNacimiento: fechaNacimientoFinal,
+      fechaEstimada: _fechaEstimada,
       pesoActual: peso,
       fotoUrl: _fotoPath,
     );
@@ -232,19 +249,35 @@ class _FormularioMascotaScreenState
               onChanged: (valor) => setState(() => _esterilizado = valor),
             ),
             const SizedBox(height: 16),
-            ListTile(
+            SwitchListTile(
               contentPadding: EdgeInsets.zero,
-              title: Text(
-                _fechaNacimiento == null
-                    ? 'Fecha de nacimiento no seleccionada'
-                    : 'Fecha de nacimiento: '
-                          '${_fechaNacimiento!.day}/${_fechaNacimiento!.month}/${_fechaNacimiento!.year}',
-              ),
-              trailing: TextButton(
-                onPressed: _seleccionarFecha,
-                child: const Text('Elegir fecha'),
-              ),
+              title: const Text('No sé la fecha exacta de nacimiento'),
+              value: _fechaEstimada,
+              onChanged: (valor) => setState(() => _fechaEstimada = valor),
             ),
+            const SizedBox(height: 16),
+            if (_fechaEstimada)
+              TextFormField(
+                controller: _edadEstimadaController,
+                decoration: const InputDecoration(
+                  labelText: 'Edad estimada (años)',
+                ),
+                keyboardType: TextInputType.number,
+              )
+            else
+              ListTile(
+                contentPadding: EdgeInsets.zero,
+                title: Text(
+                  _fechaNacimiento == null
+                      ? 'Fecha de nacimiento no seleccionada'
+                      : 'Fecha de nacimiento: '
+                            '${_fechaNacimiento!.day}/${_fechaNacimiento!.month}/${_fechaNacimiento!.year}',
+                ),
+                trailing: TextButton(
+                  onPressed: _seleccionarFecha,
+                  child: const Text('Elegir fecha'),
+                ),
+              ),
             const SizedBox(height: 32),
             ElevatedButton(onPressed: _guardar, child: const Text('Guardar')),
           ],

@@ -54,6 +54,7 @@ class DatabaseHelper {
         fecha_nacimiento TEXT,
         peso_actual REAL,
         foto_url TEXT,
+        fecha_estimada INTEGER DEFAULT 0,
         FOREIGN KEY (usuario_id) REFERENCES usuarios (id) ON DELETE CASCADE
       )
     ''');

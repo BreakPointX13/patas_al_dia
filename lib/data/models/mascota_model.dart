@@ -12,6 +12,7 @@ class MascotaModel {
   final DateTime? fechaNacimiento;
   final double? pesoActual;
   final String? fotoUrl;
+  final bool fechaEstimada;
 
   MascotaModel({
     required this.id,
@@ -27,6 +28,7 @@ class MascotaModel {
     this.fechaNacimiento,
     this.pesoActual,
     this.fotoUrl,
+    this.fechaEstimada = false,
   });
 
   // Convierte un Mapa (fila de la BDD) a un objeto MascotaModel
@@ -53,6 +55,8 @@ class MascotaModel {
           ? (map['peso_actual'] as num).toDouble()
           : null,
       fotoUrl: map['foto_url'] != null ? map['foto_url'] as String : null,
+      fechaEstimada:
+          map['fecha_estimada'] == 1 || map['fecha_estimada'] == true,
     );
   }
 
@@ -76,6 +80,7 @@ class MascotaModel {
       )[0], // Guarda solo YYYY-MM-DD
       'peso_actual': pesoActual,
       'foto_url': fotoUrl,
+      'fecha_estimada': fechaEstimada ? 1 : 0,
     };
   }
 
@@ -94,6 +99,7 @@ class MascotaModel {
     DateTime? fechaNacimiento,
     double? pesoActual,
     String? fotoUrl,
+    bool? fechaEstimada,
   }) {
     return MascotaModel(
       id: id ?? this.id,
@@ -109,6 +115,7 @@ class MascotaModel {
       fechaNacimiento: fechaNacimiento ?? this.fechaNacimiento,
       pesoActual: pesoActual ?? this.pesoActual,
       fotoUrl: fotoUrl ?? this.fotoUrl,
+      fechaEstimada: fechaEstimada ?? this.fechaEstimada,
     );
   }
 }

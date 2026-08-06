@@ -8,7 +8,7 @@ Se abre al tocar una mascota en la lista de `HomeScreen`. Desde acá se llega a 
 
 ## 🎯 Propósito del Archivo
 
-Muestra todos los datos de una mascota puntual (foto, especie, raza, sexo, fecha de nacimiento, peso, esterilizado, rut, colores, número de chip) y da acceso a tres acciones: "Editar datos" (funcional), "Agenda" y "Documentos" (placeholder "próximamente" hasta que existan esas pantallas).
+Muestra todos los datos de una mascota puntual (foto, especie, raza, sexo, fecha de nacimiento o edad estimada, peso, esterilizado, rut, colores, número de chip) y da acceso a tres acciones: "Editar datos" (funcional), "Agenda" y "Documentos" (placeholder "próximamente" hasta que existan esas pantallas).
 
 ---
 
@@ -63,6 +63,21 @@ Método de lista de Dart: recorre los elementos y devuelve el primero que cumpla
 
 Cada dato de la mascota (especie, raza, etc.) se muestra con un `ListTile` donde `title` es la etiqueta y `subtitle` es el valor — mismo widget que ya se usa en otras partes del proyecto (la fila de "Elegir fecha" en el formulario), reutilizado acá como una forma simple de mostrar pares etiqueta/valor en una lista.
 
-### 4. Las tres acciones al final
+### 4. `fechaEstimada` — mostrar edad en vez de fecha
+
+```dart
+ListTile(
+  title: Text(mascota.fechaEstimada ? 'Edad estimada' : 'Fecha de nacimiento'),
+  subtitle: Text(
+    mascota.fechaEstimada
+        ? '${DateTime.now().year - mascota.fechaNacimiento!.year} años'
+        : '.../.../...',
+  ),
+),
+```
+
+Cuando la mascota se registró con el switch "No sé la fecha exacta de nacimiento" activo (ver `formularioMascotaScreen.md`), `mascota.fechaNacimiento` guarda una fecha aproximada (hoy menos X años), no la fecha real. Por eso acá no se muestra esa fecha tal cual: se recalculan los años a partir de ella y se etiqueta la fila como "Edad estimada" en vez de "Fecha de nacimiento", para que quede claro que es un dato aproximado.
+
+### 5. Las tres acciones al final
 
 "Editar datos" navega con `Navigator.push` a `FormularioMascotaScreen(mascotaExistente: mascota)` — abre el mismo formulario que "Agregar mascota", pero en modo edición. "Agenda" y "Documentos" llaman a `_mostrarProximamente`, el mismo patrón de aviso ("próximamente") que ya se usa en `LoginScreen` para "Iniciar sesión".

@@ -50,10 +50,14 @@ class DetalleMascotaScreen extends ConsumerWidget {
             subtitle: Text(mascota.sexo ?? 'No especificado'),
           ),
           ListTile(
-            title: const Text('Fecha de nacimiento'),
+            title: Text(
+              mascota.fechaEstimada ? 'Edad estimada' : 'Fecha de nacimiento',
+            ),
             subtitle: Text(
               mascota.fechaNacimiento == null
                   ? 'No especificada'
+                  : mascota.fechaEstimada
+                  ? '${DateTime.now().year - mascota.fechaNacimiento!.year} años'
                   : '${mascota.fechaNacimiento!.day}/'
                         '${mascota.fechaNacimiento!.month}/'
                         '${mascota.fechaNacimiento!.year}',

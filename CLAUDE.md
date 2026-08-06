@@ -29,7 +29,7 @@ lib/
 │   └── screens/
 │       ├── login_screen.dart        # Bienvenida: iniciar sesión (no disponible aún) o continuar como invitado
 │       ├── home_screen.dart         # "Mis Mascotas" — lista real conectada a mascotasProvider, estado vacío, FAB abre FormularioMascotaScreen, tocar una mascota abre DetalleMascotaScreen
-│       ├── formulario_mascota_screen.dart  # Formulario único crear/editar: foto, nombre, especie, raza, rut, colores, número de chip, sexo, esterilizado, fecha de nacimiento, peso — guarda vía mascotasProvider.agregarMascota o actualizarMascota
+│       ├── formulario_mascota_screen.dart  # Formulario único crear/editar: foto, nombre, especie, raza, rut, colores, número de chip, sexo, esterilizado, fecha de nacimiento (o edad estimada, con switch), peso — guarda vía mascotasProvider.agregarMascota o actualizarMascota
 │       └── detalle_mascota_screen.dart     # Muestra todos los datos de una mascota (buscada por id en mascotasProvider) y da acceso a Editar (funcional), Agenda y Documentos (placeholder)
 ├── data/
 │   ├── database/
