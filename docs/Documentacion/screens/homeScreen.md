@@ -8,7 +8,7 @@ Es el destino de `LoginScreen` tras "Continuar como invitado" (o, en el futuro, 
 
 ## 🎯 Propósito del Archivo
 
-Pantalla "Mis Mascotas": muestra la lista de mascotas del usuario actual, cargándolas desde SQLite a través de `mascotasProvider` apenas se abre la pantalla. Si el usuario todavía no tiene ninguna, muestra un estado vacío en vez de una lista en blanco confusa. El botón flotante (`+`) es el punto de entrada a "Agregar mascota" — por ahora solo un aviso, esa pantalla real es el siguiente paso.
+Pantalla "Mis Mascotas": muestra la lista de mascotas del usuario actual, cargándolas desde SQLite a través de `mascotasProvider` apenas se abre la pantalla. Si el usuario todavía no tiene ninguna, muestra un estado vacío en vez de una lista en blanco confusa. El botón flotante (`+`) abre `FormularioMascotaScreen` en modo crear. Tocar una mascota de la lista abre `DetalleMascotaScreen`, pasándole solo el `id` (no el objeto completo — ver la nota sobre esto en `detalleMascotaScreen.md`).
 
 ---
 
@@ -81,3 +81,17 @@ Construye solo los ítems visibles en pantalla en cada momento (a diferencia de 
 ### 5. `mascota.especie ?? 'Especie no especificada'`
 
 El operador `??` ("si es null, usa esto otro") cubre el caso en que `especie` no se cargó al registrar la mascota (es un campo opcional en `MascotaModel`).
+
+### 6. `onTap` del `ListTile` — navegar solo con el id
+
+```dart
+onTap: () {
+  Navigator.of(context).push(
+    MaterialPageRoute(
+      builder: (context) => DetalleMascotaScreen(mascotaId: mascota.id),
+    ),
+  );
+}
+```
+
+Se le pasa `mascota.id` (un `String`), no el objeto `mascota` completo. Así, `DetalleMascotaScreen` siempre busca el dato más actualizado en `mascotasProvider` en vez de quedarse con una copia que puede volverse vieja si el usuario edita la mascota. Ver el detalle de esta decisión en `detalleMascotaScreen.md`.

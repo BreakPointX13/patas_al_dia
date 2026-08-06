@@ -18,7 +18,7 @@ flutter build apk        # build Android release
 ```
 
 ## Architecture
-El proyecto sigue una arquitectura por capas. Las capas de datos (`lib/data/`) y de gestión de estado (`lib/providers/`) están completas; la UI (`lib/presentation/`) está en construcción — `LoginScreen`, `HomeScreen` y `AgregarMascotaScreen` implementadas.
+El proyecto sigue una arquitectura por capas. Las capas de datos (`lib/data/`) y de gestión de estado (`lib/providers/`) están completas; la UI (`lib/presentation/`) está en construcción — `LoginScreen`, `HomeScreen`, `FormularioMascotaScreen` y `DetalleMascotaScreen` implementadas.
 
 ### Estructura objetivo de `lib/`
 
@@ -28,8 +28,9 @@ lib/
 ├── presentation/
 │   └── screens/
 │       ├── login_screen.dart        # Bienvenida: iniciar sesión (no disponible aún) o continuar como invitado
-│       ├── home_screen.dart         # "Mis Mascotas" — lista real conectada a mascotasProvider, estado vacío, FAB abre AgregarMascotaScreen
-│       └── agregar_mascota_screen.dart  # Formulario: nombre, especie, raza, sexo, fecha de nacimiento, peso — guarda vía mascotasProvider.agregarMascota
+│       ├── home_screen.dart         # "Mis Mascotas" — lista real conectada a mascotasProvider, estado vacío, FAB abre FormularioMascotaScreen, tocar una mascota abre DetalleMascotaScreen
+│       ├── formulario_mascota_screen.dart  # Formulario único crear/editar: foto, nombre, especie, raza, rut, colores, número de chip, sexo, esterilizado, fecha de nacimiento, peso — guarda vía mascotasProvider.agregarMascota o actualizarMascota
+│       └── detalle_mascota_screen.dart     # Muestra todos los datos de una mascota (buscada por id en mascotasProvider) y da acceso a Editar (funcional), Agenda y Documentos (placeholder)
 ├── data/
 │   ├── database/
 │   │   └── database_helper.dart     # Singleton SQLite — punto de acceso único a la DB
@@ -53,7 +54,7 @@ lib/
 Estado de las capas:
 - `lib/data/repositories/` — completa; los 4 repositories del core (`mascota_repository.dart`, `usuario_repository.dart`, `agenda_evento_repository.dart`, `documento_repository.dart`) tienen el CRUD completo (crear, leer, actualizar, eliminar)
 - `lib/providers/` — completa; los 4 repositories están expuestos (DI simple vía `Provider`), y `mascota_provider.dart`/`agenda_evento_provider.dart`/`documento_provider.dart`/`usuario_provider.dart` ya tienen su `NotifierProvider` con CRUD completo sobre el estado
-- `lib/presentation/` — en construcción; `LoginScreen` completa (crea usuario invitado y navega, o avisa que el login real no está disponible aún), `HomeScreen` completa (lista real de mascotas vía `mascotasProvider`, estado vacío) y `AgregarMascotaScreen` completa (formulario con nombre obligatorio + especie, raza, sexo, fecha de nacimiento y peso opcionales; guarda vía `mascotasProvider.agregarMascota`). Pendiente: edición de mascota existente, y pantallas de detalle (agenda, documentos)
+- `lib/presentation/` — en construcción; `LoginScreen` completa (crea usuario invitado y navega, o avisa que el login real no está disponible aún), `HomeScreen` completa (lista real de mascotas vía `mascotasProvider`, estado vacío), `FormularioMascotaScreen` completa (formulario único crear/editar con todos los campos de `MascotaModel`, incluida foto vía `image_picker`) y `DetalleMascotaScreen` completa (muestra todos los datos de una mascota y da acceso a Editar). Pendiente: pantallas de agenda y documentos (Editar en `DetalleMascotaScreen` navega a `FormularioMascotaScreen`; Agenda y Documentos son placeholder "próximamente")
 
 ### Capa de datos
 

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:patas_al_dia/presentation/screens/agregar_mascota_screen.dart';
+import 'package:patas_al_dia/presentation/screens/detalle_mascota_screen.dart';
+import 'package:patas_al_dia/presentation/screens/formulario_mascota_screen.dart';
 import 'package:patas_al_dia/providers/mascota_provider.dart';
 import 'package:patas_al_dia/providers/usuario_provider.dart';
 
@@ -21,7 +22,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   void _irAAgregarMascota() {
     Navigator.of(context).push(
-      MaterialPageRoute(builder: (context) => const AgregarMascotaScreen()),
+      MaterialPageRoute(builder: (context) => const FormularioMascotaScreen()),
     );
   }
 
@@ -41,6 +42,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   leading: const Icon(Icons.pets),
                   title: Text(mascota.nombre),
                   subtitle: Text(mascota.especie ?? 'Especie no especificada'),
+                  onTap: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (context) =>
+                            DetalleMascotaScreen(mascotaId: mascota.id),
+                      ),
+                    );
+                  },
                 );
               },
             ),
