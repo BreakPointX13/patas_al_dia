@@ -54,7 +54,30 @@ Future<void> crearUsuario(UsuarioModel usuario) async {
 
 Los tres siguen la misma estructura de tres pasos que ya conocemos (pedir repository → operar contra la base → actualizar `state`), pero el último paso es siempre un reemplazo directo (`state = usuario` o `state = await repo.obtenerUsuarioPorId(id)`), nunca una reconstrucción de lista.
 
-### 3. `eliminarUsuario()` — sin parámetros, con retorno temprano
+### 3. `cargarSesionActiva()` y `cerrarSesion()`
+
+```dart
+Future<bool> cargarSesionActiva() async {
+  final repo = ref.read(usuarioRepositoryProvider);
+  state = await repo.obtenerUsuarioConSesionActiva();
+  return state != null;
+}
+
+Future<void> cerrarSesion() async {
+  if (state == null) {
+    return;
+  }
+
+  final repo = ref.read(usuarioRepositoryProvider);
+  await repo.actualizarUsuario(state!.copyWith(sesionActiva: false));
+  state = null;
+}
+```
+
+- **`cargarSesionActiva()`**: la llama `SesionInicialScreen` una sola vez al arrancar la app. Devuelve `bool` (no solo actualiza `state`) porque quien la llama necesita decidir, en el mismo `await`, a qué pantalla navegar — `true` si había un usuario con sesión activa (va a `HomeScreen`), `false` si no (va a `LoginScreen`).
+- **`cerrarSesion()`**: a diferencia de `eliminarUsuario()`, **no borra** la fila de `usuarios` — usa `actualizarUsuario` con `copyWith(sesionActiva: false)` para conservar los datos del invitado (por si vuelve a entrar), y solo después limpia el `state` en memoria. Mismo patrón de retorno temprano que `eliminarUsuario()` para evitar operar sobre un `state` nulo.
+
+### 4. `eliminarUsuario()` — sin parámetros, con retorno temprano
 
 ```dart
 Future<void> eliminarUsuario() async {

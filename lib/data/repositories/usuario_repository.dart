@@ -23,6 +23,20 @@ class UsuarioRepository {
     return UsuarioModel.fromMap(maps.first);
   }
 
+  Future<UsuarioModel?> obtenerUsuarioConSesionActiva() async {
+    final db = await DatabaseHelper.instance.database;
+    final List<Map<String, dynamic>> maps = await db.query(
+      'usuarios',
+      where: 'sesion_activa = ?',
+      whereArgs: [1],
+      limit: 1,
+    );
+    if (maps.isEmpty) {
+      return null;
+    }
+    return UsuarioModel.fromMap(maps.first);
+  }
+
   Future<int> actualizarUsuario(UsuarioModel usuario) async {
     final db = await DatabaseHelper.instance.database;
     final int filasActualizadas = await db.update(

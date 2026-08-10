@@ -8,7 +8,7 @@ Es el destino de `LoginScreen` tras "Continuar como invitado" (o, en el futuro, 
 
 ## 🎯 Propósito del Archivo
 
-Pantalla "Mis Mascotas": muestra la lista de mascotas del usuario actual, cargándolas desde SQLite a través de `mascotasProvider` apenas se abre la pantalla. Si el usuario todavía no tiene ninguna, muestra un estado vacío en vez de una lista en blanco confusa. El botón flotante (`+`) abre `FormularioMascotaScreen` en modo crear. Tocar una mascota de la lista abre `DetalleMascotaScreen`, pasándole solo el `id` (no el objeto completo — ver la nota sobre esto en `detalleMascotaScreen.md`).
+Pantalla "Mis Mascotas": muestra la lista de mascotas del usuario actual, cargándolas desde SQLite a través de `mascotasProvider` apenas se abre la pantalla. Si el usuario todavía no tiene ninguna, muestra un estado vacío en vez de una lista en blanco confusa. El botón flotante (`+`) abre `FormularioMascotaScreen` en modo crear. Tocar una mascota de la lista abre `DetalleMascotaScreen`, pasándole solo el `id` (no el objeto completo — ver la nota sobre esto en `detalleMascotaScreen.md`). El ícono de engranaje del `AppBar` abre `AjustesScreen`, donde vive "Cerrar sesión" (ver `ajustesScreen.md`).
 
 ---
 

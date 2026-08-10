@@ -1,0 +1,23 @@
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+<title>Patas al día — ícono de launcher</title>
+<desc>Ícono de aplicación: cuaderno de salud con huella de mascota sobre fondo crema, paleta cálida.</desc>
+<!-- fondo -->
+<rect width="1024" height="1024" fill="#fbf0e2"/>
+<!-- cruz de salud sutil -->
+<rect x="449" y="193" width="126" height="638" rx="40" fill="#e0653a" opacity="0.12"/>
+<rect x="193" y="449" width="638" height="126" rx="40" fill="#e0653a" opacity="0.12"/>
+<!-- cuaderno -->
+<rect x="312" y="227" width="467" height="570" rx="68" fill="#f6b64d" stroke="#d06d1f" stroke-width="28"/>
+<!-- lomo durazno -->
+<rect x="312" y="227" width="114" height="570" rx="57" fill="#f3c98f" stroke="#d06d1f" stroke-width="28"/>
+<!-- página -->
+<rect x="455" y="273" width="273" height="478" rx="34" fill="#fff7ec" stroke="#d98a2b" stroke-width="23"/>
+<!-- renglones -->
+<line x1="512" y1="376" x2="671" y2="376" stroke="#e3b57e" stroke-width="23" stroke-linecap="round"/>
+<line x1="512" y1="455" x2="671" y2="455" stroke="#e3b57e" stroke-width="23" stroke-linecap="round"/>
+<!-- huella -->
+<ellipse cx="580" cy="614" rx="74" ry="63" fill="#d06d1f"/>
+<ellipse cx="506" cy="523" rx="23" ry="31" fill="#d06d1f"/>
+<ellipse cx="580" cy="500" rx="23" ry="31" fill="#d06d1f"/>
+<ellipse cx="654" cy="523" rx="23" ry="31" fill="#d06d1f"/>
+</svg>

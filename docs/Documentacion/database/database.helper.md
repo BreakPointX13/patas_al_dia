@@ -86,3 +86,9 @@ class DatabaseHelper {
     - **Ejecución Única:** Este método no se ejecuta cada vez que se abre la app; la librería `sqflite` detecta de forma inteligente si el archivo `.db` ya existe en el almacenamiento. Si existe, se salta este paso, acelerando el tiempo de carga de la aplicación.
         
     - **Traducción SQL a SQLite:** Como SQLite almacena datos de forma compacta en el dispositivo, tus restricciones complejas de PostgreSQL o SQL Server se adaptaron automáticamente en este bloque: las llaves primarias universales se definieron como `TEXT` (para soportar tus `UUID`), y las relaciones de borrado automatizado (`ON DELETE CASCADE`) se delegaron directamente a las llaves foráneas (`FOREIGN KEY`), garantizando que si se elimina un registro de usuario o mascota en el teléfono, no queden datos huérfanos ocupando almacenamiento de forma innecesaria.
+
+### 4. Columna `sesion_activa` en `usuarios`
+
+- **El Problema:** al reabrir la app, no había ninguna forma de saber si ya existía un usuario (invitado o registrado) en este dispositivo — cada arranque mostraba `LoginScreen` de nuevo y creaba un usuario invitado *nuevo*, dejando huérfanas (a nivel de sesión, no de base de datos) las mascotas del usuario anterior.
+- **La Solución:** columna `sesion_activa INTEGER DEFAULT 1`. `SesionInicialScreen` consulta `WHERE sesion_activa = 1` al arrancar; si encuentra una fila, la app entra directo a `HomeScreen` con ese usuario. "Cerrar sesión" (desde `AjustesScreen`) no borra la fila — solo pone `sesion_activa = 0`, para que los datos del invitado sigan intactos si vuelve a entrar más adelante.
+- **Nota de esquema:** este cambio se aplicó directo en `_onCreate` sin migración (`onUpgrade`), siguiendo la decisión ya registrada en `decisiones_arquitectura.md` de que, durante desarrollo sin usuarios reales, los cambios de esquema se resuelven reinstalando la app.

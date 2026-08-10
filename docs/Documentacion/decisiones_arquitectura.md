@@ -102,6 +102,31 @@ Registro de las decisiones de arquitectura tomadas en el proyecto, con el contex
 
 ---
 
+## 2026-08-06 — Persistencia de sesión vía flag `sesion_activa`, no vía la sola existencia de la fila en `usuarios`
+
+**Decisión:** para que la app recuerde al usuario invitado entre reaperturas (bug: antes se creaba un usuario invitado nuevo en cada arranque porque `LoginScreen` era el `home` fijo), se agrega una columna `sesion_activa INTEGER DEFAULT 1` a `usuarios`, en vez de asumir que "la primera fila que exista" es la sesión activa. `SesionInicialScreen`, nueva pantalla, es ahora el `home` de la app: consulta `WHERE sesion_activa = 1` y decide si ir a `HomeScreen` o a `LoginScreen`. "Cerrar sesión" (nueva `AjustesScreen`, accesible desde `HomeScreen`) pone el flag en `0` sin borrar la fila ni sus datos.
+
+**Por qué:** decisión del usuario tras comparar dos opciones — usar la fila existente directamente (más simple, pero "cerrar sesión" quedaría ambiguo: solo se podría lograr borrando al usuario invitado, perdiendo sus mascotas por el `ON DELETE CASCADE`) vs. un flag explícito (mismo costo de dependencias — sigue siendo solo `sqflite` — pero separa "existe un usuario" de "es la sesión activa", permitiendo cerrar sesión sin destruir datos y dejando la puerta abierta a soportar más de un usuario guardado por dispositivo en el futuro).
+
+**Alternativa considerada:** guardar el id de la sesión activa fuera de SQLite (ej. `shared_preferences`). Descartada por chocar con la regla de dependencias mínimas — la tabla `usuarios` ya podía resolverlo sin paquetes nuevos.
+
+---
+
+## 2026-08-10 — Identidad visual: fuentes y logo empaquetados manualmente, sin paquetes nuevos
+
+**Decisión:** se incorporó la identidad visual de la app (logo, paleta de color, tipografía Nunito/Source Sans 3, generada aparte por el usuario y ya aprobada) sin agregar ningún paquete nuevo:
+
+- **Fuentes:** en vez de `google_fonts` (que puede descargar los `.ttf` de la red la primera vez que se usan si no se configura para assets empaquetados), se bajaron los `.ttf` de Nunito (600/700/800) y Source Sans 3 (400/600) una sola vez y se declararon como assets locales en `pubspec.yaml`, referenciados por `fontFamily` en el `ThemeData` de `main.dart`.
+- **Logo dentro de la app:** el SVG original se rasterizó una vez a PNG (`assets/images/logo_patas_al_dia.png`, vía ImageMagick) en vez de sumar `flutter_svg` para renderizarlo como vector — el logo es prácticamente estático (no se redimensiona dinámicamente en runtime), así que no se justifica la dependencia.
+- **Ícono de launcher:** se generaron manualmente con ImageMagick los 5 tamaños de `mipmap-*` (Android) y los 14 de `AppIcon.appiconset` (iOS) a partir de un segundo SVG (versión sin transparencia, pensada para ícono), en vez de usar el paquete `flutter_launcher_icons`.
+- De paso, se corrigió el nombre visible de la app (`android:label` y `CFBundleDisplayName`, que quedaban en `patas_al_dia`/`Patas Al Dia`) a "Patas al Día".
+
+**Por qué:** las tres alternativas de paquete (`google_fonts`, `flutter_svg`, `flutter_launcher_icons`) resuelven problemas que ya cubren herramientas existentes en el entorno de desarrollo (ImageMagick) o el propio Flutter (`pubspec.yaml` assets/fonts) — chocan con la regla de dependencias mínimas sin traer una ventaja real para el tamaño actual de la app. Además, `google_fonts` en su modo por defecto podría violar la regla de local-first (usuario invitado sin errores por falta de conexión) si las fuentes no llegan a estar cacheadas.
+
+**Alternativa considerada:** usar los tres paquetes mencionados, que es el camino "por defecto" que sugiere la propia guía de identidad entregada por el usuario. Se descartó por las razones de arriba.
+
+---
+
 ## De aquí en adelante
 
 Cada vez que se tome una decisión de arquitectura nueva (enfoque, tecnología, estructura — no un simple fix o ajuste de código), se agrega una entrada acá con: fecha, la decisión, el porqué, y alternativas consideradas si las hubo.

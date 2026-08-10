@@ -172,14 +172,20 @@ class _FormularioMascotaScreenState
             Center(
               child: GestureDetector(
                 onTap: _elegirFoto,
-                child: CircleAvatar(
-                  radius: 48,
-                  backgroundImage: _fotoPath != null
-                      ? FileImage(File(_fotoPath!))
-                      : null,
-                  child: _fotoPath == null
-                      ? const Icon(Icons.pets, size: 48)
-                      : null,
+                child: Column(
+                  children: [
+                    CircleAvatar(
+                      radius: 48,
+                      backgroundImage: _fotoPath != null
+                          ? FileImage(File(_fotoPath!))
+                          : null,
+                      child: _fotoPath == null
+                          ? const Icon(Icons.pets, size: 48)
+                          : null,
+                    ),
+                    const SizedBox(height: 8),
+                    Text(_fotoPath == null ? 'Añadir foto' : 'Cambiar foto'),
+                  ],
                 ),
               ),
             ),

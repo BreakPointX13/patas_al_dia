@@ -43,7 +43,11 @@ class LoginScreen extends ConsumerWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(Icons.pets, size: 96),
+              Image.asset(
+                'assets/images/logo_patas_al_dia.png',
+                width: 140,
+                height: 140,
+              ),
               const SizedBox(height: 16),
               Text(
                 'Patas al Día',

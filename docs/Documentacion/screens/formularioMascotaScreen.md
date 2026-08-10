@@ -137,7 +137,21 @@ Si estamos editando, reutiliza el `id` de la mascota existente (`widget.mascotaE
 
 En `LoginScreen` (un `ConsumerWidget`, sin estado propio) se usa `context.mounted` tras un `await`. Acá, al ser un `ConsumerState` (tiene estado propio), existe la propiedad `mounted` directamente en el `State` — es la forma preferida por el analizador cuando está disponible, en vez de `context.mounted`.
 
-### 11. `_fechaEstimada` — edad aproximada en vez de fecha exacta
+### 11. Texto de estado en el selector de foto
+
+```dart
+Column(
+  children: [
+    CircleAvatar(...),
+    const SizedBox(height: 8),
+    Text(_fotoPath == null ? 'Añadir foto' : 'Cambiar foto'),
+  ],
+)
+```
+
+El `CircleAvatar` original no tenía ninguna etiqueta — quedaba ambiguo si era decorativo o tocable. El texto reutiliza la misma condición (`_fotoPath == null`) que ya decide si mostrar el ícono de pata o la imagen, así los dos estados (icono + "Añadir foto" / imagen + "Cambiar foto") quedan sincronizados sin variables nuevas.
+
+### 12. `_fechaEstimada` — edad aproximada en vez de fecha exacta
 
 ```dart
 if (_fechaEstimada)

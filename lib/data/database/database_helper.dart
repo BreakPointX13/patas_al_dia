@@ -34,7 +34,8 @@ class DatabaseHelper {
         es_invitado INTEGER DEFAULT 1,
         fecha_registro TEXT DEFAULT CURRENT_TIMESTAMP,
         ultima_sincronizacion TEXT,
-        dispositivo_id TEXT
+        dispositivo_id TEXT,
+        sesion_activa INTEGER DEFAULT 1
       )
     ''');
 

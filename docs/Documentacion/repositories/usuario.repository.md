@@ -45,7 +45,12 @@ Por ahora `UsuarioRepository` implementa solo el CRUD base (create, read, update
 - **Definición Estándar:** Operación **Update** — `UPDATE usuarios SET ... WHERE id = ?`.
 - **En Nuestro Proyecto:** Usa `db.update('usuarios', usuario.toMap(), where: 'id = ?', whereArgs: [usuario.id])`, devolviendo `Future<int>` con la cantidad de filas afectadas. Este método será clave más adelante para actualizar `ultimaSincronizacion` cada vez que el usuario sincronice con Supabase, y para setear `esInvitado = false` cuando un invitado se registre.
 
-### 4. `eliminarUsuario(String id)`
+### 4. `obtenerUsuarioConSesionActiva()`
+
+- **Definición Estándar:** Operación **Read** de un único registro, pero filtrando por un flag de estado (`sesion_activa = 1`) en vez de por clave primaria.
+- **En Nuestro Proyecto:** Igual estructura que `obtenerUsuarioPorId`, cambiando el `where`. `limit: 1` es solo una salvaguarda — en el diseño actual de un único usuario por dispositivo, nunca debería haber más de una fila con `sesion_activa = 1` a la vez. La usa `SesionInicialScreen` al arrancar la app para decidir si saltar `LoginScreen`.
+
+### 5. `eliminarUsuario(String id)`
 
 - **Definición Estándar:** Operación **Delete** — `DELETE FROM usuarios WHERE id = ?`.
 - **En Nuestro Proyecto:** Igual que en `MascotaRepository.eliminarMascota`, se apoya en el `ON DELETE CASCADE` definido en `DatabaseHelper`: borrar un usuario elimina automáticamente, a nivel de motor SQLite, todas sus mascotas (y en cadena, los eventos/documentos/reportes de esas mascotas). Es la operación más destructiva del esquema — en la UI final debería requerir confirmación explícita del usuario.

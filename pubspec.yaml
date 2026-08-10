@@ -63,6 +63,25 @@ flutter:
   # the material Icons class.
   uses-material-design: true
 
+
+  assets:
+      - assets/images/logo_patas_al_dia.png
+
+  fonts:
+    - family: Nunito
+      fonts:
+        - asset: assets/fonts/Nunito/Nunito-SemiBold.ttf
+          weight: 600
+        - asset: assets/fonts/Nunito/Nunito-Bold.ttf
+          weight: 700
+        - asset: assets/fonts/Nunito/Nunito-ExtraBold.ttf
+          weight: 800
+    - family: SourceSans3
+      fonts:
+        - asset: assets/fonts/SourceSans3/SourceSans3-Regular.ttf
+          weight: 400
+        - asset: assets/fonts/SourceSans3/SourceSans3-SemiBold.ttf
+          weight: 600
   # To add assets to your application, add an assets section, like this:
   # assets:
   #   - images/a_dot_burr.jpeg

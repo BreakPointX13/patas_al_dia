@@ -17,6 +17,22 @@ class UsuarioNotifier extends Notifier<UsuarioModel?> {
     state = await repo.obtenerUsuarioPorId(id);
   }
 
+  Future<bool> cargarSesionActiva() async {
+    final repo = ref.read(usuarioRepositoryProvider);
+    state = await repo.obtenerUsuarioConSesionActiva();
+    return state != null;
+  }
+
+  Future<void> cerrarSesion() async {
+    if (state == null) {
+      return;
+    }
+
+    final repo = ref.read(usuarioRepositoryProvider);
+    await repo.actualizarUsuario(state!.copyWith(sesionActiva: false));
+    state = null;
+  }
+
   Future<void> crearUsuario(UsuarioModel usuario) async {
     final repo = ref.read(usuarioRepositoryProvider);
     await repo.crearUsuario(usuario);

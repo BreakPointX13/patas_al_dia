@@ -1,0 +1,16 @@
+<svg width="300" height="300" viewBox="0 0 300 300" role="img" xmlns="http://www.w3.org/2000/svg">
+<title>Patas al día — logo</title>
+<desc>Insignia con cuaderno de salud y huella de mascota en paleta cálida.</desc>
+<circle cx="150" cy="150" r="120" fill="#fbf0e2" stroke="#d06d1f" stroke-width="8"/>
+<rect x="131" y="70" width="38" height="160" rx="10" fill="#e0653a" opacity="0.12"/>
+<rect x="70" y="131" width="160" height="38" rx="10" fill="#e0653a" opacity="0.12"/>
+<rect x="94" y="80" width="112" height="140" rx="11" fill="#f6b64d" stroke="#d06d1f" stroke-width="5"/>
+<rect x="94" y="80" width="27" height="140" rx="11" fill="#f3c98f" stroke="#d06d1f" stroke-width="5"/>
+<rect x="129" y="92" width="65" height="116" rx="6" fill="#fff7ec" stroke="#d98a2b" stroke-width="4"/>
+<line x1="143" y1="118" x2="180" y2="118" stroke="#e3b57e" stroke-width="5" stroke-linecap="round"/>
+<line x1="143" y1="138" x2="180" y2="138" stroke="#e3b57e" stroke-width="5" stroke-linecap="round"/>
+<ellipse cx="161" cy="176" rx="18" ry="15" fill="#d06d1f"/>
+<ellipse cx="143" cy="153" rx="5.6" ry="7.6" fill="#d06d1f"/>
+<ellipse cx="161" cy="147" rx="5.6" ry="7.6" fill="#d06d1f"/>
+<ellipse cx="179" cy="153" rx="5.6" ry="7.6" fill="#d06d1f"/>
+</svg>

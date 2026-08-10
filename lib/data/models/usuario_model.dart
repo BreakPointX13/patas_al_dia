@@ -5,6 +5,7 @@ class UsuarioModel {
   final DateTime? fechaRegistro;
   final DateTime? ultimaSincronizacion;
   final String? dispositivoId;
+  final bool sesionActiva;
 
   UsuarioModel({
     required this.id,
@@ -13,6 +14,7 @@ class UsuarioModel {
     this.fechaRegistro,
     this.ultimaSincronizacion,
     this.dispositivoId,
+    this.sesionActiva = true,
   });
 
   // ADUANA DE ENTRADA: De mapas de SQLite a objetos de Flutter
@@ -28,6 +30,7 @@ class UsuarioModel {
           ? DateTime.parse(map['ultima_sincronizacion'] as String)
           : null,
       dispositivoId: map['dispositivo_id'] as String?,
+      sesionActiva: (map['sesion_activa'] as int?) == 1,
     );
   }
 
@@ -40,6 +43,7 @@ class UsuarioModel {
       'fecha_registro': fechaRegistro?.toIso8601String(),
       'ultima_sincronizacion': ultimaSincronizacion?.toIso8601String(),
       'dispositivo_id': dispositivoId,
+      'sesion_activa': sesionActiva ? 1 : 0,
     };
   }
 
@@ -51,6 +55,7 @@ class UsuarioModel {
     DateTime? fechaRegistro,
     DateTime? ultimaSincronizacion,
     String? dispositivoId,
+    bool? sesionActiva,
   }) {
     return UsuarioModel(
       id: id ?? this.id,
@@ -59,6 +64,7 @@ class UsuarioModel {
       fechaRegistro: fechaRegistro ?? this.fechaRegistro,
       ultimaSincronizacion: ultimaSincronizacion ?? this.ultimaSincronizacion,
       dispositivoId: dispositivoId ?? this.dispositivoId,
+      sesionActiva: sesionActiva ?? this.sesionActiva,
     );
   }
 }
