@@ -127,6 +127,23 @@ Registro de las decisiones de arquitectura tomadas en el proyecto, con el contex
 
 ---
 
+## 2026-08-12 — Navegación principal: barra inferior con `Navigator` independiente por pestaña, en vez de uno solo compartido
+
+**Decisión:** se agrega `NavegacionPrincipalScreen` como nuevo destino de `SesionInicialScreen` (reemplaza a `HomeScreen` en ese rol). Es el "marco" de la app: una barra de navegación inferior con 3 pestañas — Mascotas (`HomeScreen`, sin cambios de contenido), Agenda y Mapa (`AgendaScreen`/`MapaScreen`, placeholders "Próximamente" por ahora) — construidas con widgets nativos de Flutter (`NavigationBar`, `IndexedStack`), sin paquetes nuevos.
+
+Cada pestaña tiene su propio `Navigator` independiente (uno por `GlobalKey<NavigatorState>`), en vez de compartir el único `Navigator` de toda la app. Esto significa que la pila de pantallas de cada pestaña vive por separado: si se abre `DetalleMascotaScreen` desde la pestaña Mascotas y se cambia a otra pestaña, al volver se sigue viendo ese detalle en vez de la lista, y la barra inferior permanece visible en todo momento (no se tapa al navegar dentro de una pestaña). El botón "atrás" del dispositivo se resuelve con `PopScope`: primero intenta retroceder dentro del `Navigator` de la pestaña activa, y solo cierra la app cuando esa pestaña ya está en su raíz.
+
+**Por qué:** decisión explícita del usuario, sopesando dos alternativas con el mismo costo de dependencias (ambas nativas de Flutter):
+
+- **Un solo `Navigator` compartido** (lo que ya existía): más simple de construir y entender, pero al abrir una pantalla desde cualquier pestaña, la barra inferior desaparece tapada por esa pantalla.
+- **Un `Navigator` por pestaña** (la elegida): más código nuevo y conceptos más avanzados (`Navigator` anidados, `GlobalKey` por pestaña), pero el resultado se comporta como apps de referencia (Instagram, YouTube) — se consideró que valía la pena priorizando el valor del proyecto como portafolio, aun sabiendo que la app todavía no tiene tantas funciones como para necesitarlo por complejidad real.
+
+Como consecuencia de mover `AjustesScreen` a una posición común a las tres pestañas, el ícono de engranaje de `HomeScreen` se reemplazó por `MenuUsuarioAvatar` (`lib/presentation/widgets/menu_usuario_avatar.dart`, primer archivo de una carpeta `widgets/` nueva, hermana de `screens/`): un ícono de avatar con menú desplegable, reutilizado en las tres pantallas raíz. No es una foto real de usuario — `UsuarioModel` todavía no tiene ese campo — así que por ahora es un ícono genérico de persona.
+
+**Alternativa considerada (para "Cerrar sesión"):** al mover `AjustesScreen` detrás de un `Navigator` anidado, `Navigator.of(context)` dentro de `_cerrarSesion` pasó a resolver al `Navigator` de la pestaña activa en vez del de toda la app — sin corregirlo, cerrar sesión hubiera dejado `LoginScreen` empujado dentro de una pestaña, con la barra inferior del shell todavía visible alrededor. Se corrigió usando `Navigator.of(context, rootNavigator: true)`, que apunta siempre al `Navigator` raíz sin importar desde qué pestaña se abrió `AjustesScreen`.
+
+---
+
 ## De aquí en adelante
 
 Cada vez que se tome una decisión de arquitectura nueva (enfoque, tecnología, estructura — no un simple fix o ajuste de código), se agrega una entrada acá con: fecha, la decisión, el porqué, y alternativas consideradas si las hubo.

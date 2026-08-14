@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:patas_al_dia/presentation/screens/home_screen.dart';
 import 'package:patas_al_dia/presentation/screens/login_screen.dart';
+import 'package:patas_al_dia/presentation/screens/navegacion_principal_screen.dart';
 import 'package:patas_al_dia/providers/usuario_provider.dart';
 
 class SesionInicialScreen extends ConsumerStatefulWidget {
@@ -30,8 +30,9 @@ class _SesionInicialScreenState extends ConsumerState<SesionInicialScreen> {
 
     Navigator.of(context).pushReplacement(
       MaterialPageRoute(
-        builder: (context) =>
-            haySesionActiva ? const HomeScreen() : const LoginScreen(),
+        builder: (context) => haySesionActiva
+            ? const NavegacionPrincipalScreen()
+            : const LoginScreen(),
       ),
     );
   }

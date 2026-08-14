@@ -4,11 +4,13 @@
 
 `lib/presentation/screens/sesion_inicial_screen.dart`
 
-Es el `home` de `MaterialApp` en `main.dart` — la primera pantalla que se construye al abrir la app, antes que `LoginScreen` o `HomeScreen`.
+Es el `home` de `MaterialApp` en `main.dart` — la primera pantalla que se construye al abrir la app, antes que `LoginScreen` o `NavegacionPrincipalScreen`.
 
 ## 🎯 Propósito del Archivo
 
-Decide, en cada arranque de la app, a qué pantalla ir: consulta si hay un usuario con `sesionActiva = true` guardado en SQLite (vía `UsuarioNotifier.cargarSesionActiva()`) y navega a `HomeScreen` si lo hay, o a `LoginScreen` si no. Resuelve el bug original que motivó esta pantalla: antes, `LoginScreen` era el `home` fijo, así que cada reapertura de la app creaba un usuario invitado nuevo y las mascotas del usuario anterior quedaban sin sesión que las mostrara.
+Decide, en cada arranque de la app, a qué pantalla ir: consulta si hay un usuario con `sesionActiva = true` guardado en SQLite (vía `UsuarioNotifier.cargarSesionActiva()`) y navega a `NavegacionPrincipalScreen` si lo hay, o a `LoginScreen` si no. Resuelve el bug original que motivó esta pantalla: antes, `LoginScreen` era el `home` fijo, así que cada reapertura de la app creaba un usuario invitado nuevo y las mascotas del usuario anterior quedaban sin sesión que las mostrara.
+
+Desde el 2026-08-12 apunta a `NavegacionPrincipalScreen` (ver `navegacionPrincipalScreen.md`) en vez de a `HomeScreen` directo — esta pantalla solo decide *si* hay sesión activa, no *qué pestaña* mostrar primero; eso lo decide `NavegacionPrincipalScreen` por sí sola, sin recibir ningún parámetro.
 
 ---
 
@@ -50,12 +52,14 @@ Future<void> _verificarSesion() async {
 
   Navigator.of(context).pushReplacement(
     MaterialPageRoute(
-      builder: (context) => haySesionActiva ? const HomeScreen() : const LoginScreen(),
+      builder: (context) => haySesionActiva
+          ? const NavegacionPrincipalScreen()
+          : const LoginScreen(),
     ),
   );
 }
 ```
 
-- **`cargarSesionActiva()`** ya deja el usuario cargado en `usuarioProvider` si existe — así `HomeScreen` no necesita volver a buscarlo, `ref.read(usuarioProvider)!.id` en su `initState` ya lo encuentra listo.
+- **`cargarSesionActiva()`** ya deja el usuario cargado en `usuarioProvider` si existe — así `HomeScreen` (pestaña Mascotas dentro de `NavegacionPrincipalScreen`) no necesita volver a buscarlo, `ref.read(usuarioProvider)!.id` en su `initState` ya lo encuentra listo.
 - **`if (!mounted) return;`**: mismo motivo que el `if (!context.mounted)` de `LoginScreen` — guarda de seguridad después de un `await`.
 - **`pushReplacement`**: esta pantalla de decisión nunca debe quedar en el stack de navegación (no tiene sentido volver a ella con el botón "atrás").

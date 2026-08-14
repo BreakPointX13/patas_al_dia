@@ -13,7 +13,7 @@ class AjustesScreen extends ConsumerWidget {
       return;
     }
 
-    Navigator.of(context).pushAndRemoveUntil(
+    Navigator.of(context, rootNavigator: true).pushAndRemoveUntil(
       MaterialPageRoute(builder: (context) => const LoginScreen()),
       (route) => false,
     );

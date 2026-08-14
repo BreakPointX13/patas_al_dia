@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:patas_al_dia/presentation/screens/ajustes_screen.dart';
 import 'package:patas_al_dia/presentation/screens/detalle_mascota_screen.dart';
 import 'package:patas_al_dia/presentation/screens/formulario_mascota_screen.dart';
+import 'package:patas_al_dia/presentation/widgets/menu_usuario_avatar.dart';
 import 'package:patas_al_dia/providers/mascota_provider.dart';
 import 'package:patas_al_dia/providers/usuario_provider.dart';
 
@@ -27,12 +27,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     );
   }
 
-  void _irAAjustes() {
-    Navigator.of(
-      context,
-    ).push(MaterialPageRoute(builder: (context) => const AjustesScreen()));
-  }
-
   @override
   Widget build(BuildContext context) {
     final mascotas = ref.watch(mascotasProvider);
@@ -40,13 +34,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Mis Mascotas'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.settings),
-            tooltip: 'Ajustes',
-            onPressed: _irAAjustes,
-          ),
-        ],
+        actions: const [MenuUsuarioAvatar()],
       ),
       body: mascotas.isEmpty
           ? const Center(child: Text('Aún no tienes mascotas registradas'))
