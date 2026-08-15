@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:patas_al_dia/presentation/screens/agenda_screen.dart';
 import 'package:patas_al_dia/presentation/screens/formulario_mascota_screen.dart';
 import 'package:patas_al_dia/providers/mascota_provider.dart';
 
@@ -105,7 +106,14 @@ class DetalleMascotaScreen extends ConsumerWidget {
             leading: const Icon(Icons.event_note),
             title: const Text('Agenda'),
             trailing: const Icon(Icons.chevron_right),
-            onTap: () => _mostrarProximamente(context, 'Agenda'),
+            onTap: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) =>
+                      AgendaScreen(mascotaIdInicial: mascotaId),
+                ),
+              );
+            },
           ),
           ListTile(
             leading: const Icon(Icons.description),

@@ -55,7 +55,18 @@ Diálogo con `CheckboxListTile` por mascota más un checkbox "Todas" que sincron
 
 Antes de abrir `FormularioAgendaEventoScreen`, muestra un `showModalBottomSheet` con dos opciones — "Evento futuro" y "Evento pasado" — que se traducen en el parámetro `esEventoPasado` del formulario. Ver `formularioAgendaEventoScreen.md` para cómo ese parámetro cambia el comportamiento del formulario. Si el filtro tiene exactamente una mascota seleccionada, se la pasa como `mascotaIdInicial` para no obligar a elegirla de nuevo.
 
-### 6. Botón flotante centrado
+### 6. Vista Calendario (`table_calendar`, 2026-08-14)
+
+`_vistaCalendario` (bool, `true` por defecto — el usuario pidió explícitamente que el calendario sea la vista inicial) alterna entre `_vistaLista` (la original) y `_vistaCalendarioWidget`, con un ícono en el `AppBar` para cambiar entre ambas.
+
+- **`eventLoader: (dia) => _eventosDelDia(eventos, dia)`**: le dice a `TableCalendar` qué días marcar con un punto — se recalcula sobre la misma lista `eventos` ya filtrada por mascota, no hace una consulta aparte.
+- **`isSameDay`** (utilidad que exporta el propio paquete): compara solo año/mes/día, ignorando la hora — necesario porque `fechaProgramada` incluye hora y `DateTime ==` compararía también eso.
+- **Debajo del calendario**, un `Expanded` con la lista de eventos del día tocado (`_diaSeleccionado`, `DateTime?`) — texto "Sin eventos este día" si no hay ninguno, o "Toca un día para ver sus eventos" si no hay ningún día seleccionado. Tocar un evento (en cualquiera de las dos vistas) usa el mismo `_abrirDetalle`, factorizado para no duplicar la navegación.
+- **`onPageChanged` limpia la selección** (`_diaSeleccionado = null`): corrige un detalle de UX que notó el usuario probando la app — si seleccionabas un día con eventos y después cambiabas de mes, la lista de abajo seguía mostrando los eventos de ese día aunque ya no estuviera visible en la grilla. Ahora, cambiar de mes deja la sección de abajo pidiendo elegir un día de nuevo, en vez de arrastrar una selección que ya no tiene sentido visualmente.
+- **`headerStyle: HeaderStyle(formatButtonVisible: false)`** + `calendarFormat: CalendarFormat.month` fijo: el paquete trae por defecto un botón para alternar entre vista mes/2 semanas/semana (con texto en inglés, "2 weeks"), que no se necesita para este caso de uso — se ocultó en vez de traducirlo.
+- **`locale: 'es_ES'`**: requiere que `intl` tenga los datos de esa configuración regional cargados antes de construir el widget — ver `initializeDateFormatting('es_ES')` en `main.dart`. Sin esa llamada, el calendario lanza una excepción (`LocaleDataException`) apenas se intenta mostrar el nombre del mes.
+
+### 7. Botón flotante centrado
 
 ```dart
 floatingActionButton: FloatingActionButton.extended(

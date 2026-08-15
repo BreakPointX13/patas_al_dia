@@ -178,6 +178,16 @@ Dos bugs reales en el navbar armado el 2026-08-12, recién visibles al probar co
 
 ---
 
+## 2026-08-14 — Vista Calendario de la Agenda: `table_calendar` como excepción a dependencias mínimas
+
+**Decisión:** `AgendaScreen` tiene dos vistas alternables (lista y calendario, con calendario como vista inicial por defecto, decisión explícita del usuario), usando el paquete `table_calendar` para la vista de calendario.
+
+**Por qué choca con la regla de dependencias mínimas:** igual que con `file_picker` y `flutter_local_notifications` (ver la entrada del mismo día), Flutter no trae de fábrica un widget de calendario con grilla de mes, marcadores de eventos por día y navegación entre meses — construirlo a mano es posible pero no trivial. Excepción consciente, decidida explícitamente por el usuario ("esta parte es la principal del proyecto, no deberíamos escatimar tanto").
+
+**Detalle no evidente:** usar `locale: 'es_ES'` en `TableCalendar` requiere inicializar los datos de esa configuración regional del paquete `intl` antes (`initializeDateFormatting('es_ES')` en `main.dart`) — sin eso, el widget lanza una excepción al intentar mostrar el nombre del mes en español.
+
+---
+
 ## De aquí en adelante
 
 Cada vez que se tome una decisión de arquitectura nueva (enfoque, tecnología, estructura — no un simple fix o ajuste de código), se agrega una entrada acá con: fecha, la decisión, el porqué, y alternativas consideradas si las hubo.
