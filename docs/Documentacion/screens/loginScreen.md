@@ -4,13 +4,13 @@
 
 `lib/presentation/screens/login_screen.dart`
 
-Ya no es el `home` directo de `MaterialApp` — `main.dart` arranca con `SesionInicialScreen`, que decide si mostrar esta pantalla (no hay usuario con sesión activa en el dispositivo) o saltar directo a `HomeScreen` (sí lo hay). Ver `sesionInicialScreen.md`.
+Ya no es el `home` directo de `MaterialApp` — `main.dart` arranca con `SesionInicialScreen`, que decide si mostrar esta pantalla (no hay usuario con sesión activa en el dispositivo) o saltar directo a `NavegacionPrincipalScreen` (sí lo hay). Ver `sesionInicialScreen.md`.
 
 ## 🎯 Propósito del Archivo
 
 Pantalla de bienvenida con dos caminos, coherente con el login híbrido que `UsuarioModel` ya soporta (regla 2 de `CLAUDE.md`: ninguna funcionalidad core debe requerir registro obligatorio):
 
-- **"Continuar como invitado"** (botón principal, relleno): crea un `UsuarioModel` con `esInvitado = true` vía `UsuarioNotifier.crearUsuario`, y navega a `HomeScreen` reemplazando esta pantalla (no se puede volver atrás).
+- **"Continuar como invitado"** (botón principal, relleno): crea un `UsuarioModel` con `esInvitado = true` vía `UsuarioNotifier.crearUsuario`, y navega a `NavegacionPrincipalScreen` reemplazando esta pantalla (no se puede volver atrás).
 - **"Iniciar sesión"** (botón secundario, con borde): por ahora solo muestra un aviso ("no disponible todavía") porque el backend de Supabase aún no existe — ver sección "Backend cloud (pendiente)" de `CLAUDE.md`. Se conectará a autenticación real cuando ese backend esté listo.
 
 El logo ya no es el `Icon(Icons.pets)` de placeholder original: usa `Image.asset('assets/images/logo_patas_al_dia.png')`, el logo real de la identidad visual (ver la entrada "Identidad visual" en `decisiones_arquitectura.md`). El título "Patas al Día" hereda `textTheme.headlineMedium` del `ThemeData` global (`main.dart`), que ahora usa la tipografía Nunito de la marca en vez de la fuente por defecto de Material.
@@ -59,7 +59,7 @@ Future<void> _continuarComoInvitado(BuildContext context, WidgetRef ref) async {
   }
 
   Navigator.of(context).pushReplacement(
-    MaterialPageRoute(builder: (context) => const HomeScreen()),
+    MaterialPageRoute(builder: (context) => const NavegacionPrincipalScreen()),
   );
 }
 ```

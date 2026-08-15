@@ -67,13 +67,23 @@ class DatabaseHelper {
         mascota_id TEXT NOT NULL,
         tipo_evento TEXT,
         titulo TEXT NOT NULL,
-        medicamento_prescrito TEXT,
         observaciones TEXT,
         fecha_programada TEXT NOT NULL,
         fecha_realizada TEXT,
-        repetir_cada_meses INTEGER,
-        notificaciones_activas INTEGER DEFAULT 1,
+        recordatorio_horas_antes INTEGER,
         FOREIGN KEY (mascota_id) REFERENCES mascotas (id) ON DELETE CASCADE
+      )
+    ''');
+
+    // 3b. Tabla Medicamentos de Evento
+    await db.execute('''
+      CREATE TABLE medicamentos_evento (
+        id TEXT PRIMARY KEY,
+        agenda_evento_id TEXT NOT NULL,
+        tipo_presentacion TEXT NOT NULL,
+        nombre TEXT NOT NULL,
+        observaciones TEXT,
+        FOREIGN KEY (agenda_evento_id) REFERENCES agenda_eventos (id) ON DELETE CASCADE
       )
     ''');
 

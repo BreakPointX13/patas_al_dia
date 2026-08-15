@@ -39,9 +39,12 @@ Los sistemas de agenda o calendario en producción (Google Calendar, apps de sal
 
 - **En Nuestro Proyecto:** Igual que en `MascotaModel`, toma la fila cruda de SQLite (`Map<String, dynamic>`) y arma el objeto tipado.
 - **Lógicas Complejas:**
-    - **Conversión de Booleano (`notificacionesActivas`):** Misma técnica que `esterilizado` en `MascotaModel`: `map['notificaciones_activas'] == 1 || map['notificaciones_activas'] == true`, para tolerar tanto el `INTEGER` de SQLite como un futuro `bool` real desde Supabase.
     - **Conversión de Fechas Dobles:** `fechaProgramada` siempre se parsea con `DateTime.parse()` sin verificación de nulos (porque nunca es nula). `fechaRealizada` sí se verifica antes de parsear, ya que la mayoría de los eventos recién creados no tienen fecha de cumplimiento aún.
-    - **`repetirCadaMeses` opcional:** Se castea a `int?` solo si el dato existe. Representa la recurrencia del evento (ej. `3` para un control cada 3 meses); si es `null`, el evento no se repite automáticamente.
+    - **`recordatorioHorasAntes` opcional:** `int?` — cuántas horas antes de `fechaProgramada` se dispara la notificación local (24/12/1, ver `FormularioAgendaEventoScreen`). Si es `null`, el evento no tiene recordatorio activo. Este campo también decide, en el formulario, si la fecha del evento sigue siendo futura (`recordatorioHorasAntes` solo tiene sentido si `fechaProgramada` todavía no pasó).
+
+**Cambios del 2026-08-14:** se sacaron `notificacionesActivas` (bool) y `repetirCadaMeses` (int?), que existían en la primera versión de este modelo.
+- `notificacionesActivas` quedó redundante en cuanto se agregó `recordatorioHorasAntes`: tener un booleano *y* un valor nullable para lo mismo ("¿hay recordatorio?") podía quedar en estados contradictorios (`notificacionesActivas = true` pero `recordatorioHorasAntes = null`, por ejemplo). Ahora `recordatorioHorasAntes == null` es la única fuente de verdad para "sin recordatorio".
+- `repetirCadaMeses` se sacó por pedido explícito del usuario: quedaba redundante con la función "Programar próxima consulta" del formulario (ver `formularioAgendaEventoScreen.md`), que resuelve la misma necesidad (agendar un evento de seguimiento) de forma más flexible — el usuario elige el día exacto en vez de depender de una cadencia fija en meses.
 
 ### 3. Método de Serialización (`toMap()`)
 
@@ -49,5 +52,5 @@ Los sistemas de agenda o calendario en producción (Google Calendar, apps de sal
 
 ### 4. Copia Inmutable (`copyWith()`)
 
-- **En Nuestro Proyecto:** Como todos los campos son `final`, "completar" un evento (pasar de agendado a realizado) no se puede hacer mutando el objeto — se genera uno nuevo con `evento.copyWith(fechaRealizada: DateTime.now())`. El resto de los campos (`titulo`, `fechaProgramada`, `repetirCadaMeses`, etc.) se conservan automáticamente gracias al operador `??` dentro del método, que solo reemplaza el campo que se le pasa explícitamente.
-- **Caso de uso típico:** Este es probablemente el modelo que más va a usar `copyWith()` en la práctica, ya que marcar un evento como cumplido (llenar `fechaRealizada`) o desactivar sus notificaciones (`notificacionesActivas: false`) son operaciones de actualización parcial muy frecuentes en la agenda.
+- **En Nuestro Proyecto:** Como todos los campos son `final`, "completar" un evento (pasar de agendado a realizado) no se puede hacer mutando el objeto — se genera uno nuevo con `evento.copyWith(fechaRealizada: DateTime.now())`. El resto de los campos (`titulo`, `fechaProgramada`, `recordatorioHorasAntes`, etc.) se conservan automáticamente gracias al operador `??` dentro del método, que solo reemplaza el campo que se le pasa explícitamente.
+- **Caso de uso típico:** `DetalleAgendaEventoScreen` usa exactamente este patrón para el switch "Marcar como realizado" — ver `detalleAgendaEventoScreen.md`.

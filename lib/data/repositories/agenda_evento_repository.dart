@@ -24,6 +24,23 @@ class AgendaEventoRepository {
     return maps.map((mapa) => AgendaEventoModel.fromMap(mapa)).toList();
   }
 
+  Future<List<AgendaEventoModel>> obtenerAgendaEventosPorMascotas(
+    List<String> mascotaIds,
+  ) async {
+    if (mascotaIds.isEmpty) {
+      return [];
+    }
+
+    final db = await DatabaseHelper.instance.database;
+    final signosDePregunta = List.filled(mascotaIds.length, '?').join(',');
+    final List<Map<String, dynamic>> maps = await db.query(
+      'agenda_eventos',
+      where: 'mascota_id IN ($signosDePregunta)',
+      whereArgs: mascotaIds,
+    );
+    return maps.map((mapa) => AgendaEventoModel.fromMap(mapa)).toList();
+  }
+
   Future<AgendaEventoModel?> obtenerAgendaEventoPorId(String id) async {
     final db = await DatabaseHelper.instance.database;
     final List<Map<String, dynamic>> maps = await db.query(

@@ -29,6 +29,10 @@ Future<void> cargarDocumentos(String mascotaId) async {
 
 Filtra por `mascotaId`, igual que `AgendaEventoNotifier` — `documentos` también depende de `mascotas`. No filtra por `evento_id` todavía (esa consulta quedó pendiente en el propio `DocumentoRepository`, ver `documento.repository.md`).
 
-### 3. `agregarDocumento`, `actualizarDocumento`, `eliminarDocumento`
+### 3. `cargarDocumentosDeEvento(String eventoId)`
+
+Agregado el 2026-08-14 junto con `obtenerDocumentosPorEvento` en el repository (ver `documento.repository.md`). Lo usa `DetalleAgendaEventoScreen` para mostrar solo los documentos adjuntos a ese evento puntual.
+
+### 4. `agregarDocumento`, `actualizarDocumento`, `eliminarDocumento`
 
 Idénticos en estructura a `agregarMascota`, `actualizarMascota` y `eliminarMascota` respectivamente — spread (`[...state, documento]`), `.map()` + ternario comparando por `id`, y `.where()` excluyendo por `id`. Ver `mascotasNotifier.md` para la explicación operador por operador si hace falta refrescar la memoria.

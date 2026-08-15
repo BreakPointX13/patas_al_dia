@@ -17,6 +17,11 @@ class AgendaEventoNotifier extends Notifier<List<AgendaEventoModel>> {
     state = await repo.obtenerAgendaEventoPorMascota(mascotaId);
   }
 
+  Future<void> cargarAgendaEventosDeMascotas(List<String> mascotaIds) async {
+    final repo = ref.read(agendaEventoRepositoryProvider);
+    state = await repo.obtenerAgendaEventosPorMascotas(mascotaIds);
+  }
+
   Future<void> agregarAgendaEvento(AgendaEventoModel agendaEvento) async {
     final repo = ref.read(agendaEventoRepositoryProvider);
     await repo.crearAgendaEvento(agendaEvento);

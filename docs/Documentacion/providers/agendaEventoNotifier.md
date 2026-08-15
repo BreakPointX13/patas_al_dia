@@ -29,6 +29,10 @@ Future<void> cargarAgendaEventos(String mascotaId) async {
 
 Filtra por `mascotaId` en vez de `usuarioId` — porque `agenda_eventos` depende de `mascotas`, no de `usuarios`. Mismo patrón de reemplazo total de `state` que `cargarMascotas`.
 
-### 3. `agregarAgendaEvento`, `actualizarAgendaEvento`, `eliminarAgendaEvento`
+### 3. `cargarAgendaEventosDeMascotas(List<String> mascotaIds)`
+
+Agregado el 2026-08-14 junto con `obtenerAgendaEventosPorMascotas` en el repository (ver `agendaEvento.repository.md`). Es el método que usa `AgendaScreen` para cargar los eventos de todas las mascotas seleccionadas en el filtro, en vez de una sola — mismo patrón de reemplazo total de `state`, solo cambia qué trae el repository.
+
+### 4. `agregarAgendaEvento`, `actualizarAgendaEvento`, `eliminarAgendaEvento`
 
 Idénticos en estructura a `agregarMascota`, `actualizarMascota` y `eliminarMascota` respectivamente — spread (`[...state, agendaEvento]`), `.map()` + ternario comparando por `id`, y `.where()` excluyendo por `id`. Ver `mascotasNotifier.md` para la explicación operador por operador si hace falta refrescar la memoria.

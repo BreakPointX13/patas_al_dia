@@ -17,6 +17,11 @@ class DocumentoNotifier extends Notifier<List<DocumentoModel>> {
     state = await repo.obtenerDocumentosPorMascota(mascotaId);
   }
 
+  Future<void> cargarDocumentosDeEvento(String eventoId) async {
+    final repo = ref.read(documentoRepositoryProvider);
+    state = await repo.obtenerDocumentosPorEvento(eventoId);
+  }
+
   Future<void> agregarDocumento(DocumentoModel documento) async {
     final repo = ref.read(documentoRepositoryProvider);
     await repo.crearDocumento(documento);

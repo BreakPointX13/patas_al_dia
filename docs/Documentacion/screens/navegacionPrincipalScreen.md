@@ -81,16 +81,25 @@ Si el usuario toca la pestaña en la que ya está, en vez de no hacer nada, se m
 
 ```dart
 PopScope(
-  canPop: !(navegadorActual?.canPop() ?? false),
+  canPop: false,
   onPopInvokedWithResult: (didPop, result) {
     if (didPop) return;
-    navegadorActual?.pop();
+    final navegadorActual = _navegadoresPorPestana[_indiceActual].currentState;
+    if (navegadorActual != null && navegadorActual.canPop()) {
+      navegadorActual.pop();
+    } else {
+      SystemNavigator.pop();
+    }
   },
   ...
 )
 ```
 
 Sin esto, el botón "atrás" de Android cerraría la app entera en vez de retroceder dentro de la pestaña activa (porque, para el `Navigator` raíz de `MaterialApp`, `NavegacionPrincipalScreen` es una sola ruta sin nada más apilado encima — no "sabe" que hay Navigators anidados adentro con su propio historial).
+
+**Bug encontrado y corregido (2026-08-14):** la primera versión calculaba `canPop: !(navegadorActual?.canPop() ?? false)` una sola vez, leyendo `navegadorActual` en el momento del `build()` de `NavegacionPrincipalScreen`. El problema: empujar una pantalla nueva *dentro* de una pestaña (por ejemplo, abrir `FormularioAgendaEventoScreen` desde `AgendaScreen`) no hace que `NavegacionPrincipalScreen` se reconstruya — solo se mueve el `Navigator` anidado de esa pestaña, que es un widget aparte. Como resultado, `canPop` quedaba con un valor viejo (`true`, calculado antes de empujar nada), y el botón "atrás" del sistema cerraba la app entera en vez de volver a la pantalla anterior dentro de la pestaña.
+
+**La solución:** fijar `canPop` siempre en `false`, para que el sistema *siempre* delegue la decisión a `onPopInvokedWithResult` — y ahí sí, recién en el momento real de la pulsación, se consulta `navegadorActual.canPop()` fresco (no un valor guardado de antes). Si la pestaña activa tiene algo para retroceder, se hace `navegadorActual.pop()`; si no, se llama a `SystemNavigator.pop()` (de `package:flutter/services.dart`) para cerrar la app, ya que `canPop: false` le quitó ese control por defecto al sistema.
 
 - `canPop`: le dice al sistema si esta pantalla, vista desde afuera, tiene algo para retroceder. Se calcula preguntándole al `Navigator` de la pestaña activa si él puede retroceder (`canPop()`); si puede, `canPop` acá es `false` a propósito, para que el sistema **no** cierre nada solo y nos deje interceptar el gesto.
 - `onPopInvokedWithResult`: si el sistema no pudo hacer el pop solo (`didPop == false`), se le pide al `Navigator` de la pestaña activa que retroceda él (`navegadorActual?.pop()`).

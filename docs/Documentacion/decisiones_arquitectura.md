@@ -144,6 +144,40 @@ Como consecuencia de mover `AjustesScreen` a una posición común a las tres pes
 
 ---
 
+## 2026-08-14 — Formulario de eventos de agenda: futuro vs. pasado, con segunda mitad progresiva
+
+**Decisión:** una sola pantalla (`FormularioAgendaEventoScreen`) para crear/editar eventos de agenda, con dos modos de creación:
+
+- **Evento futuro** (recordatorio): pide solo mascota, título, fecha/hora y recordatorio. El resto del formulario (observaciones, medicamentos, documentos, "programar próxima consulta") aparece pero recién se habilita cuando la fecha programada ya pasó.
+- **Evento pasado** (historial): formulario completo desde el principio, sin recordatorio (no tiene sentido avisar de algo ya ocurrido).
+
+La visibilidad de cada sección no depende de un campo guardado que distinga "futuro" de "pasado" — se calcula en vivo comparando la fecha del evento contra el reloj actual (`_esFechaFutura`/`_segundaMitadVisible` en el formulario). Ver `formularioAgendaEventoScreen.md` para el detalle.
+
+**Por qué:** decisión del usuario, iterada en varias rondas — primero se planteó un bloqueo de 2 horas después del evento para habilitar la segunda mitad (se descartó por fricción: alguien que vuelve de la veterinaria a los 30 minutos no podía anotar la receta al toque), después se simplificó a "se habilita en cuanto pasa la hora de la consulta". Mantener todo en una sola pantalla (en vez de dos separadas) evita duplicar la lógica de medicamentos/documentos en dos archivos.
+
+---
+
+## 2026-08-14 — Medicamentos y documentos por evento: tabla nueva + `file_picker` + `flutter_local_notifications`
+
+**Decisión:** un evento de agenda ahora puede tener varios medicamentos (tabla nueva `medicamentos_evento`, con FK obligatoria y `ON DELETE CASCADE` hacia `agenda_eventos`) y varios documentos adjuntos (reutilizando la tabla `documentos` ya existente, que desde su diseño original ya soportaba un `eventoId` opcional). Para adjuntar documentos se suma el paquete `file_picker` (selección de PDF; fotos ya se cubrían con `image_picker`). Para los recordatorios con aviso real del sistema se suma `flutter_local_notifications` + `timezone`.
+
+**Por qué chocan con la regla de dependencias mínimas:** a diferencia de las fuentes/logo/ícono (2026-08-10), donde sí había una alternativa nativa razonable, acá no la hay — Flutter no trae selector de archivos genérico ni notificaciones programadas de fábrica. Excepción consciente a la regla, decidida explícitamente por el usuario: "esta parte es la principal del proyecto, no deberíamos escatimar tanto" en el caso del calendario/agenda en general.
+
+**Gotcha encontrado con `flutter_local_notifications`:** el paquete requiere declarar manualmente, en el `AndroidManifest.xml` de la app, los `<receiver>` que usa para recibir la alarma del sistema — su propio manifiesto no los incluye. Sin esa declaración, las alarmas se programan y suenan bien (es un mecanismo del sistema operativo), pero la notificación nunca llega a mostrarse, sin ningún error visible. Ver el detalle completo en `notificacionService.md`. También requirió habilitar *core library desugaring* en `android/app/build.gradle.kts` (con `coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:...")`), otro requisito del paquete no evidente hasta que el build falla pidiéndolo.
+
+---
+
+## 2026-08-14 — Bugs de navegación encontrados al probar Agenda (no decisiones, pero vale dejar registro)
+
+Dos bugs reales en el navbar armado el 2026-08-12, recién visibles al probar con interacción real del usuario (no en el desarrollo inicial):
+
+1. **`LoginScreen` no llevaba al invitado nuevo al navbar.** Al armar `NavegacionPrincipalScreen`, se actualizó `SesionInicialScreen` para que un usuario con sesión activa fuera al navbar — pero `LoginScreen._continuarComoInvitado` (el camino de un invitado *nuevo*) seguía apuntando directo a `HomeScreen`, sin el marco del navbar. Se corrigió el `Navigator.pushReplacement` para que apunte a `NavegacionPrincipalScreen`.
+2. **El botón "atrás" del sistema cerraba la app entera** en vez de retroceder dentro de una pestaña, al navegar dentro de una pestaña sin que `NavegacionPrincipalScreen` se reconstruyera (empujar `FormularioAgendaEventoScreen` no dispara un rebuild del widget padre). El detalle completo del arreglo (`PopScope` con `canPop: false` fijo) está en `navegacionPrincipalScreen.md`.
+
+**Por qué importa dejarlo anotado:** ambos bugs solo aparecen con interacción real (tocar el botón atrás del sistema, crear un usuario invitado desde cero) — no los detecta `flutter analyze` ni una revisión de código superficial. Vale la pena probar estos flujos específicos (botón atrás del sistema, no solo el de la `AppBar`; alta de usuario invitado nuevo, no solo sesión ya existente) después de cualquier cambio futuro a la navegación.
+
+---
+
 ## De aquí en adelante
 
 Cada vez que se tome una decisión de arquitectura nueva (enfoque, tecnología, estructura — no un simple fix o ajuste de código), se agrega una entrada acá con: fecha, la decisión, el porqué, y alternativas consideradas si las hubo.

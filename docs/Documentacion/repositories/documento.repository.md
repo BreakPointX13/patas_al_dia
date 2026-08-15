@@ -39,17 +39,22 @@ Por ahora `DocumentoRepository` solo cubre la consulta por `mascota_id` (la vist
 - **Definición Estándar:** Operación **Read** filtrada — el equivalente a `SELECT * FROM documentos WHERE mascota_id = ?`.
 - **En Nuestro Proyecto:** Mismo patrón que `obtenerAgendaEventoPorMascota`: `db.query()` con `where`/`whereArgs` parametrizado y conversión con `maps.map((mapa) => DocumentoModel.fromMap(mapa)).toList()`. Es la consulta que alimenta la pantalla "documentos de esta mascota".
 
-### 3. `obtenerDocumentoPorId(String id)`
+### 3. `obtenerDocumentosPorEvento(String eventoId)`
+
+- **Definición Estándar:** Operación **Read** filtrada por la foreign key opcional — `SELECT * FROM documentos WHERE evento_id = ?`.
+- **En Nuestro Proyecto:** Agregado el 2026-08-14 para que `FormularioAgendaEventoScreen` y `DetalleAgendaEventoScreen` puedan mostrar solo los documentos adjuntos a un evento puntual (ej. la receta que se adjuntó desde esa consulta), en vez de todos los documentos de la mascota. Mismo patrón `where`/`whereArgs` que el resto de las consultas.
+
+### 4. `obtenerDocumentoPorId(String id)`
 
 - **Definición Estándar:** Operación **Read** de un único registro por clave primaria.
 - **En Nuestro Proyecto:** Devuelve `Future<DocumentoModel?>` (nullable), con el mismo patrón de retorno temprano (`if (maps.isEmpty) return null;`) usado en el resto de los repositories, para evitar el `StateError` de llamar `.first` sobre una lista vacía.
 
-### 4. `actualizarDocumento(DocumentoModel documento)`
+### 5. `actualizarDocumento(DocumentoModel documento)`
 
 - **Definición Estándar:** Operación **Update** — `UPDATE documentos SET ... WHERE id = ?`.
 - **En Nuestro Proyecto:** Usa `db.update('documentos', documento.toMap(), where: 'id = ?', whereArgs: [documento.id])`. Este método será el que marque `sincronizadoNube = true` una vez que el archivo se suba a Supabase Storage.
 
-### 5. `eliminarDocumento(String id)`
+### 6. `eliminarDocumento(String id)`
 
 - **Definición Estándar:** Operación **Delete** — `DELETE FROM documentos WHERE id = ?`.
 - **En Nuestro Proyecto:** Usa `db.delete('documentos', where: 'id = ?', whereArgs: [id])`. A diferencia de eliminar una mascota o un evento (que arrastran documentos en cascada o los desvinculan), eliminar un documento es una operación de un solo nivel: no tiene ninguna tabla hija que dependa de él en el esquema actual.

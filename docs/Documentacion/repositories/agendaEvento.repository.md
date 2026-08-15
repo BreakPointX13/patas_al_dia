@@ -49,7 +49,12 @@ Por ahora `AgendaEventoRepository` cubre el CRUD base filtrando por `mascota_id`
 - **Definición Estándar:** Operación **Update** — `UPDATE agenda_eventos SET ... WHERE id = ?`.
 - **En Nuestro Proyecto:** Usa `db.update('agenda_eventos', agendaEvento.toMap(), where: 'id = ?', whereArgs: [agendaEvento.id])`. Este método es clave para marcar un evento como realizado: se actualiza `fechaRealizada` (hoy `null` hasta que la mascota reciba, por ejemplo, la vacuna).
 
-### 5. `eliminarAgendaEvento(String id)`
+### 5. `obtenerAgendaEventosPorMascotas(List<String> mascotaIds)`
+
+- **Definición Estándar:** Operación **Read** filtrada con múltiples valores — el equivalente a `SELECT * FROM agenda_eventos WHERE mascota_id IN (?, ?, ...)`.
+- **En Nuestro Proyecto:** Agregado el 2026-08-14 para alimentar la pestaña Agenda del navbar, que puede mostrar los eventos de **todas** las mascotas del usuario a la vez (o de un subconjunto elegido con el filtro), no solo de una. El número de `?` en la cláusula `IN (...)` se arma dinámicamente con `List.filled(mascotaIds.length, '?').join(',')`, y `whereArgs: mascotaIds` sigue estando parametrizado (sin concatenar los ids directo en el string SQL) — mismo nivel de seguridad que el resto de las queries del proyecto. Si `mascotaIds` está vacío, devuelve `[]` sin tocar la base de datos, para no ejecutar un `IN ()` inválido en SQL.
+
+### 6. `eliminarAgendaEvento(String id)`
 
 - **Definición Estándar:** Operación **Delete** — `DELETE FROM agenda_eventos WHERE id = ?`.
 - **En Nuestro Proyecto:** Usa `db.delete('agenda_eventos', where: 'id = ?', whereArgs: [id])`. Como `documentos` tiene `FOREIGN KEY (evento_id) REFERENCES agenda_eventos (id) ON DELETE SET NULL`, eliminar un evento de agenda no borra los documentos asociados (ej. la boleta de la vacuna) — el motor SQLite simplemente pone `evento_id` en `NULL` en esos documentos, desvinculándolos del evento sin perder el archivo.

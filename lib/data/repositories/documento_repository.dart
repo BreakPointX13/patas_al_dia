@@ -23,6 +23,19 @@ class DocumentoRepository {
     return maps.map((mapa) => DocumentoModel.fromMap(mapa)).toList();
   }
 
+  Future<List<DocumentoModel>> obtenerDocumentosPorEvento(
+    String eventoId,
+  ) async {
+    final db = await DatabaseHelper.instance.database;
+    final List<Map<String, dynamic>> maps = await db.query(
+      'documentos',
+      where: 'evento_id = ?',
+      whereArgs: [eventoId],
+    );
+
+    return maps.map((mapa) => DocumentoModel.fromMap(mapa)).toList();
+  }
+
   Future<DocumentoModel?> obtenerDocumentoPorId(String id) async {
     final db = await DatabaseHelper.instance.database;
     final List<Map<String, dynamic>> maps = await db.query(

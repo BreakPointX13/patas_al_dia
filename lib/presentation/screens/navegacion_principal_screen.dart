@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:patas_al_dia/presentation/screens/agenda_screen.dart';
 import 'package:patas_al_dia/presentation/screens/home_screen.dart';
 import 'package:patas_al_dia/presentation/screens/mapa_screen.dart';
@@ -45,15 +46,24 @@ class _NavegacionPrincipalScreenState
 
   @override
   Widget build(BuildContext context) {
-    final navegadorActual = _navegadoresPorPestana[_indiceActual].currentState;
-
     return PopScope(
-      canPop: !(navegadorActual?.canPop() ?? false),
+      // Siempre en false: así el botón "atrás" del sistema pasa siempre por
+      // onPopInvokedWithResult, donde se consulta el Navigator de la pestaña
+      // activa en el momento real de la pulsación (no un valor calculado en
+      // el último build de este widget, que puede haber quedado desactualizado
+      // si se navegó dentro de la pestaña sin que este widget se reconstruya).
+      canPop: false,
       onPopInvokedWithResult: (didPop, result) {
         if (didPop) {
           return;
         }
-        navegadorActual?.pop();
+        final navegadorActual =
+            _navegadoresPorPestana[_indiceActual].currentState;
+        if (navegadorActual != null && navegadorActual.canPop()) {
+          navegadorActual.pop();
+        } else {
+          SystemNavigator.pop();
+        }
       },
       child: Scaffold(
         body: IndexedStack(

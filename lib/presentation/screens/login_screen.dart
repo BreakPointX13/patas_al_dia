@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
 import 'package:patas_al_dia/data/models/usuario_model.dart';
-import 'package:patas_al_dia/presentation/screens/home_screen.dart';
+import 'package:patas_al_dia/presentation/screens/navegacion_principal_screen.dart';
 import 'package:patas_al_dia/providers/usuario_provider.dart';
 
 class LoginScreen extends ConsumerWidget {
@@ -20,7 +20,7 @@ class LoginScreen extends ConsumerWidget {
     }
 
     Navigator.of(context).pushReplacement(
-      MaterialPageRoute(builder: (context) => const HomeScreen()),
+      MaterialPageRoute(builder: (context) => const NavegacionPrincipalScreen()),
     );
   }
 

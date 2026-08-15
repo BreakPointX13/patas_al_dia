@@ -3,24 +3,20 @@ class AgendaEventoModel {
   final String mascotaId;
   final String? tipoEvento;
   final String titulo;
-  final String? medicamentoPrescrito;
   final String? observaciones;
   final DateTime fechaProgramada;
   final DateTime? fechaRealizada;
-  final int? repetirCadaMeses;
-  final bool notificacionesActivas;
+  final int? recordatorioHorasAntes;
 
   AgendaEventoModel({
     required this.id,
     required this.mascotaId,
     this.tipoEvento,
     required this.titulo,
-    this.medicamentoPrescrito,
     this.observaciones,
     required this.fechaProgramada,
     this.fechaRealizada,
-    this.repetirCadaMeses,
-    this.notificacionesActivas = true,
+    this.recordatorioHorasAntes,
   });
 
   // Convierte un Mapa (fila de la BDD) a un objeto AgendaEventoModel
@@ -32,9 +28,6 @@ class AgendaEventoModel {
           ? map['tipo_evento'] as String
           : null,
       titulo: map['titulo'] as String,
-      medicamentoPrescrito: map['medicamento_prescrito'] != null
-          ? map['medicamento_prescrito'] as String
-          : null,
       observaciones: map['observaciones'] != null
           ? map['observaciones'] as String
           : null,
@@ -42,12 +35,9 @@ class AgendaEventoModel {
       fechaRealizada: map['fecha_realizada'] != null
           ? DateTime.parse(map['fecha_realizada'] as String)
           : null,
-      repetirCadaMeses: map['repetir_cada_meses'] != null
-          ? map['repetir_cada_meses'] as int
+      recordatorioHorasAntes: map['recordatorio_horas_antes'] != null
+          ? map['recordatorio_horas_antes'] as int
           : null,
-      notificacionesActivas:
-          map['notificaciones_activas'] == 1 ||
-          map['notificaciones_activas'] == true,
     );
   }
 
@@ -58,14 +48,10 @@ class AgendaEventoModel {
       'mascota_id': mascotaId,
       'tipo_evento': tipoEvento,
       'titulo': titulo,
-      'medicamento_prescrito': medicamentoPrescrito,
       'observaciones': observaciones,
       'fecha_programada': fechaProgramada.toIso8601String(),
       'fecha_realizada': fechaRealizada?.toIso8601String(),
-      'repetir_cada_meses': repetirCadaMeses,
-      'notificaciones_activas': notificacionesActivas
-          ? 1
-          : 0, // SQLite almacena booleanos como 0 o 1
+      'recordatorio_horas_antes': recordatorioHorasAntes,
     };
   }
 
@@ -75,25 +61,21 @@ class AgendaEventoModel {
     String? mascotaId,
     String? tipoEvento,
     String? titulo,
-    String? medicamentoPrescrito,
     String? observaciones,
     DateTime? fechaProgramada,
     DateTime? fechaRealizada,
-    int? repetirCadaMeses,
-    bool? notificacionesActivas,
+    int? recordatorioHorasAntes,
   }) {
     return AgendaEventoModel(
       id: id ?? this.id,
       mascotaId: mascotaId ?? this.mascotaId,
       tipoEvento: tipoEvento ?? this.tipoEvento,
       titulo: titulo ?? this.titulo,
-      medicamentoPrescrito: medicamentoPrescrito ?? this.medicamentoPrescrito,
       observaciones: observaciones ?? this.observaciones,
       fechaProgramada: fechaProgramada ?? this.fechaProgramada,
       fechaRealizada: fechaRealizada ?? this.fechaRealizada,
-      repetirCadaMeses: repetirCadaMeses ?? this.repetirCadaMeses,
-      notificacionesActivas:
-          notificacionesActivas ?? this.notificacionesActivas,
+      recordatorioHorasAntes:
+          recordatorioHorasAntes ?? this.recordatorioHorasAntes,
     );
   }
 }

@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:patas_al_dia/presentation/screens/sesion_inicial_screen.dart';
+import 'package:patas_al_dia/services/notificacion_service.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await NotificacionService.instance.inicializar();
   runApp(const ProviderScope(child: MyApp()));
 }
 
