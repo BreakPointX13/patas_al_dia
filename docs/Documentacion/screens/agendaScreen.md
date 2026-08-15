@@ -66,7 +66,11 @@ Antes de abrir `FormularioAgendaEventoScreen`, muestra un `showModalBottomSheet`
 - **`headerStyle: HeaderStyle(formatButtonVisible: false)`** + `calendarFormat: CalendarFormat.month` fijo: el paquete trae por defecto un botón para alternar entre vista mes/2 semanas/semana (con texto en inglés, "2 weeks"), que no se necesita para este caso de uso — se ocultó en vez de traducirlo.
 - **`locale: 'es_ES'`**: requiere que `intl` tenga los datos de esa configuración regional cargados antes de construir el widget — ver `initializeDateFormatting('es_ES')` en `main.dart`. Sin esa llamada, el calendario lanza una excepción (`LocaleDataException`) apenas se intenta mostrar el nombre del mes.
 
-### 7. Botón flotante centrado
+### 7. `_nombreMascota` — resolución segura, sin crashear (2026-08-15)
+
+Reemplaza un `mascotas.firstWhere(..., orElse: () => mascotas.first)` que asumía que `mascotas` nunca podía estar vacía si había eventos — supuesto que se rompía justo después de cerrar sesión (ver la entrada del 2026-08-15 en `decisiones_arquitectura.md`). Ahora, si no encuentra la mascota, devuelve el texto genérico `'Mascota'` en vez de crashear con `StateError` (`.first` sobre una lista vacía).
+
+### 8. Botón flotante centrado
 
 ```dart
 floatingActionButton: FloatingActionButton.extended(

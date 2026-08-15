@@ -1,8 +1,12 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:open_filex/open_filex.dart';
 import 'package:patas_al_dia/data/models/agenda_evento_model.dart';
+import 'package:patas_al_dia/data/models/documento_model.dart';
+import 'package:patas_al_dia/data/models/mascota_model.dart';
 import 'package:patas_al_dia/presentation/screens/formulario_agenda_evento_screen.dart';
+import 'package:patas_al_dia/presentation/screens/visor_imagen_screen.dart';
 import 'package:patas_al_dia/providers/agenda_evento_provider.dart';
 import 'package:patas_al_dia/providers/documento_provider.dart';
 import 'package:patas_al_dia/providers/mascota_provider.dart';
@@ -31,13 +35,38 @@ class _DetalleAgendaEventoScreenState
         .cargarDocumentosDeEvento(widget.eventoId);
   }
 
-  Future<void> _alternarRealizado(AgendaEventoModel evento) async {
-    final eventoActualizado = evento.copyWith(
-      fechaRealizada: evento.fechaRealizada == null ? DateTime.now() : null,
-    );
+  Future<void> _marcarRealizado(AgendaEventoModel evento) async {
+    final eventoActualizado = evento.copyWith(fechaRealizada: DateTime.now());
     await ref
         .read(agendaEventosProvider.notifier)
         .actualizarAgendaEvento(eventoActualizado);
+  }
+
+  String _nombreMascota(List<MascotaModel> mascotas, String mascotaId) {
+    for (final mascota in mascotas) {
+      if (mascota.id == mascotaId) {
+        return mascota.nombre;
+      }
+    }
+    return 'Mascota';
+  }
+
+  Future<void> _abrirDocumento(DocumentoModel documento) async {
+    if (documento.fileExtension == 'pdf') {
+      await OpenFilex.open(documento.filePath);
+      return;
+    }
+    if (!mounted) {
+      return;
+    }
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => VisorImagenScreen(
+          filePath: documento.filePath,
+          titulo: documento.titulo,
+        ),
+      ),
+    );
   }
 
   Future<void> _eliminarEvento(AgendaEventoModel evento) async {
@@ -78,13 +107,28 @@ class _DetalleAgendaEventoScreenState
 
   @override
   Widget build(BuildContext context) {
-    final evento = ref
-        .watch(agendaEventosProvider)
-        .firstWhere((e) => e.id == widget.eventoId);
+    final eventos = ref.watch(agendaEventosProvider);
+    AgendaEventoModel? eventoEncontrado;
+    for (final e in eventos) {
+      if (e.id == widget.eventoId) {
+        eventoEncontrado = e;
+        break;
+      }
+    }
+    if (eventoEncontrado == null) {
+      // Puede pasar si el evento se borró (o el usuario cerró sesión) justo
+      // mientras esta pantalla seguía abierta — no hay nada que mostrar.
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted && Navigator.of(context).canPop()) {
+          Navigator.of(context).pop();
+        }
+      });
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
+    final evento = eventoEncontrado;
+
     final mascotas = ref.watch(mascotasProvider);
-    final nombreMascota = mascotas
-        .firstWhere((m) => m.id == evento.mascotaId)
-        .nombre;
+    final nombreMascota = _nombreMascota(mascotas, evento.mascotaId);
     final medicamentos = ref.watch(medicamentoEventoProvider);
     final documentos = ref.watch(documentosProvider);
 
@@ -129,18 +173,23 @@ class _DetalleAgendaEventoScreenState
             ),
           ),
           const Divider(height: 32),
-          SwitchListTile(
-            contentPadding: EdgeInsets.zero,
-            title: const Text('Marcar como realizado'),
-            subtitle: evento.fechaRealizada != null
-                ? Text(
-                    'Realizado el ${evento.fechaRealizada!.day}/'
-                    '${evento.fechaRealizada!.month}/${evento.fechaRealizada!.year}',
-                  )
-                : null,
-            value: evento.fechaRealizada != null,
-            onChanged: (_) => _alternarRealizado(evento),
-          ),
+          if (evento.fechaRealizada != null)
+            ListTile(
+              contentPadding: EdgeInsets.zero,
+              leading: const Icon(Icons.check_circle),
+              title: const Text('Realizado'),
+              subtitle: Text(
+                '${evento.fechaRealizada!.day}/'
+                '${evento.fechaRealizada!.month}/${evento.fechaRealizada!.year}',
+              ),
+            )
+          else
+            SwitchListTile(
+              contentPadding: EdgeInsets.zero,
+              title: const Text('Marcar como realizado'),
+              value: false,
+              onChanged: (_) => _marcarRealizado(evento),
+            ),
           const Divider(height: 32),
           Text('Medicamentos', style: Theme.of(context).textTheme.titleMedium),
           if (medicamentos.isEmpty)
@@ -180,6 +229,8 @@ class _DetalleAgendaEventoScreenState
                       ),
                 title: Text(documento.titulo),
                 subtitle: Text(documento.tipoDocumento),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () => _abrirDocumento(documento),
               ),
           const Divider(height: 32),
           ListTile(

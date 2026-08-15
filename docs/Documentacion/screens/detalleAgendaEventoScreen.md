@@ -22,6 +22,10 @@ Muestra todos los datos de un evento de agenda (incluidos medicamentos y documen
 
 ## ⚙️ Glosario de Funciones y Componentes Complejos
 
+### 0. Guarda contra evento/mascota inexistente (2026-08-15)
+
+`build()` ya no asume que `widget.eventoId` (o la mascota del evento) siga existiendo en los providers — busca a mano con un `for` en vez de `firstWhere` sin `orElse`, y si no lo encuentra, muestra un `CircularProgressIndicator` momentáneo y hace `Navigator.pop()` en el siguiente frame. Puede pasar si el evento se borra (o se cierra sesión, ver `decisiones_arquitectura.md`) mientras esta pantalla sigue abierta.
+
 ### 1. `initState()` — carga de medicamentos y documentos
 
 ```dart
@@ -31,15 +35,16 @@ ref.read(documentosProvider.notifier).cargarDocumentosDeEvento(widget.eventoId);
 
 A diferencia de `FormularioAgendaEventoScreen` (que mantiene copias locales editables), esta pantalla es de solo lectura + una acción (marcar realizado), así que sí usa directo el `state` de los providers vía `ref.watch`, sin necesidad de listas locales.
 
-### 2. `_alternarRealizado(AgendaEventoModel evento)`
+### 2. `_marcarRealizado(AgendaEventoModel evento)` — solo se ve si todavía no está realizado
 
 ```dart
-final eventoActualizado = evento.copyWith(
-  fechaRealizada: evento.fechaRealizada == null ? DateTime.now() : null,
-);
+if (evento.fechaRealizada != null)
+  ListTile(..., title: const Text('Realizado'), subtitle: Text('.../.../...'))
+else
+  SwitchListTile(title: const Text('Marcar como realizado'), value: false, onChanged: (_) => _marcarRealizado(evento)),
 ```
 
-El `SwitchListTile` de "Marcar como realizado" es en realidad un toggle sobre `fechaRealizada`: si estaba `null` (no realizado), lo llena con la fecha actual; si ya tenía una fecha, lo vuelve a `null` (permite deshacer el marcado por error).
+**Corregido el 2026-08-15** (antes había un solo `SwitchListTile` togglable en ambos sentidos): un evento pasado, al crearse, ya trae `fechaRealizada` puesta automáticamente (ver `formularioAgendaEventoScreen.md`) — no tenía sentido mostrar un switch pidiendo confirmar algo que el usuario ya declaró que ocurrió al elegir "Evento pasado". Ahora, si `fechaRealizada` ya tiene valor, se muestra como texto fijo ("Realizado", sin interacción); el switch solo aparece cuando todavía está pendiente (eventos futuros no marcados), y una vez que se activa, pasa a mostrarse como texto fijo también — no hay forma de "desmarcar" desde acá (si fue un error, se corrige editando el evento).
 
 ### 3. `_eliminarEvento(AgendaEventoModel evento)`
 
@@ -56,4 +61,21 @@ leading: documento.fileExtension == 'pdf'
       ),
 ```
 
-Para imágenes, se muestra una vista previa real leyendo el archivo del dispositivo (`Image.file`); para PDF, solo un ícono — no hay renderizador de PDF en el proyecto todavía (se agregaría, si hace falta, cuando se construya la pantalla general de Documentos, ver el roadmap en `CLAUDE.md`). Tocar un documento no lo abre todavía — ver la misma nota en `formularioAgendaEventoScreen.md` sobre el alcance actual de esta feature.
+Para imágenes, se muestra una vista previa real leyendo el archivo del dispositivo (`Image.file`); para PDF, solo un ícono.
+
+### 5. `_abrirDocumento(DocumentoModel documento)` — ver imágenes y documentos (2026-08-15)
+
+```dart
+if (documento.fileExtension == 'pdf') {
+  await OpenFilex.open(documento.filePath);
+  return;
+}
+Navigator.of(context).push(
+  MaterialPageRoute(builder: (context) => VisorImagenScreen(...)),
+);
+```
+
+Dos caminos según el tipo de archivo:
+
+- **Imagen:** se abre `VisorImagenScreen` (nueva, `lib/presentation/screens/visor_imagen_screen.dart`) — pantalla completa negra con la imagen dentro de un `InteractiveViewer` (zoom con pellizcar), sin ningún paquete nuevo, es un widget nativo de Flutter.
+- **PDF:** no hay visor de PDF embebido en la app — se le pide al sistema operativo que lo abra con la app que el usuario ya tenga instalada para eso (`OpenFilex.open`, paquete nuevo `open_filex`). Es la misma lógica que "descargar y abrir con la app que corresponda" que usa cualquier gestor de archivos.

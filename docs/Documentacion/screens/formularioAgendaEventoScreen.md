@@ -32,6 +32,8 @@ Solo se usa cuando `eventoExistente == null` (creando). Determina dos cosas: los
 
 **Bug encontrado y corregido (2026-08-14):** `showDatePicker` sí limita el *día* a "hoy o antes" para un evento pasado, pero `showTimePicker` no tiene forma de limitar la *hora* — si se elegía "hoy" como fecha y una hora posterior a la actual, el `DateTime` combinado quedaba técnicamente en el futuro sin que el usuario lo notara, y ese evento terminaba comportándose como "futuro" (campos reducidos, sin medicamentos/documentos) al editarlo después, de forma inconsistente con otros eventos pasados creados en otro momento del día. Se corrigió validando la combinación fecha+hora después de ambos pickers: si da en el futuro para un evento pasado, se rechaza con un aviso en vez de guardarla.
 
+**Bug encontrado y corregido (2026-08-15):** `fechaRealizada` (el campo que dice si el evento ya se cumplió) quedaba `null` incluso creando un evento pasado — el usuario tenía que ir después a `DetalleAgendaEventoScreen` y tocar el switch "Marcar como realizado" a mano, algo redundante con haber elegido "Evento pasado" en el primer paso. Se corrigió en `_guardar()`: si es un evento nuevo y `widget.esEventoPasado`, `fechaRealizada` se completa sola con la misma `_fechaProgramada` elegida.
+
 ### 2. `_esFechaFutura` y `_segundaMitadVisible` — la lógica central del formulario
 
 ```dart

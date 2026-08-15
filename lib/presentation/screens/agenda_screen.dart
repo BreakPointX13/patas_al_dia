@@ -176,14 +176,26 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
     return eventos.where((e) => isSameDay(e.fechaProgramada, dia)).toList();
   }
 
-  Widget _tileEvento(AgendaEventoModel evento, MascotaModel mascota) {
+  String _nombreMascota(List<MascotaModel> mascotas, String mascotaId) {
+    for (final mascota in mascotas) {
+      if (mascota.id == mascotaId) {
+        return mascota.nombre;
+      }
+    }
+    // Puede pasar momentáneamente al cerrar sesión: mascotasProvider ya se
+    // vació para la sesión nueva, pero un evento viejo todavía no terminó
+    // de recargarse — no hay que crashear por eso, solo mostrar algo.
+    return 'Mascota';
+  }
+
+  Widget _tileEvento(AgendaEventoModel evento, List<MascotaModel> mascotas) {
     return ListTile(
       leading: Icon(
         evento.fechaRealizada != null ? Icons.check_circle : Icons.event_note,
       ),
       title: Text(evento.titulo),
       subtitle: Text(
-        '${mascota.nombre} · '
+        '${_nombreMascota(mascotas, evento.mascotaId)} · '
         '${evento.fechaProgramada.day}/'
         '${evento.fechaProgramada.month}/'
         '${evento.fechaProgramada.year}',
@@ -203,11 +215,7 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
       itemCount: eventos.length,
       itemBuilder: (context, index) {
         final evento = eventos[index];
-        final mascota = mascotas.firstWhere(
-          (m) => m.id == evento.mascotaId,
-          orElse: () => mascotas.first,
-        );
-        return _tileEvento(evento, mascota);
+        return _tileEvento(evento, mascotas);
       },
     );
   }
@@ -261,11 +269,7 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
                   itemCount: eventosDelDiaSeleccionado.length,
                   itemBuilder: (context, index) {
                     final evento = eventosDelDiaSeleccionado[index];
-                    final mascota = mascotas.firstWhere(
-                      (m) => m.id == evento.mascotaId,
-                      orElse: () => mascotas.first,
-                    );
-                    return _tileEvento(evento, mascota);
+                    return _tileEvento(evento, mascotas);
                   },
                 ),
         ),

@@ -483,7 +483,9 @@ class _FormularioAgendaEventoScreenState
           ? null
           : _observacionesController.text.trim(),
       fechaProgramada: _fechaProgramada!,
-      fechaRealizada: widget.eventoExistente?.fechaRealizada,
+      fechaRealizada: widget.eventoExistente == null && widget.esEventoPasado
+          ? _fechaProgramada
+          : widget.eventoExistente?.fechaRealizada,
       recordatorioHorasAntes: _esFechaFutura && _recordatorioActivo
           ? _recordatorioHoras
           : null,

@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:patas_al_dia/data/models/mascota_model.dart';
 import 'package:patas_al_dia/presentation/screens/agenda_screen.dart';
 import 'package:patas_al_dia/presentation/screens/formulario_mascota_screen.dart';
 import 'package:patas_al_dia/providers/mascota_provider.dart';
@@ -17,9 +18,25 @@ class DetalleMascotaScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final mascota = ref
-        .watch(mascotasProvider)
-        .firstWhere((m) => m.id == mascotaId);
+    final mascotas = ref.watch(mascotasProvider);
+    MascotaModel? mascotaEncontrada;
+    for (final m in mascotas) {
+      if (m.id == mascotaId) {
+        mascotaEncontrada = m;
+        break;
+      }
+    }
+    if (mascotaEncontrada == null) {
+      // Puede pasar si la mascota se borró (o se cerró sesión) justo
+      // mientras esta pantalla seguía abierta — no hay nada que mostrar.
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (context.mounted && Navigator.of(context).canPop()) {
+          Navigator.of(context).pop();
+        }
+      });
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
+    final mascota = mascotaEncontrada;
 
     return Scaffold(
       appBar: AppBar(title: Text(mascota.nombre)),

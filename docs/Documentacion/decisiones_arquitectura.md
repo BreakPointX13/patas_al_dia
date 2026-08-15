@@ -188,6 +188,36 @@ Dos bugs reales en el navbar armado el 2026-08-12, recién visibles al probar co
 
 ---
 
+## 2026-08-15 — Ver documentos adjuntos: `open_filex` para PDF, visor propio para imágenes
+
+**Decisión:** desde `DetalleAgendaEventoScreen`, tocar un documento adjunto ahora lo abre. Las imágenes se muestran dentro de la propia app (`VisorImagenScreen`, pantalla nueva con `InteractiveViewer` para zoom — widget nativo de Flutter, sin dependencias nuevas). Los PDF se delegan al sistema operativo (`OpenFilex.open`, paquete nuevo `open_filex`), que abre el archivo con la app que el usuario ya tenga instalada para eso — no se construyó un visor de PDF propio.
+
+**Por qué:** bug reportado por el usuario ("deberías ser capaz de poder ver las imágenes y los documentos que uno adjunte") — hasta ahora los documentos adjuntos solo se veían como ícono/miniatura, sin poder abrirlos. `open_filex` es la misma clase de excepción a dependencias mínimas ya aceptada para esta parte del proyecto (Agenda/Documentos) — no hay forma nativa de pedirle a Android/iOS que abra un archivo con la app correspondiente sin un paquete así.
+
+---
+
+## 2026-08-15 — Evento pasado: `fechaRealizada` se completa sola al crearlo
+
+**Decisión:** al guardar un evento creado con "Evento pasado", `fechaRealizada` se llena automáticamente con la misma fecha elegida (`fechaProgramada`), en vez de quedar `null` hasta que el usuario active un switch a mano. En `DetalleAgendaEventoScreen`, el switch "Marcar como realizado" ahora solo aparece si `fechaRealizada` sigue sin valor — una vez marcado (a mano o automáticamente al crear), se muestra como texto fijo.
+
+**Por qué:** bug reportado por el usuario — un evento pasado, recién creado, "quedaba como si fuera un evento agendado para futuro", obligando a un paso extra (tocar el switch) para algo que el usuario ya había declarado al elegir "Evento pasado" en el primer paso del formulario.
+
+---
+
+## 2026-08-15 — Bug: datos de la sesión anterior sobrevivían en memoria tras cerrar sesión
+
+**Síntoma reportado por el usuario:** después de cerrar sesión y entrar como un invitado nuevo, `AgendaScreen` seguía mostrando eventos del invitado anterior, y la lista bajo el calendario crasheaba con un error de Flutter en rojo.
+
+**Causa:** `mascotasProvider`, `agendaEventosProvider`, `medicamentoEventoProvider` y `documentosProvider` son providers globales de Riverpod — nada los "vacía" solo por navegar a `LoginScreen` y crear un usuario invitado nuevo. `mascotasProvider` terminaba reflejando al invitado nuevo (vacío) porque `HomeScreen` siempre dispara `cargarMascotas` al montarse, pero `agendaEventosProvider` podía quedar con los eventos viejos por una condición de carrera (su propia recarga podía leer `mascotasProvider` *antes* de que terminara de actualizarse). El resultado: una pantalla con `mascotas` vacío pero `eventos` apuntando a mascotas que ya no estaban en esa lista — y el código asumía (`firstWhere(..., orElse: () => mascotas.first)`) que la lista de mascotas nunca podía estar vacía si había eventos, lo cual dejó de ser cierto.
+
+**Solución (dos partes, no solo una):**
+1. **Causa raíz:** `AjustesScreen._cerrarSesion` ahora invalida (`ref.invalidate(...)`) los cuatro providers al cerrar sesión, para que arranquen limpios la próxima vez que algo los lea — no dependen de que cada pantalla se acuerde de recargarlos a tiempo.
+2. **Defensivo, igual necesario:** se sacaron todos los `firstWhere(..., orElse: () => lista.first)` que asumían que la lista nunca podía estar vacía (`AgendaScreen`, `DetalleAgendaEventoScreen`, `DetalleMascotaScreen`) — ahora, si no se encuentra el dato, se muestra un texto de reemplazo o se vuelve a la pantalla anterior en vez de crashear. Vale la pena mantener esto aunque la causa raíz ya esté resuelta: es la misma clase de bug (asumir que un dato relacionado siempre existe) que puede reaparecer por otras vías (ej. sincronización futura con Supabase, otro dispositivo borrando algo).
+
+**De paso:** se agregó una confirmación antes de cerrar sesión (`AjustesScreen`) — como invitado no hay forma de volver a esa sesión después, así que es una acción efectivamente irreversible que merecía un aviso, aunque los datos no se borren literalmente de SQLite (siguen la decisión ya registrada del 2026-08-06: "sesión" es un flag, no la existencia de la fila).
+
+---
+
 ## De aquí en adelante
 
 Cada vez que se tome una decisión de arquitectura nueva (enfoque, tecnología, estructura — no un simple fix o ajuste de código), se agrega una entrada acá con: fecha, la decisión, el porqué, y alternativas consideradas si las hubo.

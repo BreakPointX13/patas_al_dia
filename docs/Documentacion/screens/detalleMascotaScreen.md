@@ -47,6 +47,10 @@ Nota: cuando esta pantalla navega a "Editar", ahí sí le pasa la `MascotaModel`
 
 ## ⚙️ Glosario de Funciones y Componentes Complejos
 
+### 0. Guarda contra mascota inexistente (2026-08-15)
+
+`build()` ya no usa `firstWhere` sin `orElse` (podía lanzar `StateError` si la mascota ya no estaba en `mascotasProvider` — ej. justo después de cerrar sesión, ver `decisiones_arquitectura.md`). Ahora busca a mano con un `for`, y si no la encuentra, muestra un `CircularProgressIndicator` momentáneo y hace `Navigator.pop()` en el siguiente frame en vez de crashear.
+
 ### 1. `ConsumerWidget` (no `ConsumerStatefulWidget`)
 
 A diferencia de `HomeScreen` y `FormularioMascotaScreen`, esta pantalla no maneja campos de formulario ni necesita ningún método de ciclo de vida propio (`initState`, `dispose`) — solo lee datos y navega. Por eso alcanza con `ConsumerWidget`, la versión "sin estado propio" (como `LoginScreen`).
