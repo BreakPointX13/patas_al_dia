@@ -66,6 +66,7 @@ class DatabaseHelper {
         id TEXT PRIMARY KEY,
         mascota_id TEXT NOT NULL,
         tipo_evento TEXT,
+        tipo_evento_personalizado TEXT,
         titulo TEXT NOT NULL,
         observaciones TEXT,
         fecha_programada TEXT NOT NULL,

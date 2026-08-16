@@ -73,16 +73,20 @@ class _DocumentosScreenState extends ConsumerState<DocumentosScreen> {
         ? documento.tipoDocumentoPersonalizado!
         : documento.tipoDocumento;
 
-    return ListTile(
-      leading: Icon(
-        documento.fileExtension == 'pdf' ? Icons.picture_as_pdf : Icons.image,
+    return Card(
+      child: ListTile(
+        leading: Icon(
+          documento.fileExtension == 'pdf'
+              ? Icons.picture_as_pdf
+              : Icons.image,
+        ),
+        title: Text(documento.titulo),
+        subtitle: Text(tipo),
+        trailing: documento.eventoId == null
+            ? null
+            : const Icon(Icons.link, size: 18),
+        onTap: () => _abrirDetalle(documento.id),
       ),
-      title: Text(documento.titulo),
-      subtitle: Text(tipo),
-      trailing: documento.eventoId == null
-          ? null
-          : const Icon(Icons.link, size: 18),
-      onTap: () => _abrirDetalle(documento.id),
     );
   }
 }

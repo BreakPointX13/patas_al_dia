@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import 'package:intl/intl.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:patas_al_dia/data/models/agenda_evento_model.dart';
 import 'package:patas_al_dia/data/models/mascota_model.dart';
@@ -8,7 +10,31 @@ import 'package:patas_al_dia/presentation/screens/formulario_agenda_evento_scree
 import 'package:patas_al_dia/presentation/widgets/logo_barra_superior.dart';
 import 'package:patas_al_dia/presentation/widgets/menu_usuario_avatar.dart';
 import 'package:patas_al_dia/providers/agenda_evento_provider.dart';
+import 'package:patas_al_dia/providers/documento_provider.dart';
 import 'package:patas_al_dia/providers/mascota_provider.dart';
+
+const _iconosPorTipoEvento = {
+  'Vacuna': 'assets/icons/eventos/vacuna.svg',
+  'Desparasitación': 'assets/icons/eventos/desparasitacion.svg',
+  'Peluquería': 'assets/icons/eventos/peluqueria.svg',
+  'Operación': 'assets/icons/eventos/operacion.svg',
+  'Control': 'assets/icons/eventos/control.svg',
+  'Examen': 'assets/icons/eventos/examen.svg',
+  'Otro': 'assets/icons/eventos/otro.svg',
+};
+
+String _iconoEvento(String? tipoEvento) =>
+    _iconosPorTipoEvento[tipoEvento] ?? _iconosPorTipoEvento['Otro']!;
+
+String _tipoEventoTexto(AgendaEventoModel evento) {
+  if (evento.tipoEvento == 'Otro' && evento.tipoEventoPersonalizado != null) {
+    return evento.tipoEventoPersonalizado!;
+  }
+  return evento.tipoEvento ?? 'Otro';
+}
+
+String _capitalizar(String texto) =>
+    texto.isEmpty ? texto : texto[0].toUpperCase() + texto.substring(1);
 
 class AgendaScreen extends ConsumerStatefulWidget {
   final String? mascotaIdInicial;
@@ -24,6 +50,7 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
   bool _vistaCalendario = true;
   DateTime _diaEnfocado = DateTime.now();
   DateTime? _diaSeleccionado = DateTime.now();
+  Set<String> _eventoIdsConDocumento = {};
 
   @override
   void initState() {
@@ -34,11 +61,24 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) => _cargarEventos());
   }
 
-  void _cargarEventos() {
+  Future<void> _cargarEventos() async {
     final mascotas = ref.read(mascotasProvider);
     final ids =
         _mascotaIdsFiltro?.toList() ?? mascotas.map((m) => m.id).toList();
-    ref.read(agendaEventosProvider.notifier).cargarAgendaEventosDeMascotas(ids);
+    await ref
+        .read(agendaEventosProvider.notifier)
+        .cargarAgendaEventosDeMascotas(ids);
+    if (!mounted) {
+      return;
+    }
+    final eventoIds = ref.read(agendaEventosProvider).map((e) => e.id).toList();
+    final idsConDocumento = await ref
+        .read(documentoRepositoryProvider)
+        .obtenerEventoIdsConDocumento(eventoIds);
+    if (!mounted) {
+      return;
+    }
+    setState(() => _eventoIdsConDocumento = idsConDocumento);
   }
 
   Future<void> _abrirFiltro(List<MascotaModel> mascotas) async {
@@ -189,19 +229,247 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
     return 'Mascota';
   }
 
-  Widget _tileEvento(AgendaEventoModel evento, List<MascotaModel> mascotas) {
-    return ListTile(
-      leading: Icon(
-        evento.fechaRealizada != null ? Icons.check_circle : Icons.event_note,
+  Widget _etiquetaSeccion(String texto) {
+    return Padding(
+      padding: const EdgeInsets.only(top: 6, bottom: 10),
+      child: Text(
+        texto,
+        style: const TextStyle(
+          fontFamily: 'Nunito',
+          fontWeight: FontWeight.w700,
+          fontSize: 12,
+          color: Color(0xFFA06A35),
+          letterSpacing: 0.6,
+        ),
       ),
-      title: Text(evento.titulo),
-      subtitle: Text(
-        '${_nombreMascota(mascotas, evento.mascotaId)} · '
-        '${evento.fechaProgramada.day}/'
-        '${evento.fechaProgramada.month}/'
-        '${evento.fechaProgramada.year}',
+    );
+  }
+
+  Widget _tarjetaProximoEvento(
+    AgendaEventoModel evento,
+    List<MascotaModel> mascotas,
+    bool mostrarNombreMascota,
+  ) {
+    final dias = evento.fechaProgramada
+        .difference(DateTime.now())
+        .inDays;
+    final etiquetaDias = dias < 0
+        ? 'Atrasado'
+        : dias == 0
+        ? 'Hoy'
+        : dias == 1
+        ? 'Mañana'
+        : 'En $dias días';
+    final fechaTexto = DateFormat(
+      'd MMM y',
+      'es_ES',
+    ).format(evento.fechaProgramada);
+    final subtitulo = mostrarNombreMascota
+        ? '${_nombreMascota(mascotas, evento.mascotaId)} · '
+              '${_tipoEventoTexto(evento)}'
+        : _tipoEventoTexto(evento);
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(16),
+        onTap: () => _abrirDetalle(evento.id),
+        child: Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: const Color(0xFFFFF7EC),
+            border: Border.all(color: const Color(0xFFE0812F), width: 2),
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 11,
+                      vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFBF0E2),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: const Text(
+                      'PRÓXIMO',
+                      style: TextStyle(
+                        fontFamily: 'Nunito',
+                        fontWeight: FontWeight.w700,
+                        fontSize: 11,
+                        color: Color(0xFFD06D1F),
+                        letterSpacing: 0.4,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      '$etiquetaDias · $fechaTexto',
+                      style: const TextStyle(
+                        fontSize: 12,
+                        color: Color(0xFFA06A35),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Container(
+                    width: 42,
+                    height: 42,
+                    padding: const EdgeInsets.all(9),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFBF0E2),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: SvgPicture.asset(_iconoEvento(evento.tipoEvento)),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          evento.titulo,
+                          style: const TextStyle(
+                            fontFamily: 'Nunito',
+                            fontWeight: FontWeight.w700,
+                            fontSize: 16,
+                            color: Color(0xFF7A4A22),
+                          ),
+                        ),
+                        Text(
+                          subtitulo,
+                          style: const TextStyle(
+                            fontSize: 13,
+                            color: Color(0xFFA06A35),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
       ),
-      onTap: () => _abrirDetalle(evento.id),
+    );
+  }
+
+  Widget _tarjetaEventoTimeline(
+    AgendaEventoModel evento,
+    List<MascotaModel> mascotas,
+    bool mostrarNombreMascota,
+  ) {
+    final fechaTexto = DateFormat(
+      'd MMM y',
+      'es_ES',
+    ).format(evento.fechaProgramada);
+    final tipoTexto = _tipoEventoTexto(evento);
+    final detalle = evento.observaciones?.trim().isNotEmpty == true
+        ? evento.observaciones!.trim()
+        : tipoTexto;
+    final subtitulo = mostrarNombreMascota
+        ? '${_nombreMascota(mascotas, evento.mascotaId)} · $detalle'
+        : detalle;
+    final tieneDocumento = _eventoIdsConDocumento.contains(evento.id);
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(14),
+        onTap: () => _abrirDetalle(evento.id),
+        child: Container(
+          margin: const EdgeInsets.only(bottom: 10),
+          padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 13),
+          decoration: BoxDecoration(
+            color: const Color(0xFFFFF7EC),
+            border: Border.all(color: const Color(0xFFF0DCC0)),
+            borderRadius: BorderRadius.circular(14),
+          ),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              SizedBox(
+                width: 26,
+                height: 26,
+                child: SvgPicture.asset(_iconoEvento(evento.tipoEvento)),
+              ),
+              const SizedBox(width: 13),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      evento.titulo,
+                      style: const TextStyle(
+                        fontFamily: 'Nunito',
+                        fontWeight: FontWeight.w700,
+                        fontSize: 15,
+                        color: Color(0xFF7A4A22),
+                      ),
+                    ),
+                    Text(
+                      subtitulo,
+                      style: const TextStyle(
+                        fontSize: 13,
+                        color: Color(0xFFA06A35),
+                      ),
+                    ),
+                    Text(
+                      fechaTexto,
+                      style: const TextStyle(
+                        fontSize: 12,
+                        color: Color(0xFFB8946A),
+                      ),
+                    ),
+                    if (tieneDocumento)
+                      Container(
+                        margin: const EdgeInsets.only(top: 6),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 2,
+                        ),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFFBF0E2),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: const Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.attach_file,
+                              size: 12,
+                              color: Color(0xFFD06D1F),
+                            ),
+                            SizedBox(width: 4),
+                            Text(
+                              'Documento adjunto',
+                              style: TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w600,
+                                color: Color(0xFFD06D1F),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 
@@ -212,12 +480,45 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
     if (eventos.isEmpty) {
       return const Center(child: Text('No hay eventos programados'));
     }
-    return ListView.builder(
-      itemCount: eventos.length,
-      itemBuilder: (context, index) {
-        final evento = eventos[index];
-        return _tileEvento(evento, mascotas);
-      },
+
+    final mostrarNombreMascota =
+        _mascotaIdsFiltro == null || _mascotaIdsFiltro!.length != 1;
+
+    AgendaEventoModel? proximo;
+    for (final evento in eventos) {
+      if (evento.fechaRealizada == null &&
+          (proximo == null ||
+              evento.fechaProgramada.isBefore(proximo.fechaProgramada))) {
+        proximo = evento;
+      }
+    }
+
+    final restoOrdenado = [for (final e in eventos) if (e != proximo) e]
+      ..sort((a, b) => a.fechaProgramada.compareTo(b.fechaProgramada));
+
+    final grupos = <String, List<AgendaEventoModel>>{};
+    for (final evento in restoOrdenado) {
+      final clave = DateFormat(
+        'MMMM y',
+        'es_ES',
+      ).format(evento.fechaProgramada);
+      grupos.putIfAbsent(clave, () => []).add(evento);
+    }
+
+    return ListView(
+      padding: const EdgeInsets.all(16),
+      children: [
+        if (proximo != null) ...[
+          _etiquetaSeccion('Próximo evento'),
+          _tarjetaProximoEvento(proximo, mascotas, mostrarNombreMascota),
+          const SizedBox(height: 8),
+        ],
+        for (final grupo in grupos.entries) ...[
+          _etiquetaSeccion(_capitalizar(grupo.key)),
+          for (final evento in grupo.value)
+            _tarjetaEventoTimeline(evento, mascotas, mostrarNombreMascota),
+        ],
+      ],
     );
   }
 
@@ -233,47 +534,148 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
 
     return Column(
       children: [
-        TableCalendar<AgendaEventoModel>(
-          locale: 'es_ES',
-          firstDay: DateTime(2000),
-          lastDay: DateTime(2100),
-          focusedDay: _diaEnfocado,
-          startingDayOfWeek: StartingDayOfWeek.monday,
-          calendarFormat: CalendarFormat.month,
-          headerStyle: const HeaderStyle(formatButtonVisible: false),
-          selectedDayPredicate: (dia) =>
-              diaSeleccionado != null && isSameDay(dia, diaSeleccionado),
-          eventLoader: (dia) => _eventosDelDia(eventos, dia),
-          onDaySelected: (diaSeleccionado, diaEnfocado) {
-            setState(() {
-              _diaSeleccionado = diaSeleccionado;
-              _diaEnfocado = diaEnfocado;
-            });
-          },
-          onPageChanged: (diaEnfocado) {
-            // Al cambiar de mes, el día que estaba seleccionado ya no se ve
-            // en la grilla — se limpia la selección para no dejar la lista
-            // de abajo mostrando eventos de un día que ya no está a la vista.
-            setState(() {
-              _diaEnfocado = diaEnfocado;
-              _diaSeleccionado = null;
-            });
-          },
+        Padding(
+          padding: const EdgeInsets.fromLTRB(12, 8, 12, 16),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(16),
+            child: Container(
+              color: const Color(0xFFF3C98F),
+              padding: const EdgeInsets.only(bottom: 10),
+              child: TableCalendar<AgendaEventoModel>(
+                locale: 'es_ES',
+                firstDay: DateTime(2000),
+                lastDay: DateTime(2100),
+                focusedDay: _diaEnfocado,
+                startingDayOfWeek: StartingDayOfWeek.monday,
+                calendarFormat: CalendarFormat.month,
+                rowHeight: 42,
+                daysOfWeekHeight: 20,
+                headerStyle: const HeaderStyle(formatButtonVisible: false),
+                calendarStyle: const CalendarStyle(
+                  defaultTextStyle: TextStyle(color: Color(0xFF7A4A22)),
+                  weekendTextStyle: TextStyle(color: Color(0xFF7A4A22)),
+                  outsideTextStyle: TextStyle(color: Color(0xFFA06A35)),
+                  selectedDecoration: BoxDecoration(
+                    color: Color(0xFFF6B64D),
+                    shape: BoxShape.circle,
+                  ),
+                  selectedTextStyle: TextStyle(
+                    color: Color(0xFF7A4A22),
+                    fontWeight: FontWeight.bold,
+                  ),
+                  todayDecoration: BoxDecoration(
+                    color: Color(0xFFE0812F),
+                    shape: BoxShape.circle,
+                  ),
+                  todayTextStyle: TextStyle(color: Color(0xFFFBF0E2)),
+                ),
+                selectedDayPredicate: (dia) =>
+                    diaSeleccionado != null && isSameDay(dia, diaSeleccionado),
+                eventLoader: (dia) => _eventosDelDia(eventos, dia),
+                onDaySelected: (diaSeleccionado, diaEnfocado) {
+                  setState(() {
+                    _diaSeleccionado = diaSeleccionado;
+                    _diaEnfocado = diaEnfocado;
+                  });
+                },
+                onPageChanged: (diaEnfocado) {
+                  // Al cambiar de mes, el día que estaba seleccionado ya no
+                  // se ve en la grilla — se limpia la selección para no
+                  // dejar la lista de abajo mostrando eventos de un día que
+                  // ya no está a la vista.
+                  setState(() {
+                    _diaEnfocado = diaEnfocado;
+                    _diaSeleccionado = null;
+                  });
+                },
+              ),
+            ),
+          ),
         ),
         const Divider(height: 1),
         Expanded(
           child: diaSeleccionado == null
               ? const Center(child: Text('Toca un día para ver sus eventos'))
               : eventosDelDiaSeleccionado.isEmpty
-              ? const Center(child: Text('Sin eventos este día'))
+              ? _sinEventosDelDia(diaSeleccionado, eventos, mascotas)
               : ListView.builder(
+                  padding: const EdgeInsets.all(16),
                   itemCount: eventosDelDiaSeleccionado.length,
                   itemBuilder: (context, index) {
                     final evento = eventosDelDiaSeleccionado[index];
-                    return _tileEvento(evento, mascotas);
+                    return _tarjetaEventoTimeline(
+                      evento,
+                      mascotas,
+                      _mascotaIdsFiltro == null ||
+                          _mascotaIdsFiltro!.length != 1,
+                    );
                   },
                 ),
         ),
+      ],
+    );
+  }
+
+  Widget _sinEventosDelDia(
+    DateTime dia,
+    List<AgendaEventoModel> eventos,
+    List<MascotaModel> mascotas,
+  ) {
+    final mostrarNombreMascota =
+        _mascotaIdsFiltro == null || _mascotaIdsFiltro!.length != 1;
+    final proximos =
+        [
+            for (final e in eventos)
+              if (e.fechaRealizada == null &&
+                  e.fechaProgramada.isAfter(DateTime.now()))
+                e,
+          ]
+          ..sort((a, b) => a.fechaProgramada.compareTo(b.fechaProgramada));
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 12, 16, 2),
+          child: Text(
+            DateFormat('d MMM y', 'es_ES').format(dia),
+            style: const TextStyle(
+              fontFamily: 'Nunito',
+              fontWeight: FontWeight.w700,
+              fontSize: 14,
+              color: Color(0xFF7A4A22),
+            ),
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: Text(
+            'Sin eventos este día',
+            style: const TextStyle(fontSize: 12, color: Color(0xFFA06A35)),
+          ),
+        ),
+        if (proximos.isEmpty)
+          const Expanded(
+            child: Center(child: Text('No hay más eventos programados')),
+          )
+        else
+          Expanded(
+            child: ListView.builder(
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
+              itemCount: proximos.length + 1,
+              itemBuilder: (context, index) {
+                if (index == 0) {
+                  return _etiquetaSeccion('Próximos eventos');
+                }
+                final evento = proximos[index - 1];
+                return _tarjetaEventoTimeline(
+                  evento,
+                  mascotas,
+                  mostrarNombreMascota,
+                );
+              },
+            ),
+          ),
       ],
     );
   }
@@ -288,9 +690,16 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
     final eventos = [...ref.watch(agendaEventosProvider)]
       ..sort((a, b) => a.fechaProgramada.compareTo(b.fechaProgramada));
 
+    // Si se abrió desde una mascota puntual (DetalleMascotaScreen), esta
+    // pantalla es un push dentro del Navigator de esa pestaña, no la
+    // pestaña raíz "Agenda" — necesita la flecha de "atrás" en vez del
+    // logo, y el filtro por mascota no tiene sentido: ya está fijo a esa
+    // única mascota.
+    final esPantallaRaiz = widget.mascotaIdInicial == null;
+
     return Scaffold(
       appBar: AppBar(
-        leading: const LogoBarraSuperior(),
+        leading: esPantallaRaiz ? const LogoBarraSuperior() : null,
         title: const Text('Agenda'),
         actions: [
           IconButton(
@@ -301,11 +710,14 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
             onPressed: () =>
                 setState(() => _vistaCalendario = !_vistaCalendario),
           ),
-          IconButton(
-            icon: const Icon(Icons.filter_list),
-            tooltip: 'Filtrar por mascota',
-            onPressed: mascotas.isEmpty ? null : () => _abrirFiltro(mascotas),
-          ),
+          if (esPantallaRaiz)
+            IconButton(
+              icon: const Icon(Icons.filter_list),
+              tooltip: 'Filtrar por mascota',
+              onPressed: mascotas.isEmpty
+                  ? null
+                  : () => _abrirFiltro(mascotas),
+            ),
           const MenuUsuarioAvatar(),
         ],
       ),

@@ -29,14 +29,20 @@ Lista los eventos de agenda (vacunas, controles, consultas) de las mascotas del 
 ### 2. `_cargarEventos()`
 
 ```dart
-void _cargarEventos() {
+Future<void> _cargarEventos() async {
   final mascotas = ref.read(mascotasProvider);
   final ids = _mascotaIdsFiltro?.toList() ?? mascotas.map((m) => m.id).toList();
-  ref.read(agendaEventosProvider.notifier).cargarAgendaEventosDeMascotas(ids);
+  await ref.read(agendaEventosProvider.notifier).cargarAgendaEventosDeMascotas(ids);
+  if (!mounted) return;
+  final eventoIds = ref.read(agendaEventosProvider).map((e) => e.id).toList();
+  final idsConDocumento = await ref.read(documentoRepositoryProvider)
+      .obtenerEventoIdsConDocumento(eventoIds);
+  if (!mounted) return;
+  setState(() => _eventoIdsConDocumento = idsConDocumento);
 }
 ```
 
-Traduce el filtro actual a una lista de ids y se la pasa al provider. Se llama en tres momentos distintos (ver siguiente punto) porque hay una carrera real entre "la pestaña Agenda ya se montó" y "la lista de mascotas del usuario ya se cargó".
+Traduce el filtro actual a una lista de ids y se la pasa al provider. Se llama en tres momentos distintos (ver siguiente punto) porque hay una carrera real entre "la pestaña Agenda ya se montó" y "la lista de mascotas del usuario ya se cargó". Desde el 2026-08-16 también resuelve, una vez cargados los eventos, qué eventos tienen al menos un documento adjunto (`_eventoIdsConDocumento`) — se usa para el chip "Documento adjunto" del timeline (punto 10). Se consulta con `DocumentoRepository.obtenerEventoIdsConDocumento` directo, sin pasar por `documentosProvider`, porque ese provider guarda un único listado plano que ya se pisa entre "documentos de una mascota" y "documentos de un evento" — mezclarlo acá lo hubiera roto.
 
 ### 3. `ref.listen` + `WidgetsBinding.instance.addPostFrameCallback` — cubrir la carrera de datos
 
@@ -61,7 +67,7 @@ Antes de abrir `FormularioAgendaEventoScreen`, muestra un `showModalBottomSheet`
 
 - **`eventLoader: (dia) => _eventosDelDia(eventos, dia)`**: le dice a `TableCalendar` qué días marcar con un punto — se recalcula sobre la misma lista `eventos` ya filtrada por mascota, no hace una consulta aparte.
 - **`isSameDay`** (utilidad que exporta el propio paquete): compara solo año/mes/día, ignorando la hora — necesario porque `fechaProgramada` incluye hora y `DateTime ==` compararía también eso.
-- **Debajo del calendario**, un `Expanded` con la lista de eventos del día tocado (`_diaSeleccionado`, `DateTime?`) — texto "Sin eventos este día" si no hay ninguno, o "Toca un día para ver sus eventos" si no hay ningún día seleccionado. Tocar un evento (en cualquiera de las dos vistas) usa el mismo `_abrirDetalle`, factorizado para no duplicar la navegación.
+- **Debajo del calendario**, un `Expanded` con la lista de eventos del día tocado (`_diaSeleccionado`, `DateTime?`) — texto "Toca un día para ver sus eventos" si no hay ningún día seleccionado. Tocar un evento (en cualquiera de las dos vistas) usa el mismo `_abrirDetalle`, factorizado para no duplicar la navegación. Si el día tocado no tiene eventos, ver el punto 10 (`_sinEventosDelDia`) — desde el 2026-08-16 ya no queda una pantalla vacía.
 - **`onPageChanged` limpia la selección** (`_diaSeleccionado = null`): corrige un detalle de UX que notó el usuario probando la app — si seleccionabas un día con eventos y después cambiabas de mes, la lista de abajo seguía mostrando los eventos de ese día aunque ya no estuviera visible en la grilla. Ahora, cambiar de mes deja la sección de abajo pidiendo elegir un día de nuevo, en vez de arrastrar una selección que ya no tiene sentido visualmente.
 - **`headerStyle: HeaderStyle(formatButtonVisible: false)`** + `calendarFormat: CalendarFormat.month` fijo: el paquete trae por defecto un botón para alternar entre vista mes/2 semanas/semana (con texto en inglés, "2 weeks"), que no se necesita para este caso de uso — se ocultó en vez de traducirlo.
 - **`locale: 'es_ES'`**: requiere que `intl` tenga los datos de esa configuración regional cargados antes de construir el widget — ver `initializeDateFormatting('es_ES')` en `main.dart`. Sin esa llamada, el calendario lanza una excepción (`LocaleDataException`) apenas se intenta mostrar el nombre del mes.
@@ -86,3 +92,25 @@ floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
 ```
 
 A diferencia del FAB circular de `HomeScreen` (esquina inferior derecha), acá se usa la variante `.extended` (ícono + texto) centrada — decisión de diseño explícita del usuario, ver la entrada correspondiente en `decisiones_arquitectura.md`.
+
+### 10. Vista de lista como timeline, con íconos por tipo de evento (2026-08-16)
+
+`_vistaLista` dejó de ser una lista plana de `ListTile` para pasarse a un diseño de "historial" (timeline), a partir de una maqueta HTML que trajo el usuario. Piezas clave:
+
+- **`_iconosPorTipoEvento`** (constante a nivel de archivo): mapea cada uno de los 7 tipos fijos de evento (ver `formularioAgendaEventoScreen.md`, punto de "Tipo de evento") a su ícono SVG en `assets/icons/eventos/` (`vacuna.svg`, `desparasitacion.svg`, `peluqueria.svg`, `operacion.svg`, `control.svg`, `examen.svg`, `otro.svg` — diseñados por el usuario). `_iconoEvento(tipoEvento)` cae en `otro.svg` si el tipo es `null` o no está en el mapa (dato viejo, previo a la lista fija). Se renderizan con el paquete `flutter_svg` (`SvgPicture.asset`), agregado específicamente para esto — no hay forma nativa de pintar SVG en Flutter.
+- **`_tipoEventoTexto(evento)`**: si `tipoEvento == 'Otro'` y hay `tipoEventoPersonalizado`, muestra ese texto libre; si no, el tipo tal cual. Mismo patrón que `DocumentoModel`/`documentos_screen.dart` con `tipoDocumentoPersonalizado`.
+- **Tarjeta "Próximo evento"** (`_tarjetaProximoEvento`): se elige recorriendo la lista de eventos y quedándose con el de `fechaRealizada == null` con `fechaProgramada` más cercana (puede ser pasada y estar atrasado — en ese caso la etiqueta dice "Atrasado" en vez de "En N días"). Es la única tarjeta con borde naranja y fondo de ícono propio; el resto de los eventos no la incluye (se descarta por **identidad de objeto**, `e != proximo`, no por id — funciona porque `proximo` es literalmente uno de los elementos de la misma lista `eventos`, no una copia).
+- **Agrupación por mes** (`grupos`, `Map<String, List<AgendaEventoModel>>`): la clave es `DateFormat('MMMM y', 'es_ES').format(...)` capitalizada a mano con `_capitalizar` (`intl` devuelve el mes en minúscula). El resto de los eventos (todo menos el destacado) se ordena **ascendente** por `fechaProgramada` antes de agruparse — decisión explícita del usuario tras ver la primera versión (descendente, como en la maqueta) y pedir que quedara en orden cronológico ascendente en su lugar.
+- **Chip "Documento adjunto"**: aparece en la tarjeta de un evento si su id está en `_eventoIdsConDocumento` (ver punto 2). Es solo un aviso genérico — no muestra el nombre del archivo, para no tener que cargar los `DocumentoModel` completos solo para pintar la lista.
+- **`mostrarNombreMascota`**: si el filtro (`_mascotaIdsFiltro`) tiene más de una mascota (o es `null`, "todas"), cada tarjeta antepone el nombre de la mascota al subtítulo; si el filtro deja exactamente una mascota seleccionada, se omite (ya es obvio por el contexto — decisión del usuario tras preguntarle explícitamente cómo adaptar la maqueta, pensada para una sola mascota, al caso de "todas las mascotas").
+- **`_tarjetaEventoTimeline`** se reutiliza igual en la lista del día seleccionado del calendario (`_vistaCalendarioWidget`) y en `_sinEventosDelDia` (punto 11) — reemplazó por completo al viejo `_tileEvento` (`ListTile` simple), que se borró por quedar sin uso.
+
+### 11. Día seleccionado sin eventos → "Próximos eventos" (2026-08-16)
+
+Antes, tocar un día del calendario sin eventos dejaba toda la sección de abajo con un único texto centrado ("Sin eventos este día") y nada más. Ahora `_sinEventosDelDia(dia, eventos, mascotas)`:
+
+1. Muestra la fecha tocada en chico + "Sin eventos este día" debajo, ambos compactos arriba (no centrados, no ocupan toda la sección).
+2. Debajo, si hay eventos futuros sin realizar (`fechaRealizada == null && fechaProgramada.isAfter(DateTime.now())`) en cualquier fecha, los lista bajo el título "Próximos eventos" (ascendente, con `_tarjetaEventoTimeline`) — para que la pantalla no quede "muerta" solo porque el día puntual elegido no tiene nada agendado.
+3. Si tampoco hay ningún evento futuro en general, cae a un texto centrado "No hay más eventos programados".
+
+Pedido explícito del usuario tras notar que la Agenda se sentía "vacía" al tocar cualquier día sin eventos, en vez de aprovechar el espacio para mostrar qué es lo próximo que viene.

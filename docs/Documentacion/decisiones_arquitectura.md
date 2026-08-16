@@ -238,6 +238,20 @@ Dos bugs reales en el navbar armado el 2026-08-12, recién visibles al probar co
 
 ---
 
+## 2026-08-16 — Vista de lista de Agenda como timeline: `flutter_svg`, tipo de evento fijo, esquema nuevo
+
+**Decisión:** la vista de lista de `AgendaScreen` pasa de una lista plana de `ListTile` a un diseño de "historial" (timeline) con tarjeta destacada para el próximo evento y el resto agrupado por mes, a partir de una maqueta HTML que trajo el usuario (`timeline_patas_al_dia.html`) y un set de 7 íconos SVG que diseñó a medida (`vacuna`, `desparasitación`, `peluquería`, `operación`, `control`, `examen`, `otro`).
+
+**Nueva dependencia — `flutter_svg`:** rompe la regla de dependencias mínimas del proyecto de forma consciente, misma excepción ya aceptada antes para `table_calendar`/`file_picker`/`open_filex`: Flutter no trae forma nativa de renderizar SVG, y los íconos ya venían como SVG (no se generaron desde cero para este proyecto).
+
+**`AgendaEventoModel.tipoEvento` pasa de texto libre a lista fija:** para poder mapear cada evento a uno de los 7 íconos de forma confiable, `tipoEvento` deja de ser un `TextField` sin restricciones y pasa a un `DropdownButtonFormField` con esos 7 valores. Se agrega `tipoEventoPersonalizado` (nueva columna `tipo_evento_personalizado` en `agenda_eventos`) para el texto libre de la opción "Otro" — mismo patrón ya usado en `documentos`/`tipoDocumentoPersonalizado`. El usuario decidió no migrar los eventos existentes (los volvió a crear desde cero tras el cambio de esquema) en vez de escribir lógica de migración de datos viejos — coherente con la política ya registrada de reinstalar la app durante esta etapa de desarrollo en vez de mantener migraciones.
+
+**Alcance de la maqueta, adaptado:** el botón "Agendar cita" que traía la maqueta se descartó (ya existe el FAB "Agregar evento" de la pantalla). La tarjeta destacada de "Próximo evento" se decidió mantener también cuando se filtran *todas* las mascotas a la vez (no solo una, como en la maqueta original) — mostrando el nombre de la mascota en la tarjeta y en cada evento del timeline solo cuando hay más de una mascota en el filtro activo, para no ser redundante cuando el filtro ya deja una sola.
+
+**Orden del timeline:** la primera versión agrupaba los meses de más reciente a más antiguo (igual que la maqueta original). El usuario pidió el cambio a orden cronológico ascendente (más antiguo/próximo arriba) después de probarlo — la maqueta era solo un punto de partida visual, no una spec de comportamiento a seguir al pie de la letra.
+
+---
+
 ## De aquí en adelante
 
 Cada vez que se tome una decisión de arquitectura nueva (enfoque, tecnología, estructura — no un simple fix o ajuste de código), se agrega una entrada acá con: fecha, la decisión, el porqué, y alternativas consideradas si las hubo.

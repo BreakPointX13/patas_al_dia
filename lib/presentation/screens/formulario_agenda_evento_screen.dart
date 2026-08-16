@@ -31,6 +31,16 @@ const _tiposPresentacion = [
 
 const _tiposDocumento = ['Receta', 'Examen', 'Certificado', 'Boleta', 'Otro'];
 
+const _tiposEvento = [
+  'Vacuna',
+  'Desparasitación',
+  'Peluquería',
+  'Operación',
+  'Control',
+  'Examen',
+  'Otro',
+];
+
 class FormularioAgendaEventoScreen extends ConsumerStatefulWidget {
   final AgendaEventoModel? eventoExistente;
   final String? mascotaIdInicial;
@@ -55,9 +65,10 @@ class _FormularioAgendaEventoScreenState
   final _formKey = GlobalKey<FormState>();
 
   final _tituloController = TextEditingController();
-  final _tipoEventoController = TextEditingController();
+  final _tipoEventoPersonalizadoController = TextEditingController();
   final _observacionesController = TextEditingController();
 
+  String _tipoEvento = _tiposEvento.first;
   String? _mascotaId;
   DateTime? _fechaProgramada;
   bool _recordatorioActivo = false;
@@ -113,7 +124,18 @@ class _FormularioAgendaEventoScreenState
     if (evento != null) {
       _mascotaId = evento.mascotaId;
       _tituloController.text = evento.titulo;
-      _tipoEventoController.text = evento.tipoEvento ?? '';
+      if (evento.tipoEvento != null && _tiposEvento.contains(evento.tipoEvento)) {
+        _tipoEvento = evento.tipoEvento!;
+        if (_tipoEvento == 'Otro') {
+          _tipoEventoPersonalizadoController.text =
+              evento.tipoEventoPersonalizado ?? '';
+        }
+      } else if (evento.tipoEvento != null) {
+        // Evento creado antes de que "tipo de evento" fuera una lista fija:
+        // el texto libre que tenía cae en "Otro" con ese mismo texto.
+        _tipoEvento = 'Otro';
+        _tipoEventoPersonalizadoController.text = evento.tipoEvento!;
+      }
       _observacionesController.text = evento.observaciones ?? '';
       _fechaProgramada = evento.fechaProgramada;
       _recordatorioActivo = evento.recordatorioHorasAntes.isNotEmpty;
@@ -154,7 +176,7 @@ class _FormularioAgendaEventoScreenState
   @override
   void dispose() {
     _tituloController.dispose();
-    _tipoEventoController.dispose();
+    _tipoEventoPersonalizadoController.dispose();
     _observacionesController.dispose();
     super.dispose();
   }
@@ -489,9 +511,12 @@ class _FormularioAgendaEventoScreenState
     final evento = AgendaEventoModel(
       id: _eventoId,
       mascotaId: _mascotaId!,
-      tipoEvento: _tipoEventoController.text.trim().isEmpty
-          ? null
-          : _tipoEventoController.text.trim(),
+      tipoEvento: _tipoEvento,
+      tipoEventoPersonalizado:
+          _tipoEvento == 'Otro' &&
+              _tipoEventoPersonalizadoController.text.trim().isNotEmpty
+          ? _tipoEventoPersonalizadoController.text.trim()
+          : null,
       titulo: _tituloController.text.trim(),
       observaciones: _observacionesController.text.trim().isEmpty
           ? null
@@ -555,6 +580,7 @@ class _FormularioAgendaEventoScreenState
         id: const Uuid().v4(),
         mascotaId: evento.mascotaId,
         tipoEvento: evento.tipoEvento,
+        tipoEventoPersonalizado: evento.tipoEventoPersonalizado,
         titulo: evento.titulo,
         fechaProgramada: DateTime(
           _proximaConsultaFecha!.year,
@@ -613,13 +639,24 @@ class _FormularioAgendaEventoScreenState
               },
             ),
             const SizedBox(height: 16),
-            TextFormField(
-              controller: _tipoEventoController,
-              decoration: const InputDecoration(
-                labelText: 'Tipo de evento',
-                hintText: 'Vacuna, control, desparasitación...',
-              ),
+            DropdownButtonFormField<String>(
+              initialValue: _tipoEvento,
+              decoration: const InputDecoration(labelText: 'Tipo de evento'),
+              items: _tiposEvento
+                  .map((t) => DropdownMenuItem(value: t, child: Text(t)))
+                  .toList(),
+              onChanged: (valor) =>
+                  setState(() => _tipoEvento = valor ?? _tiposEvento.first),
             ),
+            if (_tipoEvento == 'Otro') ...[
+              const SizedBox(height: 16),
+              TextFormField(
+                controller: _tipoEventoPersonalizadoController,
+                decoration: const InputDecoration(
+                  labelText: 'Especifica el tipo',
+                ),
+              ),
+            ],
             const SizedBox(height: 16),
             ListTile(
               contentPadding: EdgeInsets.zero,

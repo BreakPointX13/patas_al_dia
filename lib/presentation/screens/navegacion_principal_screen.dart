@@ -25,6 +25,12 @@ class _NavegacionPrincipalScreenState
 
   static const _pantallasRaiz = [HomeScreen(), AgendaScreen(), MapaScreen()];
 
+  static const _destinos = [
+    (icono: Icons.pets, etiqueta: 'Mascotas'),
+    (icono: Icons.event_note, etiqueta: 'Agenda'),
+    (icono: Icons.map, etiqueta: 'Mapa'),
+  ];
+
   void _cambiarPestana(int indice) {
     if (indice == _indiceActual) {
       _navegadoresPorPestana[indice].currentState?.popUntil(
@@ -40,6 +46,47 @@ class _NavegacionPrincipalScreenState
       key: _navegadoresPorPestana[indice],
       onGenerateRoute: (settings) => MaterialPageRoute(
         builder: (context) => _pantallasRaiz[indice],
+      ),
+    );
+  }
+
+  // Barra propia (en vez del NavigationBar de Material) para que la "luz"
+  // de la pestaña activa sea un panel que envuelve ícono + texto juntos,
+  // en vez de solo el ícono como hace el indicador estándar de Material 3.
+  Widget _construirItemBarra(int indice) {
+    final destino = _destinos[indice];
+    final seleccionado = indice == _indiceActual;
+    return Expanded(
+      child: InkWell(
+        borderRadius: BorderRadius.circular(20),
+        onTap: () => _cambiarPestana(indice),
+        child: Center(
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 200),
+            width: 92,
+            padding: const EdgeInsets.symmetric(vertical: 6),
+            decoration: BoxDecoration(
+              color: seleccionado
+                  ? const Color(0xFFF3C98F)
+                  : Colors.transparent,
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(destino.icono, color: const Color(0xFF7A4A22), size: 22),
+                const SizedBox(height: 2),
+                Text(
+                  destino.etiqueta,
+                  style: const TextStyle(
+                    color: Color(0xFF7A4A22),
+                    fontSize: 12,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }
@@ -74,22 +121,18 @@ class _NavegacionPrincipalScreenState
           borderRadius: const BorderRadius.vertical(
             top: Radius.circular(20),
           ),
-          child: NavigationBar(
-            height: 68,
-            // Color provisorio, más oscuro, solo para poder ver bien la
-            // forma (tamaño y bordes) mientras se prueba — el color final
-            // se define después.
-            backgroundColor: const Color(0xFFD06D1F),
-            selectedIndex: _indiceActual,
-            onDestinationSelected: _cambiarPestana,
-            destinations: const [
-              NavigationDestination(icon: Icon(Icons.pets), label: 'Mascotas'),
-              NavigationDestination(
-                icon: Icon(Icons.event_note),
-                label: 'Agenda',
+          child: Container(
+            height: 76,
+            color: const Color(0xFFE0812F),
+            child: SafeArea(
+              top: false,
+              child: Row(
+                children: List.generate(
+                  _destinos.length,
+                  _construirItemBarra,
+                ),
               ),
-              NavigationDestination(icon: Icon(Icons.map), label: 'Mapa'),
-            ],
+            ),
           ),
         ),
       ),

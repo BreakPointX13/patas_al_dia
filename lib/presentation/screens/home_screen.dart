@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:patas_al_dia/presentation/screens/detalle_mascota_screen.dart';
@@ -44,18 +45,38 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               itemCount: mascotas.length,
               itemBuilder: (context, index) {
                 final mascota = mascotas[index];
-                return ListTile(
-                  leading: const Icon(Icons.pets),
-                  title: Text(mascota.nombre),
-                  subtitle: Text(mascota.especie ?? 'Especie no especificada'),
-                  onTap: () {
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (context) =>
-                            DetalleMascotaScreen(mascotaId: mascota.id),
+                return Card(
+                  child: ListTile(
+                    leading: Container(
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: const Color(0xFF7A4A22),
+                          width: 2,
+                        ),
                       ),
-                    );
-                  },
+                      child: CircleAvatar(
+                        backgroundImage: mascota.fotoUrl != null
+                            ? FileImage(File(mascota.fotoUrl!))
+                            : null,
+                        child: mascota.fotoUrl == null
+                            ? const Icon(Icons.pets)
+                            : null,
+                      ),
+                    ),
+                    title: Text(mascota.nombre),
+                    subtitle: Text(
+                      mascota.especie ?? 'Especie no especificada',
+                    ),
+                    onTap: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (context) =>
+                              DetalleMascotaScreen(mascotaId: mascota.id),
+                        ),
+                      );
+                    },
+                  ),
                 );
               },
             ),

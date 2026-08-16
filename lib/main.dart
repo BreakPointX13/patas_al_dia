@@ -25,6 +25,23 @@ class MyApp extends StatelessWidget {
         ),
         scaffoldBackgroundColor: const Color(0xFFFBF0E2),
         fontFamily: 'SourceSans3',
+        appBarTheme: const AppBarTheme(
+          backgroundColor: Color(0xFFE0812F),
+          foregroundColor: Color(0xFF7A4A22),
+        ),
+        floatingActionButtonTheme: const FloatingActionButtonThemeData(
+          backgroundColor: Color(0xFFD06D1F),
+          foregroundColor: Color(0xFFFFF7EC),
+        ),
+        cardTheme: CardThemeData(
+          color: const Color(0xFFF3C98F),
+          elevation: 0,
+          clipBehavior: Clip.antiAlias,
+          margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+        ),
         textTheme: const TextTheme(
           headlineMedium: TextStyle(
             fontFamily: 'Nunito',

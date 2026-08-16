@@ -44,6 +44,11 @@ Por ahora `DocumentoRepository` solo cubre la consulta por `mascota_id` (la vist
 - **Definición Estándar:** Operación **Read** filtrada por la foreign key opcional — `SELECT * FROM documentos WHERE evento_id = ?`.
 - **En Nuestro Proyecto:** Agregado el 2026-08-14 para que `FormularioAgendaEventoScreen` y `DetalleAgendaEventoScreen` puedan mostrar solo los documentos adjuntos a un evento puntual (ej. la receta que se adjuntó desde esa consulta), en vez de todos los documentos de la mascota. Mismo patrón `where`/`whereArgs` que el resto de las consultas.
 
+### 3b. `obtenerEventoIdsConDocumento(List<String> eventoIds)` (2026-08-16)
+
+- **Definición Estándar:** consulta agregada — `SELECT DISTINCT evento_id FROM documentos WHERE evento_id IN (...)`, devolviendo solo las claves, no las filas completas.
+- **En Nuestro Proyecto:** Devuelve `Set<String>` (no `List<DocumentoModel>`) porque a quien la llama (`AgendaScreen`, ver `agendaScreen.md`) solo le importa el booleano "¿este evento tiene algún documento adjunto?" para pintar un chip en el timeline — traer los documentos completos hubiera sido desperdiciar memoria y ancho de banda para un dato que no se muestra. Se arma el `IN (...)` con `List.filled(eventoIds.length, '?').join(',')` como placeholders y `whereArgs: eventoIds`, evitando concatenar los ids directo en el SQL. Devuelve un `Set` vacío sin tocar la base si `eventoIds` viene vacío (puede pasar si la mascota filtrada todavía no tiene ningún evento cargado).
+
 ### 4. `obtenerDocumentoPorId(String id)`
 
 - **Definición Estándar:** Operación **Read** de un único registro por clave primaria.

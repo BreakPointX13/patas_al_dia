@@ -45,6 +45,7 @@ dependencies:
   table_calendar: ^3.2.1
   intl: ^0.20.3
   open_filex: ^4.7.0
+  flutter_svg: ^2.3.0
 
 dev_dependencies:
   flutter_test:
@@ -72,6 +73,7 @@ flutter:
 
   assets:
       - assets/images/logo_patas_al_dia.png
+      - assets/icons/eventos/
 
   fonts:
     - family: Nunito

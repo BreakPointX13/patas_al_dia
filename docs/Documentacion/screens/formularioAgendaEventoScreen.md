@@ -65,6 +65,20 @@ Ninguna de las dos reglas necesita saber si el evento se creó como "futuro" o "
 
 `_recordatorioHorasSeleccionadas` (`Set<int>`, antes era un `int` único con `DropdownButtonFormField`) permite marcar varias opciones a la vez (24/12/6/1 horas antes, "6 horas antes" agregada en esta misma vuelta) con un `CheckboxListTile` por opción, en vez de forzar a elegir una sola. Al guardar, el `Set` se convierte a `List<int>` ordenada de mayor a menor (`..sort((a, b) => b.compareTo(a))`) antes de pasarla al modelo — ver `agendaEvento.model.md` sobre por qué el campo es una lista y no una tabla hija.
 
+### 2c. "Tipo de evento" pasó de texto libre a lista fija (2026-08-16)
+
+```dart
+const _tiposEvento = [
+  'Vacuna', 'Desparasitación', 'Peluquería', 'Operación', 'Control', 'Examen', 'Otro',
+];
+```
+
+Antes era un `TextField` sin restricciones (`_tipoEventoController`); ahora es un `DropdownButtonFormField<String>` con esos 7 valores fijos, mismo patrón que `tipoDocumento` en `formularioDocumentoScreen.md`: si se elige "Otro", aparece un campo extra (`_tipoEventoPersonalizadoController`) para el texto libre, que se guarda en el nuevo campo `AgendaEventoModel.tipoEventoPersonalizado` (ver `agendaEvento.model.md`) — no se reutiliza `tipoEvento` para el texto libre porque necesita seguir valiendo exactamente `'Otro'` para que el resto de la app (íconos del timeline, filtros futuros) lo reconozca como esa categoría.
+
+**Compatibilidad con eventos creados antes de este cambio:** al editar un evento viejo cuyo `tipoEvento` es un texto libre que no matchea ninguno de los 7 valores fijos, el dropdown cae en "Otro" y precarga ese texto en el campo personalizado — así no se pierde el dato ni el formulario queda en un estado inválido. El usuario decidió no migrar los eventos existentes (los descartó y volvió a crear de cero), pero el formulario igual quedó preparado para el caso.
+
+Motivo del cambio: el usuario quería poder mostrar un ícono distinto por tipo de evento en el timeline de `AgendaScreen` (ver `agendaScreen.md`, punto 10) — con texto libre eso no es posible de forma confiable.
+
 ### 3. `_eventoId` fijo desde el arranque
 
 ```dart

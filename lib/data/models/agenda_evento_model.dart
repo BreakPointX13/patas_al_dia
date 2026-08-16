@@ -2,6 +2,7 @@ class AgendaEventoModel {
   final String id;
   final String mascotaId;
   final String? tipoEvento;
+  final String? tipoEventoPersonalizado;
   final String titulo;
   final String? observaciones;
   final DateTime fechaProgramada;
@@ -12,6 +13,7 @@ class AgendaEventoModel {
     required this.id,
     required this.mascotaId,
     this.tipoEvento,
+    this.tipoEventoPersonalizado,
     required this.titulo,
     this.observaciones,
     required this.fechaProgramada,
@@ -26,6 +28,9 @@ class AgendaEventoModel {
       mascotaId: map['mascota_id'] as String,
       tipoEvento: map['tipo_evento'] != null
           ? map['tipo_evento'] as String
+          : null,
+      tipoEventoPersonalizado: map['tipo_evento_personalizado'] != null
+          ? map['tipo_evento_personalizado'] as String
           : null,
       titulo: map['titulo'] as String,
       observaciones: map['observaciones'] != null
@@ -52,6 +57,7 @@ class AgendaEventoModel {
       'id': id,
       'mascota_id': mascotaId,
       'tipo_evento': tipoEvento,
+      'tipo_evento_personalizado': tipoEventoPersonalizado,
       'titulo': titulo,
       'observaciones': observaciones,
       'fecha_programada': fechaProgramada.toIso8601String(),
@@ -67,6 +73,7 @@ class AgendaEventoModel {
     String? id,
     String? mascotaId,
     String? tipoEvento,
+    String? tipoEventoPersonalizado,
     String? titulo,
     String? observaciones,
     DateTime? fechaProgramada,
@@ -77,6 +84,8 @@ class AgendaEventoModel {
       id: id ?? this.id,
       mascotaId: mascotaId ?? this.mascotaId,
       tipoEvento: tipoEvento ?? this.tipoEvento,
+      tipoEventoPersonalizado:
+          tipoEventoPersonalizado ?? this.tipoEventoPersonalizado,
       titulo: titulo ?? this.titulo,
       observaciones: observaciones ?? this.observaciones,
       fechaProgramada: fechaProgramada ?? this.fechaProgramada,

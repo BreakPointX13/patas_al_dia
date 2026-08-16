@@ -46,6 +46,10 @@ Los sistemas de agenda o calendario en producción (Google Calendar, apps de sal
 - `notificacionesActivas` quedó redundante en cuanto se agregó `recordatorioHorasAntes`: tener un booleano *y* un valor nullable para lo mismo ("¿hay recordatorio?") podía quedar en estados contradictorios (`notificacionesActivas = true` pero `recordatorioHorasAntes = null`, por ejemplo). Ahora `recordatorioHorasAntes == null` es la única fuente de verdad para "sin recordatorio".
 - `repetirCadaMeses` se sacó por pedido explícito del usuario: quedaba redundante con la función "Programar próxima consulta" del formulario (ver `formularioAgendaEventoScreen.md`), que resuelve la misma necesidad (agendar un evento de seguimiento) de forma más flexible — el usuario elige el día exacto en vez de depender de una cadencia fija en meses.
 
+### 2b. `tipoEvento` + `tipoEventoPersonalizado` (2026-08-16)
+
+`tipoEvento` pasó de texto libre a un valor de una lista fija de 7 (`Vacuna`, `Desparasitación`, `Peluquería`, `Operación`, `Control`, `Examen`, `Otro` — ver `formularioAgendaEventoScreen.md`, punto 2c). Se agregó `tipoEventoPersonalizado` (`String?`, nueva columna `tipo_evento_personalizado`) para el texto libre solo cuando `tipoEvento == 'Otro'` — mismo patrón que `DocumentoModel.tipoDocumentoPersonalizado`. Requirió agregar la columna a `agenda_eventos` en `DatabaseHelper._onCreate`; como el proyecto está en etapa de desarrollo, el cambio de esquema se aplicó reinstalando la app desde cero (desinstalar + instalar, no `flutter run` sobre una instalación existente) en vez de escribir una migración — ver la entrada correspondiente en `decisiones_arquitectura.md`.
+
 ### 3. Método de Serialización (`toMap()`)
 
 - **En Nuestro Proyecto:** Empaqueta el objeto de vuelta a las columnas exactas de `agenda_eventos`, incluyendo el truco `fechaRealizada?.toIso8601String()` — el operador `?.` evita lanzar un error si el evento aún no fue realizado, guardando `null` directamente en la columna.

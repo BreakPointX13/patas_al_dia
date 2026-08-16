@@ -149,7 +149,12 @@ class _DetalleAgendaEventoScreenState
           ListTile(title: const Text('Mascota'), subtitle: Text(nombreMascota)),
           ListTile(
             title: const Text('Tipo de evento'),
-            subtitle: Text(evento.tipoEvento ?? 'No especificado'),
+            subtitle: Text(
+              evento.tipoEvento == 'Otro' &&
+                      evento.tipoEventoPersonalizado != null
+                  ? evento.tipoEventoPersonalizado!
+                  : evento.tipoEvento ?? 'No especificado',
+            ),
           ),
           ListTile(
             title: const Text('Fecha programada'),
