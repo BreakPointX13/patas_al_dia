@@ -228,6 +228,16 @@ Dos bugs reales en el navbar armado el 2026-08-12, recién visibles al probar co
 
 ---
 
+## 2026-08-16 — Pantalla general de Documentos: alcance completo, sin tocar la capa de datos
+
+**Decisión:** `DocumentosScreen` (lista de todos los documentos de una mascota) + `FormularioDocumentoScreen` (crear/editar con **todos** los campos de `DocumentoModel`: título, tipo, archivo, fecha de emisión, fecha de vencimiento, recordatorio de vencimiento, notas) + `DetalleDocumentoScreen`. Decisión explícita del usuario: alcance completo desde el arranque, no una versión reducida como se hizo primero con Agenda.
+
+**Nada cambió en `data/` ni en `providers/`** — `documentoProvider`/`DocumentoRepository` ya tenían todo lo necesario desde que se construyeron (incluida la relación opcional con `agenda_eventos` vía `eventoId`), semanas antes de que existiera esta pantalla. Es la primera feature grande del proyecto que no requirió ningún cambio de esquema ni de repository — validación de que el diseño original de esas capas (2026-08-06) ya contemplaba este caso de uso.
+
+**Recordatorio de vencimiento — solo dato, sin notificación real (por ahora):** a diferencia del recordatorio de Agenda (que sí programa notificaciones reales), `recordatorioVencimiento` se guarda como preferencia pero no dispara nada todavía — decisión explícita del usuario, con la UI aclarándolo directamente (subtítulo del switch, y la fecha de vencimiento marcada como "(opcional)"). Se deja pendiente para una tarea aparte si se decide implementarlo.
+
+---
+
 ## De aquí en adelante
 
 Cada vez que se tome una decisión de arquitectura nueva (enfoque, tecnología, estructura — no un simple fix o ajuste de código), se agrega una entrada acá con: fecha, la decisión, el porqué, y alternativas consideradas si las hubo.

@@ -3,18 +3,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:patas_al_dia/data/models/mascota_model.dart';
 import 'package:patas_al_dia/presentation/screens/agenda_screen.dart';
+import 'package:patas_al_dia/presentation/screens/documentos_screen.dart';
 import 'package:patas_al_dia/presentation/screens/formulario_mascota_screen.dart';
 import 'package:patas_al_dia/providers/mascota_provider.dart';
 
 class DetalleMascotaScreen extends ConsumerWidget {
   final String mascotaId;
   const DetalleMascotaScreen({super.key, required this.mascotaId});
-
-  void _mostrarProximamente(BuildContext context, String funcionalidad) {
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text('$funcionalidad: próximamente.')));
-  }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -136,7 +131,13 @@ class DetalleMascotaScreen extends ConsumerWidget {
             leading: const Icon(Icons.description),
             title: const Text('Documentos'),
             trailing: const Icon(Icons.chevron_right),
-            onTap: () => _mostrarProximamente(context, 'Documentos'),
+            onTap: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => DocumentosScreen(mascotaId: mascotaId),
+                ),
+              );
+            },
           ),
         ],
       ),

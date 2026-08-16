@@ -5,6 +5,7 @@ import 'package:patas_al_dia/data/models/agenda_evento_model.dart';
 import 'package:patas_al_dia/data/models/mascota_model.dart';
 import 'package:patas_al_dia/presentation/screens/detalle_agenda_evento_screen.dart';
 import 'package:patas_al_dia/presentation/screens/formulario_agenda_evento_screen.dart';
+import 'package:patas_al_dia/presentation/widgets/logo_barra_superior.dart';
 import 'package:patas_al_dia/presentation/widgets/menu_usuario_avatar.dart';
 import 'package:patas_al_dia/providers/agenda_evento_provider.dart';
 import 'package:patas_al_dia/providers/mascota_provider.dart';
@@ -289,6 +290,7 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
 
     return Scaffold(
       appBar: AppBar(
+        leading: const LogoBarraSuperior(),
         title: const Text('Agenda'),
         actions: [
           IconButton(

@@ -4,11 +4,11 @@
 
 `lib/presentation/screens/detalle_mascota_screen.dart`
 
-Se abre al tocar una mascota en la lista de `HomeScreen`. Desde acá se llega a `FormularioMascotaScreen` (modo editar), a `AgendaScreen` filtrada por esta mascota, y (pendiente) a la pantalla de documentos.
+Se abre al tocar una mascota en la lista de `HomeScreen`. Desde acá se llega a `FormularioMascotaScreen` (modo editar), a `AgendaScreen` filtrada por esta mascota, y a `DocumentosScreen` filtrada por esta mascota.
 
 ## 🎯 Propósito del Archivo
 
-Muestra todos los datos de una mascota puntual (foto, especie, raza, sexo, fecha de nacimiento o edad estimada, peso, esterilizado, rut, colores, número de chip) y da acceso a tres acciones: "Editar datos" y "Agenda" (ambas funcionales) y "Documentos" (placeholder "próximamente" hasta que exista esa pantalla).
+Muestra todos los datos de una mascota puntual (foto, especie, raza, sexo, fecha de nacimiento o edad estimada, peso, esterilizado, rut, colores, número de chip) y da acceso a tres acciones, las tres funcionales desde el 2026-08-16: "Editar datos", "Agenda" y "Documentos".
 
 ---
 
@@ -84,4 +84,4 @@ Cuando la mascota se registró con el switch "No sé la fecha exacta de nacimien
 
 ### 5. Las tres acciones al final
 
-"Editar datos" navega con `Navigator.push` a `FormularioMascotaScreen(mascotaExistente: mascota)` — abre el mismo formulario que "Agregar mascota", pero en modo edición. "Agenda" (desde el 2026-08-14) navega a `AgendaScreen(mascotaIdInicial: mascotaId)` — la misma pantalla que vive en la pestaña Agenda del navbar, pero empujada como pantalla suelta dentro de la pestaña Mascotas, con el filtro ya puesto en esta mascota puntual. Como se llega empujando una pantalla (no cambiando de pestaña), la barra inferior sigue mostrando "Mascotas" como seleccionada mientras se ve la Agenda filtrada — comportamiento aceptado, no es necesario forzar el cambio de pestaña para esto. "Documentos" sigue llamando a `_mostrarProximamente`, el mismo patrón de aviso ("próximamente") que ya se usa en `LoginScreen` para "Iniciar sesión".
+"Editar datos" navega con `Navigator.push` a `FormularioMascotaScreen(mascotaExistente: mascota)` — abre el mismo formulario que "Agregar mascota", pero en modo edición. "Agenda" (desde el 2026-08-14) navega a `AgendaScreen(mascotaIdInicial: mascotaId)` — la misma pantalla que vive en la pestaña Agenda del navbar, pero empujada como pantalla suelta dentro de la pestaña Mascotas, con el filtro ya puesto en esta mascota puntual. Como se llega empujando una pantalla (no cambiando de pestaña), la barra inferior sigue mostrando "Mascotas" como seleccionada mientras se ve la Agenda filtrada — comportamiento aceptado, no es necesario forzar el cambio de pestaña para esto. "Documentos" (desde el 2026-08-16) navega igual a `DocumentosScreen(mascotaId: mascotaId)`, ver `documentosScreen.md`.

@@ -77,6 +77,17 @@ void _cambiarPestana(int indice) {
 
 Si el usuario toca la pestaña en la que ya está, en vez de no hacer nada, se manda esa pestaña de vuelta a su pantalla raíz (`popUntil((route) => route.isFirst)`) — el mismo comportamiento que se ve en apps como Instagram al tocar dos veces el mismo ícono.
 
+### 4b. Barra inferior más baja y con bordes curvos (2026-08-16)
+
+```dart
+ClipRRect(
+  borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+  child: NavigationBar(height: 68, ...),
+)
+```
+
+`NavigationBar` mide 80 de alto por defecto — se bajó un poco a 68 (pedido explícito del usuario, "no mucho"). Para los bordes curvos, `NavigationBar` no tiene una propiedad propia de radio — se envuelve en un `ClipRRect` que recorta solo las esquinas superiores (las inferiores tocan el borde de la pantalla, no hace falta redondearlas). Lo que queda "cortado" en las esquinas deja ver el fondo del `Scaffold` (el mismo crema de `scaffoldBackgroundColor`), así que se ve como una barra flotante con esquinas redondeadas en vez de un rectángulo pegado al borde.
+
 ### 5. `PopScope` — el botón "atrás" del dispositivo
 
 ```dart

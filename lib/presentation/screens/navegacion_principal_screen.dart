@@ -70,17 +70,27 @@ class _NavegacionPrincipalScreenState
           index: _indiceActual,
           children: List.generate(3, _construirPestana),
         ),
-        bottomNavigationBar: NavigationBar(
-          selectedIndex: _indiceActual,
-          onDestinationSelected: _cambiarPestana,
-          destinations: const [
-            NavigationDestination(icon: Icon(Icons.pets), label: 'Mascotas'),
-            NavigationDestination(
-              icon: Icon(Icons.event_note),
-              label: 'Agenda',
-            ),
-            NavigationDestination(icon: Icon(Icons.map), label: 'Mapa'),
-          ],
+        bottomNavigationBar: ClipRRect(
+          borderRadius: const BorderRadius.vertical(
+            top: Radius.circular(20),
+          ),
+          child: NavigationBar(
+            height: 68,
+            // Color provisorio, más oscuro, solo para poder ver bien la
+            // forma (tamaño y bordes) mientras se prueba — el color final
+            // se define después.
+            backgroundColor: const Color(0xFFD06D1F),
+            selectedIndex: _indiceActual,
+            onDestinationSelected: _cambiarPestana,
+            destinations: const [
+              NavigationDestination(icon: Icon(Icons.pets), label: 'Mascotas'),
+              NavigationDestination(
+                icon: Icon(Icons.event_note),
+                label: 'Agenda',
+              ),
+              NavigationDestination(icon: Icon(Icons.map), label: 'Mapa'),
+            ],
+          ),
         ),
       ),
     );
