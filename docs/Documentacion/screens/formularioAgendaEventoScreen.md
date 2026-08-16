@@ -37,8 +37,12 @@ Solo se usa cuando `eventoExistente == null` (creando). Determina dos cosas: los
 ### 2. `_esFechaFutura` y `_segundaMitadVisible` — la lógica central del formulario
 
 ```dart
-bool get _esFechaFutura =>
-    _fechaProgramada != null && _fechaProgramada!.isAfter(DateTime.now());
+bool get _esFechaFutura {
+  if (widget.eventoExistente?.fechaRealizada != null) {
+    return false;
+  }
+  return _fechaProgramada != null && _fechaProgramada!.isAfter(DateTime.now());
+}
 
 bool get _segundaMitadVisible {
   if (widget.eventoExistente == null && widget.esEventoPasado) {
@@ -54,6 +58,12 @@ Estos dos getters, no un campo de estado guardado, deciden qué se ve en pantall
 - **Segunda mitad** (observaciones, medicamentos, documentos, próxima consulta) se muestra si la fecha ya no es futura — **excepto** al crear un evento pasado, donde se fuerza a `true` desde el inicio (corrección del 2026-08-14: antes exigía elegir primero la fecha, lo cual no tenía sentido si el usuario ya sabía que estaba registrando algo del pasado).
 
 Ninguna de las dos reglas necesita saber si el evento se creó como "futuro" o "pasado" una vez guardado — alcanza con comparar la fecha guardada contra el reloj actual. Esto es intencional: evita persistir un campo extra solo para diferenciar los dos modos de creación.
+
+**Bug encontrado y corregido (2026-08-16):** un evento futuro marcado como "realizado" desde `DetalleAgendaEventoScreen` (switch, ver esa nota) *antes* de que llegara su `fechaProgramada`, seguía tratándose como "futuro" al editarlo — `_esFechaFutura` solo miraba la fecha, no si ya se había confirmado como cumplido, así que el recordatorio seguía ofreciéndose y la segunda mitad (medicamentos, documentos) quedaba oculta, aunque el usuario ya hubiera dicho que el evento ocurrió. Se corrigió agregando esa condición al principio de `_esFechaFutura`: si `fechaRealizada` ya tiene valor, se trata como si la fecha ya hubiera pasado, sin importar qué diga `fechaProgramada`.
+
+### 2b. Recordatorio múltiple con checkboxes (2026-08-16)
+
+`_recordatorioHorasSeleccionadas` (`Set<int>`, antes era un `int` único con `DropdownButtonFormField`) permite marcar varias opciones a la vez (24/12/6/1 horas antes, "6 horas antes" agregada en esta misma vuelta) con un `CheckboxListTile` por opción, en vez de forzar a elegir una sola. Al guardar, el `Set` se convierte a `List<int>` ordenada de mayor a menor (`..sort((a, b) => b.compareTo(a))`) antes de pasarla al modelo — ver `agendaEvento.model.md` sobre por qué el campo es una lista y no una tabla hija.
 
 ### 3. `_eventoId` fijo desde el arranque
 

@@ -12,7 +12,12 @@ import 'package:patas_al_dia/providers/mascota_provider.dart';
 import 'package:patas_al_dia/providers/medicamento_evento_provider.dart';
 import 'package:patas_al_dia/services/notificacion_service.dart';
 
-const _opcionesRecordatorio = {24: '1 día antes', 12: '12 horas antes', 1: '1 hora antes'};
+const _opcionesRecordatorio = {
+  24: '1 día antes',
+  12: '12 horas antes',
+  6: '6 horas antes',
+  1: '1 hora antes',
+};
 
 const _tiposPresentacion = [
   'Comprimido',
@@ -56,7 +61,7 @@ class _FormularioAgendaEventoScreenState
   String? _mascotaId;
   DateTime? _fechaProgramada;
   bool _recordatorioActivo = false;
-  int _recordatorioHoras = 24;
+  Set<int> _recordatorioHorasSeleccionadas = {24};
   bool _proximaConsultaActiva = false;
   DateTime? _proximaConsultaFecha;
 
@@ -70,12 +75,19 @@ class _FormularioAgendaEventoScreenState
   List<DocumentoModel> _documentos = [];
   List<DocumentoModel> _documentosOriginales = [];
 
-  // La segunda mitad del formulario (observaciones, próxima consulta, y en
-  // tareas siguientes medicamentos/documentos) se habilita sola una vez que
-  // la fecha programada ya pasó — no hace falta un campo aparte para
-  // distinguir "evento pasado" de "evento futuro ya ocurrido".
-  bool get _esFechaFutura =>
-      _fechaProgramada != null && _fechaProgramada!.isAfter(DateTime.now());
+  // La segunda mitad del formulario (observaciones, próxima consulta,
+  // medicamentos, documentos) se habilita sola una vez que la fecha
+  // programada ya pasó — no hace falta un campo aparte para distinguir
+  // "evento pasado" de "evento futuro ya ocurrido". Si el evento ya se
+  // marcó como realizado (desde DetalleAgendaEventoScreen), se trata igual
+  // que si la fecha ya hubiera pasado, aunque fechaProgramada siga técnicamente
+  // en el futuro — el usuario ya confirmó que ocurrió.
+  bool get _esFechaFutura {
+    if (widget.eventoExistente?.fechaRealizada != null) {
+      return false;
+    }
+    return _fechaProgramada != null && _fechaProgramada!.isAfter(DateTime.now());
+  }
   bool get _segundaMitadVisible {
     // Al crear un evento pasado, toda la información (medicamentos,
     // documentos, etc.) está disponible desde el principio — no tiene
@@ -104,8 +116,10 @@ class _FormularioAgendaEventoScreenState
       _tipoEventoController.text = evento.tipoEvento ?? '';
       _observacionesController.text = evento.observaciones ?? '';
       _fechaProgramada = evento.fechaProgramada;
-      _recordatorioActivo = evento.recordatorioHorasAntes != null;
-      _recordatorioHoras = evento.recordatorioHorasAntes ?? 24;
+      _recordatorioActivo = evento.recordatorioHorasAntes.isNotEmpty;
+      if (_recordatorioActivo) {
+        _recordatorioHorasSeleccionadas = evento.recordatorioHorasAntes.toSet();
+      }
       _cargarMedicamentosExistentes();
       _cargarDocumentosExistentes();
     } else {
@@ -487,8 +501,8 @@ class _FormularioAgendaEventoScreenState
           ? _fechaProgramada
           : widget.eventoExistente?.fechaRealizada,
       recordatorioHorasAntes: _esFechaFutura && _recordatorioActivo
-          ? _recordatorioHoras
-          : null,
+          ? (_recordatorioHorasSeleccionadas.toList()..sort((a, b) => b.compareTo(a)))
+          : const [],
     );
 
     if (widget.eventoExistente == null) {
@@ -549,7 +563,7 @@ class _FormularioAgendaEventoScreenState
           horaOriginal.hour,
           horaOriginal.minute,
         ),
-        recordatorioHorasAntes: 24,
+        recordatorioHorasAntes: const [24],
       );
       await ref
           .read(agendaEventosProvider.notifier)
@@ -630,23 +644,27 @@ class _FormularioAgendaEventoScreenState
                 value: _recordatorioActivo,
                 onChanged: (valor) => setState(() => _recordatorioActivo = valor),
               ),
-              if (_recordatorioActivo)
-                DropdownButtonFormField<int>(
-                  initialValue: _recordatorioHoras,
-                  decoration: const InputDecoration(
-                    labelText: 'Avisar',
+              if (_recordatorioActivo) ...[
+                Text('Avisar', style: Theme.of(context).textTheme.bodySmall),
+                for (final opcion in _opcionesRecordatorio.entries)
+                  CheckboxListTile(
+                    contentPadding: EdgeInsets.zero,
+                    controlAffinity: ListTileControlAffinity.leading,
+                    title: Text(opcion.value),
+                    value: _recordatorioHorasSeleccionadas.contains(
+                      opcion.key,
+                    ),
+                    onChanged: (marcado) {
+                      setState(() {
+                        if (marcado ?? false) {
+                          _recordatorioHorasSeleccionadas.add(opcion.key);
+                        } else {
+                          _recordatorioHorasSeleccionadas.remove(opcion.key);
+                        }
+                      });
+                    },
                   ),
-                  items: _opcionesRecordatorio.entries
-                      .map(
-                        (e) => DropdownMenuItem(
-                          value: e.key,
-                          child: Text(e.value),
-                        ),
-                      )
-                      .toList(),
-                  onChanged: (valor) =>
-                      setState(() => _recordatorioHoras = valor ?? 24),
-                ),
+              ],
             ],
             if (_segundaMitadVisible) ...[
               const Divider(height: 32),

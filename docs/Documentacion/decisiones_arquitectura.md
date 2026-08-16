@@ -218,6 +218,16 @@ Dos bugs reales en el navbar armado el 2026-08-12, recién visibles al probar co
 
 ---
 
+## 2026-08-16 — Recordatorios múltiples por evento, con checkboxes en vez de un dropdown
+
+**Decisión:** `AgendaEventoModel.recordatorioHorasAntes` pasa de `int?` (un solo valor) a `List<int>` — un evento puede pedir que le avisen en varios momentos a la vez (ej. 1 día antes *y* 1 hora antes), no solo uno. En el formulario, el selector cambia de `DropdownButtonFormField` (una sola opción) a una lista de `CheckboxListTile` (varias a la vez). Se agrega "6 horas antes" como cuarta opción (antes eran solo 24/12/1).
+
+**Cómo se guarda:** como texto separado por comas en la misma columna `recordatorio_horas_antes` (que pasa de `INTEGER` a `TEXT`), no una tabla hija nueva — a diferencia de `medicamentos_evento` (que sí es una tabla propia), acá el conjunto de valores posibles es chico, cerrado y sin identidad propia (no tiene sentido "editar" un recordatorio de 12 horas, o darle observaciones) — no ameritaba el mismo tratamiento relacional.
+
+**Notificaciones:** `NotificacionService` ahora programa un recordatorio por cada valor de la lista, cada uno con su propio id (combinando el id del evento y la cantidad de horas). Al cancelar, como no se sabe de antemano cuáles horas tenía programadas ese evento en particular, se cancelan las cuatro combinaciones posibles — cancelar un id que nunca se programó es un no-op seguro.
+
+---
+
 ## De aquí en adelante
 
 Cada vez que se tome una decisión de arquitectura nueva (enfoque, tecnología, estructura — no un simple fix o ajuste de código), se agrega una entrada acá con: fecha, la decisión, el porqué, y alternativas consideradas si las hubo.

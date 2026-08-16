@@ -70,7 +70,11 @@ Antes de abrir `FormularioAgendaEventoScreen`, muestra un `showModalBottomSheet`
 
 Reemplaza un `mascotas.firstWhere(..., orElse: () => mascotas.first)` que asumía que `mascotas` nunca podía estar vacía si había eventos — supuesto que se rompía justo después de cerrar sesión (ver la entrada del 2026-08-15 en `decisiones_arquitectura.md`). Ahora, si no encuentra la mascota, devuelve el texto genérico `'Mascota'` en vez de crashear con `StateError` (`.first` sobre una lista vacía).
 
-### 8. Botón flotante centrado
+### 8. Aviso "No hay mascotas creadas" (2026-08-16)
+
+Junto al texto "Mostrando: ...", si `mascotas.isEmpty`, aparece un recuadro rojo avisándolo — solo cuando corresponde (ej. justo después de crear un invitado nuevo, o de cerrar sesión, ver `decisiones_arquitectura.md`). Detalle de UX pedido explícitamente por el usuario, para que quede claro por qué la Agenda está vacía en vez de dejarlo ambiguo (¿no hay eventos, o no hay ni siquiera mascotas?).
+
+### 9. Botón flotante centrado
 
 ```dart
 floatingActionButton: FloatingActionButton.extended(

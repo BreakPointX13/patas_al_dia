@@ -6,7 +6,7 @@ class AgendaEventoModel {
   final String? observaciones;
   final DateTime fechaProgramada;
   final DateTime? fechaRealizada;
-  final int? recordatorioHorasAntes;
+  final List<int> recordatorioHorasAntes;
 
   AgendaEventoModel({
     required this.id,
@@ -16,7 +16,7 @@ class AgendaEventoModel {
     this.observaciones,
     required this.fechaProgramada,
     this.fechaRealizada,
-    this.recordatorioHorasAntes,
+    this.recordatorioHorasAntes = const [],
   });
 
   // Convierte un Mapa (fila de la BDD) a un objeto AgendaEventoModel
@@ -35,9 +35,14 @@ class AgendaEventoModel {
       fechaRealizada: map['fecha_realizada'] != null
           ? DateTime.parse(map['fecha_realizada'] as String)
           : null,
-      recordatorioHorasAntes: map['recordatorio_horas_antes'] != null
-          ? map['recordatorio_horas_antes'] as int
-          : null,
+      recordatorioHorasAntes:
+          map['recordatorio_horas_antes'] == null ||
+              (map['recordatorio_horas_antes'] as String).isEmpty
+          ? const []
+          : (map['recordatorio_horas_antes'] as String)
+                .split(',')
+                .map(int.parse)
+                .toList(),
     );
   }
 
@@ -51,7 +56,9 @@ class AgendaEventoModel {
       'observaciones': observaciones,
       'fecha_programada': fechaProgramada.toIso8601String(),
       'fecha_realizada': fechaRealizada?.toIso8601String(),
-      'recordatorio_horas_antes': recordatorioHorasAntes,
+      'recordatorio_horas_antes': recordatorioHorasAntes.isEmpty
+          ? null
+          : recordatorioHorasAntes.join(','),
     };
   }
 
@@ -64,7 +71,7 @@ class AgendaEventoModel {
     String? observaciones,
     DateTime? fechaProgramada,
     DateTime? fechaRealizada,
-    int? recordatorioHorasAntes,
+    List<int>? recordatorioHorasAntes,
   }) {
     return AgendaEventoModel(
       id: id ?? this.id,

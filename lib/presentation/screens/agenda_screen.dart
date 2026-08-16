@@ -311,12 +311,35 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
         children: [
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            child: Align(
-              alignment: Alignment.centerLeft,
-              child: Text(
-                'Mostrando: ${_tituloFiltro(mascotas)}',
-                style: Theme.of(context).textTheme.bodySmall,
-              ),
+            child: Wrap(
+              crossAxisAlignment: WrapCrossAlignment.center,
+              spacing: 8,
+              runSpacing: 4,
+              children: [
+                Text(
+                  'Mostrando: ${_tituloFiltro(mascotas)}',
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
+                if (mascotas.isEmpty)
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 2,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.red.shade50,
+                      borderRadius: BorderRadius.circular(6),
+                      border: Border.all(color: Colors.red),
+                    ),
+                    child: Text(
+                      'No hay mascotas creadas',
+                      style: TextStyle(
+                        color: Colors.red.shade900,
+                        fontSize: 12,
+                      ),
+                    ),
+                  ),
+              ],
             ),
           ),
           Expanded(

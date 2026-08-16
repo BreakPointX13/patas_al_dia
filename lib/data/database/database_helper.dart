@@ -70,7 +70,7 @@ class DatabaseHelper {
         observaciones TEXT,
         fecha_programada TEXT NOT NULL,
         fecha_realizada TEXT,
-        recordatorio_horas_antes INTEGER,
+        recordatorio_horas_antes TEXT,
         FOREIGN KEY (mascota_id) REFERENCES mascotas (id) ON DELETE CASCADE
       )
     ''');

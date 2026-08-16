@@ -167,9 +167,11 @@ class _DetalleAgendaEventoScreenState
           ListTile(
             title: const Text('Recordatorio'),
             subtitle: Text(
-              evento.recordatorioHorasAntes == null
+              evento.recordatorioHorasAntes.isEmpty
                   ? 'Sin recordatorio'
-                  : '${evento.recordatorioHorasAntes} horas antes',
+                  : evento.recordatorioHorasAntes
+                        .map((h) => '$h horas antes')
+                        .join(', '),
             ),
           ),
           const Divider(height: 32),

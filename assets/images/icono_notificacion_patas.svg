@@ -1,0 +1,16 @@
+<svg width="96" height="96" viewBox="0 0 96 96" xmlns="http://www.w3.org/2000/svg">
+<title>Patas al día — ícono de notificación</title>
+<desc>Silueta blanca monocromática: huella de mascota con un check vaciado (transparente) integrado, sobre fondo transparente.</desc>
+<defs>
+  <mask id="checkMask">
+    <rect width="96" height="96" fill="white"/>
+    <path d="M36 52 L45 62 L62 42" fill="none" stroke="black" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+  </mask>
+</defs>
+<g mask="url(#checkMask)">
+  <ellipse cx="49" cy="54" rx="22" ry="18" fill="#ffffff"/>
+  <ellipse cx="27" cy="31" rx="7.5" ry="10" fill="#ffffff"/>
+  <ellipse cx="49" cy="25" rx="7.5" ry="10.5" fill="#ffffff"/>
+  <ellipse cx="71" cy="31" rx="7.5" ry="10" fill="#ffffff"/>
+</g>
+</svg>

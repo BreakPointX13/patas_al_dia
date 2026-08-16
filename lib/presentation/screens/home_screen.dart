@@ -57,11 +57,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 );
               },
             ),
-      floatingActionButton: FloatingActionButton(
+      floatingActionButton: FloatingActionButton.extended(
         onPressed: _irAAgregarMascota,
-        tooltip: 'Agregar mascota',
-        child: const Icon(Icons.add),
+        icon: const Icon(Icons.add),
+        label: const Text('Agregar mascota'),
       ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
     );
   }
 }
