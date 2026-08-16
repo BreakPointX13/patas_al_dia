@@ -114,3 +114,11 @@ Antes, tocar un día del calendario sin eventos dejaba toda la sección de abajo
 3. Si tampoco hay ningún evento futuro en general, cae a un texto centrado "No hay más eventos programados".
 
 Pedido explícito del usuario tras notar que la Agenda se sentía "vacía" al tocar cualquier día sin eventos, en vez de aprovechar el espacio para mostrar qué es lo próximo que viene.
+
+### 12. `esPantallaRaiz` — logo/filtro solo en la pestaña, no al llegar desde una mascota (2026-08-16)
+
+```dart
+final esPantallaRaiz = widget.mascotaIdInicial == null;
+```
+
+`AgendaScreen` se usa en dos contextos distintos: como pestaña raíz del navbar (`AgendaScreen()`, sin `mascotaIdInicial`) y empujada desde `DetalleMascotaScreen` (`AgendaScreen(mascotaIdInicial: mascotaId)`, ver `detalleMascotaScreen.md`). Antes, el `AppBar` no distinguía entre ambos casos: siempre mostraba `LogoBarraSuperior` como `leading` (tapando el espacio donde Flutter pondría la flecha de "atrás" automática al haber sido empujada) y siempre mostraba el ícono de filtro por mascota (sin sentido si ya se llegó con el filtro fijo a una sola mascota). `esPantallaRaiz` controla ambos: `leading: esPantallaRaiz ? const LogoBarraSuperior() : null` (con `null`, Flutter pone la flecha sola) y el `IconButton` de filtro se envuelve en `if (esPantallaRaiz)`.

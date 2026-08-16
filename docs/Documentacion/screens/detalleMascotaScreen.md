@@ -63,9 +63,13 @@ ref.watch(mascotasProvider).firstWhere((m) => m.id == mascotaId)
 
 Método de lista de Dart: recorre los elementos y devuelve el primero que cumpla la condición. Si ninguno cumple, lanza una excepción (acá no se contempla ese caso porque, mientras no exista una función de "eliminar mascota", el id siempre debería estar en la lista).
 
-### 3. `ListTile` reutilizado como fila de dato
+### 3. `ListTile` dentro de `Card` — cada dato en su propia tarjeta (2026-08-16)
 
-Cada dato de la mascota (especie, raza, etc.) se muestra con un `ListTile` donde `title` es la etiqueta y `subtitle` es el valor — mismo widget que ya se usa en otras partes del proyecto (la fila de "Elegir fecha" en el formulario), reutilizado acá como una forma simple de mostrar pares etiqueta/valor en una lista.
+Cada dato de la mascota (especie, raza, etc.) sigue siendo un `ListTile` (`title` = etiqueta, `subtitle` = valor), pero ahora cada uno va envuelto en un `Card` (`for (final tile in datosTiles) Card(child: tile)`) en vez de quedar pegados uno debajo del otro. Usa el mismo `CardTheme` global de `main.dart` (fondo Durazno, bordes redondeados) que ya aplican las listas de `HomeScreen`/`AgendaScreen`/`DocumentosScreen` — es la tercera iteración de este espaciado: primero se probó sin separación (se veía "pegado"), después con líneas divisorias en Durazno entre cada dato (el usuario las encontró poco prolijas al verlas en pantalla), y finalmente esta versión con tarjetas, que el usuario prefirió por quedar visualmente coherente con el resto de las listas de la app en vez de introducir un tratamiento nuevo solo para esta pantalla.
+
+`datosTiles` se arma como una lista local de `ListTile` *antes* del `return Scaffold(...)`, en vez de escribir cada `Card(child: ListTile(...))` inline — quedó de cuando existía un `Divider` grueso separando el bloque de datos del bloque de acciones (una iteración intermedia de este mismo cambio); con las tarjetas propias ese divisor grueso dejó de hacer falta (el corte visual ya lo dan las tarjetas mismas) y se sacó, quedando solo un `SizedBox(height: 16)` entre ambos bloques — pero la lista se conservó como variable aparte igual, ya no por necesidad sino porque no había motivo para volver a inlinearla.
+
+**Margen superior extra sobre la foto:** el `ListView` que arma la pantalla pasó de `padding: EdgeInsets.all(16)` a `EdgeInsets.fromLTRB(16, 32, 16, 16)` — el usuario notó que la foto de la mascota quedaba "muy pegada" al `AppBar` al entrar a una mascota.
 
 ### 4. `fechaEstimada` — mostrar edad en vez de fecha
 
@@ -85,3 +89,5 @@ Cuando la mascota se registró con el switch "No sé la fecha exacta de nacimien
 ### 5. Las tres acciones al final
 
 "Editar datos" navega con `Navigator.push` a `FormularioMascotaScreen(mascotaExistente: mascota)` — abre el mismo formulario que "Agregar mascota", pero en modo edición. "Agenda" (desde el 2026-08-14) navega a `AgendaScreen(mascotaIdInicial: mascotaId)` — la misma pantalla que vive en la pestaña Agenda del navbar, pero empujada como pantalla suelta dentro de la pestaña Mascotas, con el filtro ya puesto en esta mascota puntual. Como se llega empujando una pantalla (no cambiando de pestaña), la barra inferior sigue mostrando "Mascotas" como seleccionada mientras se ve la Agenda filtrada — comportamiento aceptado, no es necesario forzar el cambio de pestaña para esto. "Documentos" (desde el 2026-08-16) navega igual a `DocumentosScreen(mascotaId: mascotaId)`, ver `documentosScreen.md`.
+
+**Bug encontrado y corregido (2026-08-16):** al llegar a `AgendaScreen` por este camino (`mascotaIdInicial != null`), la pantalla mostraba igual el logo de la app y el ícono de filtro por mascota en el `AppBar` — ambos pensados solo para cuando Agenda es la pestaña raíz del navbar. El logo tapaba el espacio de la flecha de "atrás" (no había forma visual de volver, solo el botón físico/gesto del sistema), y el filtro no tenía sentido si ya se llegó con una mascota fija. Se corrigió en `AgendaScreen` condicionando ambos al mismo chequeo (`mascotaIdInicial == null` = pantalla raíz) — ver `agendaScreen.md`.

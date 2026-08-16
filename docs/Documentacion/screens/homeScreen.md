@@ -71,12 +71,12 @@ ListView.builder(
   itemCount: mascotas.length,
   itemBuilder: (context, index) {
     final mascota = mascotas[index];
-    return ListTile(...);
+    return Card(child: ListTile(...));
   },
 )
 ```
 
-Construye solo los ítems visibles en pantalla en cada momento (a diferencia de un `Column` con muchos hijos, que los crea todos de una) — la forma eficiente de mostrar listas potencialmente largas en Flutter.
+Construye solo los ítems visibles en pantalla en cada momento (a diferencia de un `Column` con muchos hijos, que los crea todos de una) — la forma eficiente de mostrar listas potencialmente largas en Flutter. Cada `ListTile` va envuelto en un `Card` desde el 2026-08-16 (pasada de colores) — usa el `CardTheme` global de `main.dart` (fondo Durazno, bordes redondeados), mismo tratamiento que se le dio a las listas de `AgendaScreen` y `DocumentosScreen` para que las tres se vean consistentes.
 
 ### 5. `mascota.especie ?? 'Especie no especificada'`
 
@@ -95,3 +95,20 @@ onTap: () {
 ```
 
 Se le pasa `mascota.id` (un `String`), no el objeto `mascota` completo. Así, `DetalleMascotaScreen` siempre busca el dato más actualizado en `mascotasProvider` en vez de quedarse con una copia que puede volverse vieja si el usuario edita la mascota. Ver el detalle de esta decisión en `detalleMascotaScreen.md`.
+
+### 7. Foto real en el `leading` de cada mascota, con borde (2026-08-16)
+
+```dart
+leading: Container(
+  decoration: BoxDecoration(
+    shape: BoxShape.circle,
+    border: Border.all(color: const Color(0xFF7A4A22), width: 2),
+  ),
+  child: CircleAvatar(
+    backgroundImage: mascota.fotoUrl != null ? FileImage(File(mascota.fotoUrl!)) : null,
+    child: mascota.fotoUrl == null ? const Icon(Icons.pets) : null,
+  ),
+),
+```
+
+Antes, la lista mostraba siempre el mismo ícono genérico de pata (`Icons.pets`) para todas las mascotas, incluso las que ya tenían foto cargada (la foto solo se veía al entrar al detalle). Ahora, si `fotoUrl` no es `null`, se muestra la foto real con `FileImage` (mismo patrón que el avatar grande de `DetalleMascotaScreen`); si es `null`, sigue cayendo en el ícono genérico — sin ningún caso especial para cuando una mascota pasa de "sin foto" a "con foto" al editarla, porque `image_picker` genera una ruta de archivo nueva cada vez que se elige una imagen (no reutiliza nombres), así que no hay riesgo de que Flutter muestre una imagen vieja cacheada bajo la misma ruta. El `Container` con `BoxDecoration(shape: BoxShape.circle, border: ...)` envuelve el `CircleAvatar` para agregarle un borde Café texto — `CircleAvatar` no tiene una propiedad propia de borde.

@@ -79,14 +79,36 @@ Si el usuario toca la pestaña en la que ya está, en vez de no hacer nada, se m
 
 ### 4b. Barra inferior más baja y con bordes curvos (2026-08-16)
 
+Altura reducida (76, antes 80 por defecto de `NavigationBar`) y esquinas superiores curvas — igual que antes, con `ClipRRect(borderRadius: BorderRadius.vertical(top: Radius.circular(20)))` recortando solo las esquinas de arriba (las de abajo tocan el borde de la pantalla).
+
+### 4c. Barra inferior propia, en vez de `NavigationBar` de Material (2026-08-16)
+
+Durante la pasada de colores (ver la entrada correspondiente en `decisiones_arquitectura.md`), el `NavigationBar` de Material se reemplazó por una barra armada a mano (`_construirItemBarra`, un `Row` de 3 `Expanded` dentro de un `Container`). Motivo: el indicador de pestaña seleccionada de `NavigationBar` solo colorea un óvalo alrededor del ícono, dejando la etiqueta de texto suelta sin ningún tratamiento visual — el usuario pidió explícitamente que el "iluminado" fuera un solo panel envolviendo ícono *y* texto juntos, algo que el widget estándar no permite configurar.
+
 ```dart
-ClipRRect(
-  borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-  child: NavigationBar(height: 68, ...),
-)
+Widget _construirItemBarra(int indice) {
+  final seleccionado = indice == _indiceActual;
+  return Expanded(
+    child: InkWell(
+      onTap: () => _cambiarPestana(indice),
+      child: Center(
+        child: AnimatedContainer(
+          width: 92, // ancho fijo — ver más abajo
+          decoration: BoxDecoration(
+            color: seleccionado ? const Color(0xFFF3C98F) : Colors.transparent,
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: Column(children: [Icon(...), Text(...)]),
+        ),
+      ),
+    ),
+  );
+}
 ```
 
-`NavigationBar` mide 80 de alto por defecto — se bajó un poco a 68 (pedido explícito del usuario, "no mucho"). Para los bordes curvos, `NavigationBar` no tiene una propiedad propia de radio — se envuelve en un `ClipRRect` que recorta solo las esquinas superiores (las inferiores tocan el borde de la pantalla, no hace falta redondearlas). Lo que queda "cortado" en las esquinas deja ver el fondo del `Scaffold` (el mismo crema de `scaffoldBackgroundColor`), así que se ve como una barra flotante con esquinas redondeadas en vez de un rectángulo pegado al borde.
+- **`width: 92` fijo:** la primera versión dejaba que el panel se ajustara al ancho del texto (`mainAxisSize.min`), lo que hacía que "Mascotas" tuviera un panel visiblemente más ancho que "Mapa" al seleccionarse — inconsistencia que el usuario notó de inmediato. Un ancho fijo, igual para las 3 pestañas, lo resuelve sin tener que medir el texto más largo en tiempo de ejecución.
+- **El texto nunca cambia de color** (siempre Café texto `#7A4A22`, seleccionada o no) — a propósito: el usuario probó primero una versión donde el texto se oscurecía/engordaba al seleccionarse (imitando el color+peso del ícono) y pidió deshacerlo; el único indicador de selección es el fondo del panel.
+- **`_destinos`** (record `{icono, etiqueta}`, no una clase nueva) reemplaza los `NavigationDestination` que traía `NavigationBar` — se conserva la misma lista de 3 (Mascotas/Agenda/Mapa) pero como datos propios en vez de un widget de Material.
 
 ### 5. `PopScope` — el botón "atrás" del dispositivo
 

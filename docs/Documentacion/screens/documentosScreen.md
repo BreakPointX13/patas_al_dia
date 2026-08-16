@@ -30,6 +30,10 @@ trailing: documento.eventoId == null ? null : const Icon(Icons.link, size: 18),
 
 Si el documento se adjuntó desde un evento de agenda (`eventoId != null`), aparece un ícono chico de enlace en la fila — para que se note, sin abrir el documento, que viene de una consulta puntual. No se busca el título del evento acá (eso sería una consulta extra por cada fila de la lista); ese detalle sí se muestra en `DetalleDocumentoScreen`, donde solo hace falta una consulta para el documento que se está viendo.
 
+### 1b. Cada fila en su propia `Card` (2026-08-16)
+
+`_tileDocumento` devuelve `Card(child: ListTile(...))`, no un `ListTile` suelto — mismo `CardTheme` global (fondo Durazno, bordes redondeados) que las listas de `HomeScreen` y `AgendaScreen`, parte de la misma pasada de colores.
+
 ### 2. Botón flotante centrado
 
 Mismo patrón que `AgendaScreen`/`HomeScreen` (ver `decisiones_arquitectura.md`, entrada del 2026-08-12): `FloatingActionButton.extended` con ícono + texto, centrado abajo.
