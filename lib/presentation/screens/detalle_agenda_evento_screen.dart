@@ -85,6 +85,7 @@ class _DetalleAgendaEventoScreenState
             child: const Text('Cancelar'),
           ),
           ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
             onPressed: () => Navigator.of(context).pop(true),
             child: const Text('Eliminar'),
           ),
@@ -133,16 +134,7 @@ class _DetalleAgendaEventoScreenState
     final documentos = ref.watch(documentosProvider);
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(evento.titulo),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.delete_outline),
-            tooltip: 'Eliminar evento',
-            onPressed: () => _eliminarEvento(evento),
-          ),
-        ],
-      ),
+      appBar: AppBar(title: Text(evento.titulo)),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
@@ -252,6 +244,15 @@ class _DetalleAgendaEventoScreenState
                 ),
               );
             },
+          ),
+          const SizedBox(height: 16),
+          ListTile(
+            leading: const Icon(Icons.delete_outline, color: Colors.red),
+            title: const Text(
+              'Eliminar evento',
+              style: TextStyle(color: Colors.red),
+            ),
+            onTap: () => _eliminarEvento(evento),
           ),
         ],
       ),

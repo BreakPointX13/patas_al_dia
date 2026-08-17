@@ -8,6 +8,44 @@ import 'package:patas_al_dia/presentation/screens/formulario_mascota_screen.dart
 import 'package:patas_al_dia/presentation/widgets/separador_seccion_ficha.dart';
 import 'package:patas_al_dia/providers/mascota_provider.dart';
 
+Future<void> _eliminarMascota(
+  BuildContext context,
+  WidgetRef ref,
+  MascotaModel mascota,
+) async {
+  final confirmar = await showDialog<bool>(
+    context: context,
+    builder: (context) => AlertDialog(
+      title: const Text('Eliminar mascota'),
+      content: Text(
+        '¿Eliminar a ${mascota.nombre}? Se van a borrar también su agenda '
+        'y sus documentos. Esta acción no se puede deshacer.',
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(false),
+          child: const Text('Cancelar'),
+        ),
+        ElevatedButton(
+          style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+          onPressed: () => Navigator.of(context).pop(true),
+          child: const Text('Eliminar'),
+        ),
+      ],
+    ),
+  );
+
+  if (confirmar != true || !context.mounted) {
+    return;
+  }
+
+  await ref.read(mascotasProvider.notifier).eliminarMascota(mascota.id);
+
+  if (context.mounted) {
+    Navigator.of(context).pop();
+  }
+}
+
 class DetalleMascotaScreen extends ConsumerWidget {
   final String mascotaId;
   const DetalleMascotaScreen({super.key, required this.mascotaId});
@@ -153,6 +191,15 @@ class DetalleMascotaScreen extends ConsumerWidget {
                 ),
               );
             },
+          ),
+          const SizedBox(height: 16),
+          ListTile(
+            leading: const Icon(Icons.delete_outline, color: Colors.red),
+            title: const Text(
+              'Eliminar mascota',
+              style: TextStyle(color: Colors.red),
+            ),
+            onTap: () => _eliminarMascota(context, ref, mascota),
           ),
         ],
       ),

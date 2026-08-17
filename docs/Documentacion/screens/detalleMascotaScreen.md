@@ -94,8 +94,40 @@ ListTile(
 
 Cuando la mascota se registró con el switch "No sé la fecha exacta de nacimiento" activo (ver `formularioMascotaScreen.md`), `mascota.fechaNacimiento` guarda una fecha aproximada (hoy menos X años), no la fecha real. Por eso acá no se muestra esa fecha tal cual: se recalculan los años a partir de ella y se etiqueta la fila como "Edad estimada" en vez de "Fecha de nacimiento", para que quede claro que es un dato aproximado.
 
-### 5. Las tres acciones al final
+### 5. Las cuatro acciones al final
 
-"Editar datos" navega con `Navigator.push` a `FormularioMascotaScreen(mascotaExistente: mascota)` — abre el mismo formulario que "Agregar mascota", pero en modo edición. "Agenda" (desde el 2026-08-14) navega a `AgendaScreen(mascotaIdInicial: mascotaId)` — la misma pantalla que vive en la pestaña Agenda del navbar, pero empujada como pantalla suelta dentro de la pestaña Mascotas, con el filtro ya puesto en esta mascota puntual. Como se llega empujando una pantalla (no cambiando de pestaña), la barra inferior sigue mostrando "Mascotas" como seleccionada mientras se ve la Agenda filtrada — comportamiento aceptado, no es necesario forzar el cambio de pestaña para esto. "Documentos" (desde el 2026-08-16) navega igual a `DocumentosScreen(mascotaId: mascotaId)`, ver `documentosScreen.md`.
+"Editar datos" navega con `Navigator.push` a `FormularioMascotaScreen(mascotaExistente: mascota)` — abre el mismo formulario que "Agregar mascota", pero en modo edición. "Agenda" (desde el 2026-08-14) navega a `AgendaScreen(mascotaIdInicial: mascotaId)` — la misma pantalla que vive en la pestaña Agenda del navbar, pero empujada como pantalla suelta dentro de la pestaña Mascotas, con el filtro ya puesto en esta mascota puntual. Como se llega empujando una pantalla (no cambiando de pestaña), la barra inferior sigue mostrando "Mascotas" como seleccionada mientras se ve la Agenda filtrada — comportamiento aceptado, no es necesario forzar el cambio de pestaña para esto. "Documentos" (desde el 2026-08-16) navega igual a `DocumentosScreen(mascotaId: mascotaId)`, ver `documentosScreen.md`. "Eliminar mascota" (2026-08-17) es la cuarta, ver punto 6.
 
 **Bug encontrado y corregido (2026-08-16):** al llegar a `AgendaScreen` por este camino (`mascotaIdInicial != null`), la pantalla mostraba igual el logo de la app y el ícono de filtro por mascota en el `AppBar` — ambos pensados solo para cuando Agenda es la pestaña raíz del navbar. El logo tapaba el espacio de la flecha de "atrás" (no había forma visual de volver, solo el botón físico/gesto del sistema), y el filtro no tenía sentido si ya se llegó con una mascota fija. Se corrigió en `AgendaScreen` condicionando ambos al mismo chequeo (`mascotaIdInicial == null` = pantalla raíz) — ver `agendaScreen.md`.
+
+### 6. "Eliminar mascota" — primera función de borrado del proyecto (2026-08-17)
+
+```dart
+Future<void> _eliminarMascota(BuildContext context, WidgetRef ref, MascotaModel mascota) async {
+  final confirmar = await showDialog<bool>(
+    context: context,
+    builder: (context) => AlertDialog(
+      title: const Text('Eliminar mascota'),
+      content: Text('¿Eliminar a ${mascota.nombre}? Se van a borrar también su agenda y sus documentos. Esta acción no se puede deshacer.'),
+      actions: [
+        TextButton(onPressed: () => Navigator.of(context).pop(false), child: const Text('Cancelar')),
+        ElevatedButton(
+          style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+          onPressed: () => Navigator.of(context).pop(true),
+          child: const Text('Eliminar'),
+        ),
+      ],
+    ),
+  );
+  if (confirmar != true || !context.mounted) return;
+  await ref.read(mascotasProvider.notifier).eliminarMascota(mascota.id);
+  if (context.mounted) Navigator.of(context).pop();
+}
+```
+
+Hasta esta versión, el proyecto no tenía ninguna función de "eliminar" expuesta en la UI — `MascotaRepository.eliminarMascota` y `MascotasNotifier.eliminarMascota` ya existían desde que se construyó la capa de datos/providers (CRUD completo desde el inicio, ver `mascota.repository.md`), pero nada en `presentation/` los llamaba todavía.
+
+- **Confirmación con `showDialog<bool>`:** mismo patrón ya usado en `AjustesScreen._cerrarSesion` — un `AlertDialog` que devuelve `true`/`false`/`null` (si se descarta tocando afuera) según el botón tocado, y el código que sigue solo continúa si el resultado fue exactamente `true`.
+- **El aviso menciona la cascada:** el mensaje del diálogo advierte explícitamente que se borran también la agenda y los documentos de la mascota — es cierto a nivel de esquema (`ON DELETE CASCADE` en `agenda_eventos`, `documentos` y `mascotas_extraviadas`, todas con `mascota_id` como *foreign key* hacia `mascotas`, ver `database.helper.md`), así que ocultar esa consecuencia sería engañoso para una acción irreversible.
+- **Botón "Eliminar" en rojo** (`ElevatedButton.styleFrom(backgroundColor: Colors.red)`), distinto del resto de los `ElevatedButton` de la app (que usan el `ElevatedButtonTheme` por defecto) — es la primera acción destructiva de la app con esta señal visual explícita; "Cerrar sesión" no la tiene porque, a diferencia de borrar una mascota, no destruye datos (ver `decisiones_arquitectura.md`, entrada del 2026-08-06).
+- **`Navigator.of(context).pop()` al final, no `pushReplacement` ni nada más elaborado:** como `DetalleMascotaScreen` siempre se llega empujándola sobre `HomeScreen` (ver la nota sobre `mascotaId` más arriba), un simple `pop()` alcanza para volver a la lista — que ya no va a mostrar la mascota eliminada porque `eliminarMascota` del notifier actualiza el `state` en memoria antes de que se ejecute el `pop()`.
