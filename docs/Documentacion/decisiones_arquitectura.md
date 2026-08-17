@@ -294,6 +294,16 @@ Dos bugs reales en el navbar armado el 2026-08-12, recién visibles al probar co
 
 ---
 
+## 2026-08-17 — Monetización: se descarta publicidad, se agregan aportes voluntarios vía Ko-fi
+
+**Decisión:** la app no va a mostrar publicidad. En su lugar, `AjustesScreen` suma un ítem discreto "Aportes voluntarios" que abre el Ko-fi del desarrollador (`https://ko-fi.com/breakpointx`) en el navegador del sistema, vía el paquete nuevo `url_launcher`.
+
+**Por qué:** el plan original (registrado en memoria de sesión, no en este archivo hasta ahora) contemplaba publicidad mínima para cubrir costos de mantener la app en Play Store. El usuario lo reconsideró: descartó publicidad por completo — coherente con la prioridad de UX del proyecto (regla 2 de `CLAUDE.md`, "simplicidad para el usuario final") — y la reemplazó por una vía de aporte 100% opcional y fuera del flujo normal de uso, sin fricción ni interrupciones para quien no quiera usarla.
+
+**Ubicación deliberadamente discreta:** no se agregó al menú desplegable del perfil (`MenuUsuarioAvatar`), que sigue mostrando solo "Ajustes" — el acceso queda un paso más adentro, dentro de `AjustesScreen`, para que no compita visualmente con las funciones reales de la app. Ver el detalle técnico (`url_launcher`, `AndroidManifest.xml`) en `ajustesScreen.md`.
+
+---
+
 ## De aquí en adelante
 
 Cada vez que se tome una decisión de arquitectura nueva (enfoque, tecnología, estructura — no un simple fix o ajuste de código), se agrega una entrada acá con: fecha, la decisión, el porqué, y alternativas consideradas si las hubo.

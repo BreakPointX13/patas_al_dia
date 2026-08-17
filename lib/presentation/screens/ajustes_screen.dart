@@ -6,9 +6,24 @@ import 'package:patas_al_dia/providers/documento_provider.dart';
 import 'package:patas_al_dia/providers/mascota_provider.dart';
 import 'package:patas_al_dia/providers/medicamento_evento_provider.dart';
 import 'package:patas_al_dia/providers/usuario_provider.dart';
+import 'package:url_launcher/url_launcher.dart';
+
+final _urlKoFi = Uri.parse('https://ko-fi.com/breakpointx');
 
 class AjustesScreen extends ConsumerWidget {
   const AjustesScreen({super.key});
+
+  Future<void> _abrirKoFi(BuildContext context) async {
+    final abierto = await launchUrl(
+      _urlKoFi,
+      mode: LaunchMode.externalApplication,
+    );
+    if (!abierto && context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('No se pudo abrir el enlace')),
+      );
+    }
+  }
 
   Future<void> _confirmarCerrarSesion(BuildContext context, WidgetRef ref) async {
     final confirmar = await showDialog<bool>(
@@ -68,6 +83,12 @@ class AjustesScreen extends ConsumerWidget {
       appBar: AppBar(title: const Text('Ajustes')),
       body: ListView(
         children: [
+          ListTile(
+            leading: const Icon(Icons.favorite_border),
+            title: const Text('Aportes voluntarios'),
+            subtitle: const Text('Si quieres apoyar el proyecto, es en Ko-fi'),
+            onTap: () => _abrirKoFi(context),
+          ),
           ListTile(
             leading: const Icon(Icons.logout),
             title: const Text('Cerrar sesión'),

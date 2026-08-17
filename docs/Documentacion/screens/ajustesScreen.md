@@ -8,7 +8,7 @@ Se accede desde `MenuUsuarioAvatar` (ver `menuUsuarioAvatar.md`), presente en el
 
 ## 🎯 Propósito del Archivo
 
-Pantalla de ajustes de la app. Por ahora tiene una sola opción, "Cerrar sesión"; es el lugar natural donde agregar más adelante otras preferencias (notificaciones, cuenta, etc.) sin volver a tocar `HomeScreen`.
+Pantalla de ajustes de la app. Tiene dos opciones: "Aportes voluntarios" (2026-08-17, ver punto 3) y "Cerrar sesión"; es el lugar natural donde agregar más adelante otras preferencias (notificaciones, cuenta, etc.) sin volver a tocar `HomeScreen`.
 
 ---
 
@@ -52,3 +52,24 @@ Future<void> _cerrarSesion(BuildContext context, WidgetRef ref) async {
 - **`ref.invalidate(...)`** (agregado el 2026-08-15, ver el bug correspondiente en `decisiones_arquitectura.md`): fuerza a que cada provider vuelva a su estado inicial (`build()` devuelve `[]`) la próxima vez que algo lo lea. Sin esto, un invitado nuevo (creado después de cerrar sesión) podía ver por un momento — o de forma persistente en `AgendaScreen`, por una condición de carrera con `mascotasProvider` — datos del invitado anterior, porque estos providers son globales y no se "resetean" solos solo por navegar a otra pantalla.
 - **`pushAndRemoveUntil(..., (route) => false)`**: a diferencia del `pushReplacement` que usan `LoginScreen` y `SesionInicialScreen` (que reemplazan solo la pantalla actual), acá hace falta vaciar **todo** el stack de navegación — si solo se reemplazara `AjustesScreen`, `NavegacionPrincipalScreen` seguiría debajo y el botón "atrás" desde `LoginScreen` volvería a una sesión que ya se cerró. El callback `(route) => false` le dice "no conserves ninguna ruta anterior".
 - **`rootNavigator: true`**: desde el 2026-08-12, `AjustesScreen` se abre empujada dentro del `Navigator` propio de la pestaña activa (ver `navegacionPrincipalScreen.md`), no en el `Navigator` de toda la app. Sin este parámetro, `Navigator.of(context)` resolvería al `Navigator` de esa pestaña, y `pushAndRemoveUntil` solo vaciaría la pila de esa pestaña — `LoginScreen` quedaría empujado ahí adentro, con la barra inferior del shell todavía visible alrededor. `rootNavigator: true` fuerza a que apunte siempre al `Navigator` más externo (el de `MaterialApp`), sin importar desde qué pestaña se haya abierto esta pantalla.
+
+### 3. "Aportes voluntarios" — `url_launcher` (2026-08-17)
+
+```dart
+final _urlKoFi = Uri.parse('https://ko-fi.com/breakpointx');
+
+Future<void> _abrirKoFi(BuildContext context) async {
+  final abierto = await launchUrl(_urlKoFi, mode: LaunchMode.externalApplication);
+  if (!abierto && context.mounted) {
+    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('No se pudo abrir el enlace')));
+  }
+}
+```
+
+**Contexto de la decisión:** el plan de monetización original (ver `decisiones_arquitectura.md` y la memoria de sesión "Lanzamiento y monetización") era publicidad mínima para cubrir costos de Play Store. El usuario descartó esa idea y la reemplazó por una sección discreta de aportes voluntarios vía Ko-fi — sin publicidad en la app.
+
+- **`url_launcher` como dependencia nueva:** Flutter no tiene forma nativa de abrir una URL en el navegador del sistema — misma excepción a la regla de dependencias mínimas ya aceptada para `file_picker`/`open_filex`/`flutter_svg`/`table_calendar`/`share_plus`.
+- **`LaunchMode.externalApplication`**: abre el link en el navegador del sistema (o la app de Ko-fi si el usuario la tiene instalada), no en un WebView embebido dentro de la propia app — más simple y consistente con que esta es una salida a un servicio externo, no una función de la app en sí.
+- **`launchUrl` devuelve `bool`, no lanza excepción si falla:** a diferencia de otras integraciones (`OpenFilex.open`, por ejemplo), acá se chequea el resultado y se muestra un `SnackBar` de error si no se pudo abrir (ej. sin navegador disponible) — sin este chequeo, un fallo pasaría completamente desapercibido, sin ningún feedback al usuario.
+- **`android:queries` en `AndroidManifest.xml`:** Android 11+ restringe qué paquetes puede "ver" una app por defecto (*package visibility*). Sin declarar `<intent><action android:name="android.intent.action.VIEW"/><data android:scheme="https"/></intent>` dentro de `<queries>`, `launchUrl` puede fallar en dispositivos con Android 11+ aunque el navegador esté instalado — no es un requisito específico de este proyecto, es el comportamiento documentado del propio paquete `url_launcher`.
+- **Ubicación discreta, dentro de `AjustesScreen`:** decisión explícita del usuario — no un ítem en el menú desplegable del perfil (`MenuUsuarioAvatar`), que se mantiene con una sola opción ("Ajustes"), sino un `ListTile` más dentro de la pantalla de ajustes, dos pasos de distancia en vez de estar a la vista todo el tiempo.

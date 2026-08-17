@@ -57,5 +57,11 @@
             <action android:name="android.intent.action.PROCESS_TEXT"/>
             <data android:mimeType="text/plain"/>
         </intent>
+        <!-- Requerido por url_launcher en Android 11+ (restricción de visibilidad
+             de paquetes) para poder abrir enlaces https en el navegador. -->
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <data android:scheme="https" />
+        </intent>
     </queries>
 </manifest>
