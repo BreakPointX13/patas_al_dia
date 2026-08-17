@@ -5,7 +5,15 @@ import 'package:patas_al_dia/data/models/mascota_model.dart';
 import 'package:patas_al_dia/presentation/screens/agenda_screen.dart';
 import 'package:patas_al_dia/presentation/screens/documentos_screen.dart';
 import 'package:patas_al_dia/presentation/screens/formulario_mascota_screen.dart';
+import 'package:patas_al_dia/presentation/widgets/separador_seccion_ficha.dart';
 import 'package:patas_al_dia/providers/mascota_provider.dart';
+
+String _especieTexto(MascotaModel mascota) {
+  if (mascota.especie == 'Otro' && mascota.especiePersonalizada != null) {
+    return mascota.especiePersonalizada!;
+  }
+  return mascota.especie ?? 'No especificada';
+}
 
 class DetalleMascotaScreen extends ConsumerWidget {
   final String mascotaId;
@@ -33,32 +41,36 @@ class DetalleMascotaScreen extends ConsumerWidget {
     }
     final mascota = mascotaEncontrada;
 
-    final datosTiles = [
+    final grupoMascota = [
       ListTile(
         title: const Text('Especie'),
-        subtitle: Text(mascota.especie ?? 'No especificada'),
+        subtitle: Text(_especieTexto(mascota)),
       ),
       ListTile(
         title: const Text('Raza'),
         subtitle: Text(mascota.raza ?? 'No especificada'),
       ),
+    ];
+
+    final grupoIdentificacion = [
+      ListTile(
+        title: const Text('RUT de la mascota'),
+        subtitle: Text(mascota.rutMascota ?? 'No especificado'),
+      ),
+      ListTile(
+        title: const Text('Número de chip'),
+        subtitle: Text(mascota.numeroChip ?? 'No especificado'),
+      ),
+    ];
+
+    final grupoDatos = [
       ListTile(
         title: const Text('Sexo'),
         subtitle: Text(mascota.sexo ?? 'No especificado'),
       ),
       ListTile(
-        title: Text(
-          mascota.fechaEstimada ? 'Edad estimada' : 'Fecha de nacimiento',
-        ),
-        subtitle: Text(
-          mascota.fechaNacimiento == null
-              ? 'No especificada'
-              : mascota.fechaEstimada
-              ? '${DateTime.now().year - mascota.fechaNacimiento!.year} años'
-              : '${mascota.fechaNacimiento!.day}/'
-                    '${mascota.fechaNacimiento!.month}/'
-                    '${mascota.fechaNacimiento!.year}',
-        ),
+        title: const Text('Colores'),
+        subtitle: Text(mascota.colores ?? 'No especificado'),
       ),
       ListTile(
         title: const Text('Peso'),
@@ -73,16 +85,18 @@ class DetalleMascotaScreen extends ConsumerWidget {
         subtitle: Text(mascota.esterilizado ? 'Sí' : 'No'),
       ),
       ListTile(
-        title: const Text('RUT de la mascota'),
-        subtitle: Text(mascota.rutMascota ?? 'No especificado'),
-      ),
-      ListTile(
-        title: const Text('Colores'),
-        subtitle: Text(mascota.colores ?? 'No especificado'),
-      ),
-      ListTile(
-        title: const Text('Número de chip'),
-        subtitle: Text(mascota.numeroChip ?? 'No especificado'),
+        title: Text(
+          mascota.fechaEstimada ? 'Edad estimada' : 'Fecha de nacimiento',
+        ),
+        subtitle: Text(
+          mascota.fechaNacimiento == null
+              ? 'No especificada'
+              : mascota.fechaEstimada
+              ? '${DateTime.now().year - mascota.fechaNacimiento!.year} años'
+              : '${mascota.fechaNacimiento!.day}/'
+                    '${mascota.fechaNacimiento!.month}/'
+                    '${mascota.fechaNacimiento!.year}',
+        ),
       ),
     ];
 
@@ -102,8 +116,12 @@ class DetalleMascotaScreen extends ConsumerWidget {
                   : null,
             ),
           ),
-          const SizedBox(height: 24),
-          for (final tile in datosTiles) Card(child: tile),
+          SeparadorSeccionFicha.mascota(),
+          for (final tile in grupoMascota) Card(child: tile),
+          SeparadorSeccionFicha.identificacion(),
+          for (final tile in grupoIdentificacion) Card(child: tile),
+          SeparadorSeccionFicha.datos(),
+          for (final tile in grupoDatos) Card(child: tile),
           const SizedBox(height: 16),
           ListTile(
             leading: const Icon(Icons.edit),

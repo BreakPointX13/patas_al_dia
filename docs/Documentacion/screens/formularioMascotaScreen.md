@@ -8,7 +8,7 @@ Se abre de dos formas: desde el botón flotante (`+`) de `HomeScreen` (modo **cr
 
 ## 🎯 Propósito del Archivo
 
-Formulario único que sirve tanto para **crear** una mascota nueva como para **editar** una existente — evita duplicar el formulario cuando crece. Campos: foto, nombre (obligatorio), especie, raza, RUT de la mascota, colores, número de chip, sexo, esterilizado, fecha de nacimiento (o edad estimada) y peso. Al guardar, crea o actualiza un `MascotaModel` según corresponda y lo pasa a `mascotasProvider.notifier` (`agregarMascota` o `actualizarMascota`), que escribe en SQLite y actualiza el estado en memoria. Las pantallas que escuchan ese estado (`HomeScreen`, `DetalleMascotaScreen`) se refrescan solas, porque ya usan `ref.watch`.
+Formulario único que sirve tanto para **crear** una mascota nueva como para **editar** una existente — evita duplicar el formulario cuando crece. Campos, en este orden (2026-08-17, pedido explícito del usuario): foto, nombre (obligatorio), especie, raza, RUT de la mascota, número de chip, sexo, colores, peso, esterilizado y fecha de nacimiento (o edad estimada) al final. Al guardar, crea o actualiza un `MascotaModel` según corresponda y lo pasa a `mascotasProvider.notifier` (`agregarMascota` o `actualizarMascota`), que escribe en SQLite y actualiza el estado en memoria. Las pantallas que escuchan ese estado (`HomeScreen`, `DetalleMascotaScreen`) se refrescan solas, porque ya usan `ref.watch`.
 
 ---
 
@@ -81,11 +81,34 @@ validator: (valor) {
 }
 ```
 
-Función que corre cuando se llama `validate()` sobre el `Form`. Si devuelve un `String`, ese texto se muestra como error bajo el campo; si devuelve `null`, el campo pasa la validación. Además del "nombre" (obligatorio), también validan **peso** (si se llena, debe ser un número positivo) y **edad estimada** (obligatoria mientras el switch de fecha estimada esté activo, entero entre 1 y 30). El resto de los campos (especie, raza, rut, colores, número de chip) quedan como texto libre a propósito: RUT y número de chip no tienen un formato validado porque, aunque la app está pensada inicialmente para Chile, no se quiere cerrar la puerta a formatos de identificación de otros países.
+Función que corre cuando se llama `validate()` sobre el `Form`. Si devuelve un `String`, ese texto se muestra como error bajo el campo; si devuelve `null`, el campo pasa la validación. Además del "nombre" (obligatorio), también validan **peso** (si se llena, debe ser un número positivo) y **edad estimada** (obligatoria mientras el switch de fecha estimada esté activo, entero entre 1 y 30). El resto de los campos (raza, rut, colores, número de chip) quedan como texto libre a propósito: RUT y número de chip no tienen un formato validado porque, aunque la app está pensada inicialmente para Chile, no se quiere cerrar la puerta a formatos de identificación de otros países.
 
 ### 6. `DropdownButtonFormField` y `SwitchListTile`
 
 El campo "Sexo" no usa `TextEditingController`: al ser una lista fija de opciones (`Macho`/`Hembra`), el valor elegido se guarda directo en una variable de estado (`_sexo`) dentro de `onChanged`. "Esterilizado" usa el mismo principio con un `SwitchListTile` y una variable `bool`.
+
+### 6b. `_especies` — lista fija (2026-08-17)
+
+```dart
+const _especies = [
+  'Perro', 'Gato', 'Conejo', 'Hamster', 'Cobaya', 'Jerbo', 'Rata',
+  'Chinchilla', 'Erizo', 'Pez', 'Tortuga', 'Hurón', 'Ave', 'Otro',
+];
+```
+
+Igual que `tipoEvento` en `FormularioAgendaEventoScreen`, "Especie" dejó de ser texto libre y pasó a un `DropdownButtonFormField<String>` con esta lista fija (las especies más comunes como mascota en Chile, incluida Chinchilla por ser nativa). Si se elige "Otro", aparece un `TextFormField` adicional (`_especiePersonalizadaController`) para especificarla — mismo patrón exacto que `tipoEvento`/`tipoEventoPersonalizado`, incluida la nueva columna `especie_personalizada` en `mascotas` (ver `mascota.model.md` y `database.helper.md`). En `initState()`, si se edita una mascota con una especie que ya no está en la lista fija (dato viejo de texto libre), se mapea automáticamente a "Otro" con ese texto precargado en el campo personalizado.
+
+### 6c. `SeparadorSeccionFicha` — tres grupos de campos (2026-08-17)
+
+Los campos del formulario están agrupados en tres secciones, separadas visualmente por `SeparadorSeccionFicha` (`lib/presentation/widgets/separador_seccion_ficha.dart`, widget nuevo, compartido con `DetalleMascotaScreen`): una línea Durazno a cada lado con un ícono centrado (`Icons.pets` para "Mascota" — el mismo del navbar inferior — y dos SVG nuevos, `identificacion.svg`/`datos.svg`, para las otras dos, diseñados a medida por el usuario). Los tres factory constructors (`.mascota()`, `.identificacion()`, `.datos()`) evitan repetir la configuración de ícono+línea en cada pantalla que lo usa.
+
+- **`SeparadorSeccionFicha.mascota()`** antes de "Nombre" → agrupa Nombre, Especie, Raza.
+- **`SeparadorSeccionFicha.identificacion()`** antes de "Rut de la mascota" → agrupa Rut, Número de chip.
+- **`SeparadorSeccionFicha.datos()`** antes de "Sexo" → agrupa Sexo, Colores, Peso, Esterilizado, Fecha de nacimiento/Edad estimada.
+
+El orden de campos coincide exactamente con el pedido por el usuario en la misma sesión (ver `decisiones_arquitectura.md`), así que los tres grupos quedaron alineados de forma natural con los límites de cada sección — no fue necesario reordenar nada aparte para que la agrupación tuviera sentido.
+
+**Tamaño parejo entre íconos — ajustado en el SVG, no en Flutter:** al probarlo, el ícono de "Identificación" se veía notablemente más chico que "Datos" y que la pata, aunque los tres usaban el mismo `width`/`height` en `SvgPicture.asset`. La causa real no era el tamaño en Flutter, sino que el dibujo dentro del `viewBox` original (`0 0 48 48`, igual en los dos SVG) ocupaba mucho menos espacio en "Identificación" que en "Datos" — cada ícono traía su propio margen interno, distinto entre sí. La primera solución (subir el `width`/`height` solo de ese ícono en el widget) funcionaba pero era un parche a ojo, específico a este par de SVG: si se reemplaza el archivo por un diseño distinto, el tamaño ajustado deja de calzar. La solución de raíz fue recortar el `viewBox` de cada SVG (`identificacion.svg` → `9 9 30 35`, `datos.svg` → `6 4 36 40`) al rectángulo real del dibujo (con un margen calculado a partir del ancho de línea), para que el "peso visual" del ícono ocupe una proporción similar de su propio lienzo en ambos casos. Con eso, los tres íconos vuelven a usar el mismo `width`/`height` (26) en el widget — la regla para cualquier ícono SVG nuevo que se agregue a este set es la misma: recortar el `viewBox` al dibujo real antes de usarlo, no ajustar el tamaño en el código Dart.
 
 ### 7. `showDatePicker`
 

@@ -252,6 +252,28 @@ Dos bugs reales en el navbar armado el 2026-08-12, recién visibles al probar co
 
 ---
 
+## 2026-08-17 — `MascotaModel.especie` pasa de texto libre a lista fija
+
+**Decisión:** igual que se hizo con `tipoEvento` de `AgendaEventoModel` (2026-08-16), el campo "Especie" de `FormularioMascotaScreen` deja de ser un `TextFormField` sin restricciones y pasa a un `DropdownButtonFormField` con una lista fija de 14 valores: Perro, Gato, Conejo, Hamster, Cobaya, Jerbo, Rata, Chinchilla, Erizo, Pez, Tortuga, Hurón, Ave, Otro. Se agrega `especiePersonalizada` (nueva columna `especie_personalizada` en `mascotas`) para el texto libre de la opción "Otro" — mismo patrón exacto que `tipoEventoPersonalizado`/`tipoDocumentoPersonalizado`.
+
+**Por qué:** propuesta del usuario, con la misma motivación que la lista fija de tipos de evento — ordenar un dato que hasta ahora era texto libre sin restricciones. La lista de especies la definió el usuario a partir de las mascotas más comunes en Chile (Conejo, Chinchilla y Erizo se agregaron sobre la marcha, esta última recordada por el usuario después de haber dado el resto por cerrada).
+
+**Migración de datos viejos:** igual que con `tipoEvento`, no se migran los registros existentes con el algoritmo automático de "texto viejo no reconocido → Otro" en frío — se aplicó el cambio de esquema reinstalando la app, coherente con la política ya registrada de reinstalación durante esta etapa de desarrollo. El mapeo a "Otro" en `initState()` de `FormularioMascotaScreen` queda como salvaguarda para cualquier dato que sí sobreviva (ej. si se restaura un backup viejo), no como mecanismo de migración pensado.
+
+---
+
+## 2026-08-17 — Formulario de mascota: orden de campos y agrupación visual en 3 secciones
+
+**Decisión (orden):** `FormularioMascotaScreen` cambia de orden a: Nombre, Especie, Raza, RUT de la mascota, Número de chip, Sexo, Colores, Peso, Esterilizado, Fecha de nacimiento (o Edad estimada) — pedido explícito del usuario, sin ningún cambio de campos, solo de secuencia.
+
+**Decisión (agrupación visual):** los campos quedan agrupados en 3 secciones separadas por `SeparadorSeccionFicha` (widget nuevo en `lib/presentation/widgets/`, reutilizado también en `DetalleMascotaScreen`): "Mascota" (Nombre, Especie, Raza), "Identificación" (RUT, Número de chip) y "Datos" (Sexo, Colores, Peso, Esterilizado, Fecha de nacimiento). Cada separador es una línea Durazno a cada lado con un ícono centrado: `Icons.pets` (el mismo de la barra inferior) para "Mascota", y dos SVG diseñados a medida por el usuario (`assets/icons/ficha/identificacion.svg`, `assets/icons/ficha/datos.svg`) para las otras dos — misma técnica ya usada para los íconos de tipo de evento de Agenda (`flutter_svg`, ya era dependencia del proyecto).
+
+**Por qué:** el orden nuevo lo pidió el usuario primero, sin mencionar agrupación visual; en un pedido aparte, pidió separar visualmente esos mismos datos en secciones con íconos, y trajo los 2 SVG nuevos. Los límites de cada sección ("el ícono de Identificación va sobre RUT", "el de Datos va sobre Sexo") calzaron exactamente con los límites que ya había entre bloques del reordenamiento recién hecho — no fue coincidencia forzada, el pedido de agrupación reutilizó las mismas fronteras.
+
+**Aplicado también a `DetalleMascotaScreen`:** el usuario confirmó que quería el mismo criterio de agrupación en la ficha de detalle (no solo en el formulario). Ahí no existe un tile de "Nombre" (se muestra como título del `AppBar`, no como dato de la lista), así que el grupo "Mascota" de esa pantalla quedó con solo Especie y Raza — el separador con el ícono de pata se puso igual, justo debajo de la foto.
+
+---
+
 ## De aquí en adelante
 
 Cada vez que se tome una decisión de arquitectura nueva (enfoque, tecnología, estructura — no un simple fix o ajuste de código), se agrega una entrada acá con: fecha, la decisión, el porqué, y alternativas consideradas si las hubo.

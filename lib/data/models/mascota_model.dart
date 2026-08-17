@@ -4,6 +4,7 @@ class MascotaModel {
   final String nombre;
   final String? rutMascota;
   final String? especie;
+  final String? especiePersonalizada;
   final String? sexo;
   final String? raza;
   final bool esterilizado;
@@ -20,6 +21,7 @@ class MascotaModel {
     required this.nombre,
     this.rutMascota,
     this.especie,
+    this.especiePersonalizada,
     this.sexo,
     this.raza,
     this.esterilizado = false,
@@ -41,6 +43,9 @@ class MascotaModel {
           ? map['rut_mascota'] as String
           : null,
       especie: map['especie'] != null ? map['especie'] as String : null,
+      especiePersonalizada: map['especie_personalizada'] != null
+          ? map['especie_personalizada'] as String
+          : null,
       sexo: map['sexo'] != null ? map['sexo'] as String : null,
       raza: map['raza'] != null ? map['raza'] as String : null,
       esterilizado: map['esterilizado'] == 1 || map['esterilizado'] == true,
@@ -68,6 +73,7 @@ class MascotaModel {
       'nombre': nombre,
       'rut_mascota': rutMascota,
       'especie': especie,
+      'especie_personalizada': especiePersonalizada,
       'sexo': sexo,
       'raza': raza,
       'esterilizado': esterilizado
@@ -91,6 +97,7 @@ class MascotaModel {
     String? nombre,
     String? rutMascota,
     String? especie,
+    String? especiePersonalizada,
     String? sexo,
     String? raza,
     bool? esterilizado,
@@ -107,6 +114,7 @@ class MascotaModel {
       nombre: nombre ?? this.nombre,
       rutMascota: rutMascota ?? this.rutMascota,
       especie: especie ?? this.especie,
+      especiePersonalizada: especiePersonalizada ?? this.especiePersonalizada,
       sexo: sexo ?? this.sexo,
       raza: raza ?? this.raza,
       esterilizado: esterilizado ?? this.esterilizado,

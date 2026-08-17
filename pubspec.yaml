@@ -74,6 +74,7 @@ flutter:
   assets:
       - assets/images/logo_patas_al_dia.png
       - assets/icons/eventos/
+      - assets/icons/ficha/
 
   fonts:
     - family: Nunito

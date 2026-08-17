@@ -47,6 +47,7 @@ class DatabaseHelper {
         nombre TEXT NOT NULL,
         rut_mascota TEXT,
         especie TEXT,
+        especie_personalizada TEXT,
         sexo TEXT,
         raza TEXT,
         esterilizado INTEGER DEFAULT 0,

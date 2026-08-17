@@ -6,6 +6,24 @@ import 'package:patas_al_dia/providers/mascota_provider.dart';
 import 'package:patas_al_dia/providers/usuario_provider.dart';
 import 'dart:io';
 import 'package:image_picker/image_picker.dart';
+import 'package:patas_al_dia/presentation/widgets/separador_seccion_ficha.dart';
+
+const _especies = [
+  'Perro',
+  'Gato',
+  'Conejo',
+  'Hamster',
+  'Cobaya',
+  'Jerbo',
+  'Rata',
+  'Chinchilla',
+  'Erizo',
+  'Pez',
+  'Tortuga',
+  'Hurón',
+  'Ave',
+  'Otro',
+];
 
 class FormularioMascotaScreen extends ConsumerStatefulWidget {
   final MascotaModel? mascotaExistente;
@@ -21,7 +39,7 @@ class _FormularioMascotaScreenState
   final _formKey = GlobalKey<FormState>();
 
   final _nombreController = TextEditingController();
-  final _especieController = TextEditingController();
+  final _especiePersonalizadaController = TextEditingController();
   final _razaController = TextEditingController();
   final _pesoController = TextEditingController();
   final _rutController = TextEditingController();
@@ -29,6 +47,7 @@ class _FormularioMascotaScreenState
   final _numeroChipController = TextEditingController();
   final _edadEstimadaController = TextEditingController();
 
+  String _especie = _especies.first;
   String? _sexo;
   DateTime? _fechaNacimiento;
   bool _esterilizado = false;
@@ -52,7 +71,15 @@ class _FormularioMascotaScreenState
     final mascota = widget.mascotaExistente;
     if (mascota != null) {
       _nombreController.text = mascota.nombre;
-      _especieController.text = mascota.especie ?? '';
+      if (mascota.especie != null && _especies.contains(mascota.especie)) {
+        _especie = mascota.especie!;
+      } else if (mascota.especie != null) {
+        _especie = 'Otro';
+        _especiePersonalizadaController.text = mascota.especie!;
+      }
+      if (_especie == 'Otro' && mascota.especiePersonalizada != null) {
+        _especiePersonalizadaController.text = mascota.especiePersonalizada!;
+      }
       _razaController.text = mascota.raza ?? '';
       _pesoController.text = mascota.pesoActual?.toString() ?? '';
       _rutController.text = mascota.rutMascota ?? '';
@@ -73,7 +100,7 @@ class _FormularioMascotaScreenState
   @override
   void dispose() {
     _nombreController.dispose();
-    _especieController.dispose();
+    _especiePersonalizadaController.dispose();
     _razaController.dispose();
     _pesoController.dispose();
     _rutController.dispose();
@@ -118,9 +145,12 @@ class _FormularioMascotaScreenState
       id: widget.mascotaExistente?.id ?? const Uuid().v4(),
       usuarioId: usuarioId,
       nombre: _nombreController.text.trim(),
-      especie: _especieController.text.trim().isEmpty
-          ? null
-          : _especieController.text.trim(),
+      especie: _especie,
+      especiePersonalizada:
+          _especie == 'Otro' &&
+              _especiePersonalizadaController.text.trim().isNotEmpty
+          ? _especiePersonalizadaController.text.trim()
+          : null,
       raza: _razaController.text.trim().isEmpty
           ? null
           : _razaController.text.trim(),
@@ -189,7 +219,7 @@ class _FormularioMascotaScreenState
                 ),
               ),
             ),
-            const SizedBox(height: 16),
+            SeparadorSeccionFicha.mascota(),
             TextFormField(
               controller: _nombreController,
               decoration: const InputDecoration(labelText: 'Nombre *'),
@@ -201,31 +231,40 @@ class _FormularioMascotaScreenState
               },
             ),
             const SizedBox(height: 16),
-            TextFormField(
-              controller: _especieController,
+            DropdownButtonFormField<String>(
+              initialValue: _especie,
               decoration: const InputDecoration(labelText: 'Especie'),
+              items: _especies
+                  .map((e) => DropdownMenuItem(value: e, child: Text(e)))
+                  .toList(),
+              onChanged: (valor) =>
+                  setState(() => _especie = valor ?? _especies.first),
             ),
+            if (_especie == 'Otro') ...[
+              const SizedBox(height: 16),
+              TextFormField(
+                controller: _especiePersonalizadaController,
+                decoration: const InputDecoration(
+                  labelText: 'Especifica la especie',
+                ),
+              ),
+            ],
             const SizedBox(height: 16),
             TextFormField(
               controller: _razaController,
               decoration: const InputDecoration(labelText: 'Raza'),
             ),
-            const SizedBox(height: 16),
+            SeparadorSeccionFicha.identificacion(),
             TextFormField(
               controller: _rutController,
               decoration: const InputDecoration(labelText: 'Rut de la mascota'),
             ),
             const SizedBox(height: 16),
             TextFormField(
-              controller: _coloresController,
-              decoration: const InputDecoration(labelText: 'Colores'),
-            ),
-            const SizedBox(height: 16),
-            TextFormField(
               controller: _numeroChipController,
               decoration: const InputDecoration(labelText: 'Número de chip'),
             ),
-            const SizedBox(height: 16),
+            SeparadorSeccionFicha.datos(),
             DropdownButtonFormField<String>(
               initialValue: _sexo,
               decoration: const InputDecoration(labelText: 'Sexo'),
@@ -238,6 +277,11 @@ class _FormularioMascotaScreenState
                   _sexo = valor;
                 });
               },
+            ),
+            const SizedBox(height: 16),
+            TextFormField(
+              controller: _coloresController,
+              decoration: const InputDecoration(labelText: 'Colores'),
             ),
             const SizedBox(height: 16),
             TextFormField(

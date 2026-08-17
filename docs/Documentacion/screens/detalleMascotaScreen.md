@@ -69,6 +69,14 @@ Cada dato de la mascota (especie, raza, etc.) sigue siendo un `ListTile` (`title
 
 `datosTiles` se arma como una lista local de `ListTile` *antes* del `return Scaffold(...)`, en vez de escribir cada `Card(child: ListTile(...))` inline — quedó de cuando existía un `Divider` grueso separando el bloque de datos del bloque de acciones (una iteración intermedia de este mismo cambio); con las tarjetas propias ese divisor grueso dejó de hacer falta (el corte visual ya lo dan las tarjetas mismas) y se sacó, quedando solo un `SizedBox(height: 16)` entre ambos bloques — pero la lista se conservó como variable aparte igual, ya no por necesidad sino porque no había motivo para volver a inlinearla.
 
+**Orden de los datos (2026-08-17, primera pasada):** Especie, Raza, Sexo, Edad/Fecha de nacimiento, Peso, Colores, Esterilizado, RUT de la mascota, Número de chip — pedido explícito del usuario sobre el orden original (que tenía Esterilizado y RUT antes que Colores). "Esterilizado" no estaba en la lista que dio el usuario al pedir el cambio; se confirmó con él dónde ubicarlo (quedó después de Colores, en vez de al final o sacarlo del todo).
+
+### 3b. Tres grupos con `SeparadorSeccionFicha` (2026-08-17, segunda pasada)
+
+`datosTiles` (una sola lista) se dividió en tres: `grupoMascota` (Especie, Raza), `grupoIdentificacion` (RUT de la mascota, Número de chip) y `grupoDatos` (Sexo, Colores, Peso, Esterilizado, Edad/Fecha de nacimiento) — mismo agrupamiento que se le dio a `FormularioMascotaScreen` en la misma sesión (ver `formularioMascotaScreen.md`), para que la ficha de detalle y el formulario de edición se lean igual. Entre cada grupo (y antes del primero, justo debajo de la foto) va un `SeparadorSeccionFicha` (`lib/presentation/widgets/separador_seccion_ficha.dart`) — línea Durazno a cada lado con un ícono centrado: `Icons.pets` (el mismo del navbar) para "Mascota", y dos SVG nuevos (`identificacion.svg`/`datos.svg`) para las otras dos secciones.
+
+**Diferencia con el formulario:** en el formulario, el grupo "Mascota" incluye el campo "Nombre" (primer campo del form); acá no hay un tile de "Nombre" (el nombre ya se muestra como título del `AppBar`), así que el grupo "Mascota" de esta pantalla solo tiene Especie y Raza — el separador con el ícono de pata queda igual justo debajo de la foto, marcando el inicio conceptual del mismo grupo.
+
 **Margen superior extra sobre la foto:** el `ListView` que arma la pantalla pasó de `padding: EdgeInsets.all(16)` a `EdgeInsets.fromLTRB(16, 32, 16, 16)` — el usuario notó que la foto de la mascota quedaba "muy pegada" al `AppBar` al entrar a una mascota.
 
 ### 4. `fechaEstimada` — mostrar edad en vez de fecha

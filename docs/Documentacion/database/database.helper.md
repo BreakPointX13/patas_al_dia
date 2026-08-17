@@ -100,3 +100,7 @@ class DatabaseHelper {
 - **De paso:** se sacó la columna `medicamento_prescrito` de `agenda_eventos` (reemplazada por esta tabla) y se agregó `recordatorio_horas_antes` (reemplaza a `notificaciones_activas`, ver `agendaEvento.model.md` para el porqué).
 - **`recordatorio_horas_antes` cambió de `INTEGER` a `TEXT` (2026-08-16):** un evento pasó a poder tener varios recordatorios a la vez (ej. avisar 1 día y también 1 hora antes) — se guardan como texto separado por comas (`"24,1"`), no una tabla hija aparte (ver `agendaEvento.model.md` para el porqué).
 - **Columna `tipo_evento_personalizado` agregada a `agenda_eventos` (2026-08-16):** `tipo_evento` dejó de ser texto libre para pasar a una lista fija de 7 valores (ver `agendaEvento.model.md`); esta columna nueva guarda el texto libre solo para la opción "Otro", mismo patrón que `tipo_documento_personalizado` en `documentos`. Igual que el resto de los cambios de esquema en esta etapa, se aplicó reinstalando la app en vez de con una migración.
+
+### 6. Columna `especie_personalizada` agregada a `mascotas` (2026-08-17)
+
+Mismo patrón que `tipo_evento_personalizado`: `especie` en `MascotaModel` pasó de texto libre a una lista fija (ver `mascota.model.md`), y esta columna nueva guarda el texto libre solo para la opción "Otro". Aplicado reinstalando la app, siguiendo la misma política de esquema en desarrollo (ver `decisiones_arquitectura.md`).
