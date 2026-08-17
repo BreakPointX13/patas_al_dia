@@ -112,3 +112,17 @@ leading: Container(
 ```
 
 Antes, la lista mostraba siempre el mismo ícono genérico de pata (`Icons.pets`) para todas las mascotas, incluso las que ya tenían foto cargada (la foto solo se veía al entrar al detalle). Ahora, si `fotoUrl` no es `null`, se muestra la foto real con `FileImage` (mismo patrón que el avatar grande de `DetalleMascotaScreen`); si es `null`, sigue cayendo en el ícono genérico — sin ningún caso especial para cuando una mascota pasa de "sin foto" a "con foto" al editarla, porque `image_picker` genera una ruta de archivo nueva cada vez que se elige una imagen (no reutiliza nombres), así que no hay riesgo de que Flutter muestre una imagen vieja cacheada bajo la misma ruta. El `Container` con `BoxDecoration(shape: BoxShape.circle, border: ...)` envuelve el `CircleAvatar` para agregarle un borde Café texto — `CircleAvatar` no tiene una propiedad propia de borde.
+
+### 8. `trailing` — acceso rápido a la credencial (2026-08-17)
+
+```dart
+trailing: IconButton(
+  icon: const Icon(Icons.badge_outlined, color: Color(0xFFD06D1F)),
+  tooltip: 'Credencial',
+  onPressed: () => Navigator.of(context).push(
+    MaterialPageRoute(builder: (context) => CredencialMascotaScreen(mascotaId: mascota.id)),
+  ),
+),
+```
+
+Cada fila tiene ahora dos formas de navegación independientes: tocar el resto de la fila (`onTap` del `ListTile`) sigue abriendo `DetalleMascotaScreen`; tocar el ícono `trailing` abre `CredencialMascotaScreen` directo — el carnet digital de la mascota (ver `credencialMascotaScreen.md`). `trailing` es una zona de toque propia dentro del `ListTile`, no necesita lógica para distinguir ambos toques.

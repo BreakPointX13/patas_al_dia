@@ -126,4 +126,13 @@ class MascotaModel {
       fechaEstimada: fechaEstimada ?? this.fechaEstimada,
     );
   }
+
+  // Texto a mostrar para la especie: el valor libre de "Otro" si corresponde,
+  // si no la especie de la lista fija, o un texto de reemplazo si no hay dato.
+  String get especieTexto {
+    if (especie == 'Otro' && especiePersonalizada != null) {
+      return especiePersonalizada!;
+    }
+    return especie ?? 'No especificada';
+  }
 }

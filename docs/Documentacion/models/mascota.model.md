@@ -85,4 +85,17 @@ Para evitar la sobrecarga que un ORM pesado implicaría en un dispositivo móvil
 
 ### 5. `especiePersonalizada` (2026-08-17)
 
-Igual que `tipoEventoPersonalizado` en `AgendaEventoModel`, este campo nuevo (`String?`, columna `especie_personalizada`) guarda el texto libre solo cuando `especie == 'Otro'` — `especie` en sí dejó de ser texto libre para pasar a una lista fija de opciones, elegida desde un `DropdownButtonFormField` en `FormularioMascotaScreen` (ver `formularioMascotaScreen.md`). Las pantallas que muestran la especie (`HomeScreen`, `DetalleMascotaScreen`) resuelven cuál de los dos campos mostrar con una función `_especieTexto(mascota)` compartida en el mismo patrón.
+Igual que `tipoEventoPersonalizado` en `AgendaEventoModel`, este campo nuevo (`String?`, columna `especie_personalizada`) guarda el texto libre solo cuando `especie == 'Otro'` — `especie` en sí dejó de ser texto libre para pasar a una lista fija de opciones, elegida desde un `DropdownButtonFormField` en `FormularioMascotaScreen` (ver `formularioMascotaScreen.md`). Las pantallas que muestran la especie (`HomeScreen`, `DetalleMascotaScreen`, `CredencialMascotaScreen`) resuelven cuál de los dos campos mostrar con el getter `especieTexto` (ver punto 6).
+
+### 6. `especieTexto` — getter, no función suelta (2026-08-17)
+
+```dart
+String get especieTexto {
+  if (especie == 'Otro' && especiePersonalizada != null) {
+    return especiePersonalizada!;
+  }
+  return especie ?? 'No especificada';
+}
+```
+
+Al agregar `CredencialMascotaScreen`, la misma lógica de "¿muestro `especie` o `especiePersonalizada`?" iba a existir por tercera vez, duplicada en tres archivos (ya vivía como función privada `_especieTexto` en `home_screen.dart` y `detalle_mascota_screen.dart`). Se subió a `MascotaModel` como getter — cualquier pantalla que tenga una `MascotaModel` en mano puede pedir `mascota.especieTexto` directamente, sin importar una función aparte ni repetir la condición.

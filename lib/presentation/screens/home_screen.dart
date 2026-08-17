@@ -1,20 +1,13 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:patas_al_dia/data/models/mascota_model.dart';
+import 'package:patas_al_dia/presentation/screens/credencial_mascota_screen.dart';
 import 'package:patas_al_dia/presentation/screens/detalle_mascota_screen.dart';
 import 'package:patas_al_dia/presentation/screens/formulario_mascota_screen.dart';
 import 'package:patas_al_dia/presentation/widgets/logo_barra_superior.dart';
 import 'package:patas_al_dia/presentation/widgets/menu_usuario_avatar.dart';
 import 'package:patas_al_dia/providers/mascota_provider.dart';
 import 'package:patas_al_dia/providers/usuario_provider.dart';
-
-String _especieTexto(MascotaModel mascota) {
-  if (mascota.especie == 'Otro' && mascota.especiePersonalizada != null) {
-    return mascota.especiePersonalizada!;
-  }
-  return mascota.especie ?? 'Especie no especificada';
-}
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -73,7 +66,29 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       ),
                     ),
                     title: Text(mascota.nombre),
-                    subtitle: Text(_especieTexto(mascota)),
+                    subtitle: Text(mascota.especieTexto),
+                    trailing: Container(
+                      decoration: const BoxDecoration(
+                        color: Color(0xFFD06D1F),
+                        shape: BoxShape.circle,
+                      ),
+                      child: IconButton(
+                        icon: const Icon(
+                          Icons.badge_outlined,
+                          color: Color(0xFFFFF7EC),
+                        ),
+                        tooltip: 'Credencial',
+                        onPressed: () {
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (context) => CredencialMascotaScreen(
+                                mascotaId: mascota.id,
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
                     onTap: () {
                       Navigator.of(context).push(
                         MaterialPageRoute(

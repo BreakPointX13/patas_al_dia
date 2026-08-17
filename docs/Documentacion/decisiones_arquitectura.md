@@ -274,6 +274,26 @@ Dos bugs reales en el navbar armado el 2026-08-12, recién visibles al probar co
 
 ---
 
+## 2026-08-17 — Credencial digital de mascota: solo vista, sin exportar/compartir por ahora
+
+**Decisión:** `CredencialMascotaScreen` (nueva) muestra un carnet visual de la mascota (foto grande, nombre, especie/raza, RUT, número de chip, esterilizado), accesible desde un ícono de acceso rápido (`trailing`, `Icons.badge_outlined`) en cada fila de `HomeScreen`, independiente del toque normal de la fila (que sigue abriendo `DetalleMascotaScreen`). Primera versión: solo una vista dentro de la app — sin poder exportarla como imagen/PDF ni compartirla fuera de la app.
+
+**Por qué:** decisión explícita del usuario tras plantear dos alcances posibles (solo vista vs. vista + exportar/compartir) — se optó por la versión simple primero, dejando exportar como paso siguiente si hace falta más adelante. Evita sumar de entrada una dependencia nueva (captura de widget a imagen + `share_plus` o similar) para una funcionalidad que todavía no se confirmó que se vaya a necesitar.
+
+**De paso:** la lógica de "qué texto de especie mostrar" (la especie de la lista fija, o el texto libre de `especiePersonalizada` si es "Otro") estaba duplicada como función privada en `home_screen.dart` y `detalle_mascota_screen.dart`. Al necesitarla por tercera vez acá, se subió a `MascotaModel` como getter (`especieTexto`) — ver `mascota.model.md`.
+
+---
+
+## 2026-08-17 — Credencial digital: tarjeta más grande, y exportar/compartir como imagen (`share_plus`)
+
+**Decisión (tamaño):** tras probar la primera versión, se agrandó la tarjeta (`maxWidth` 360→440) y el texto (nombre 24px→32px, resto 16-18px→18-20px, foto radio 64→84) — el usuario la encontró chica y con letra poco legible. También se le agregó fondo circular Naranja marca al ícono de acceso rápido en `HomeScreen` (antes era un ícono suelto sobre la tarjeta Durazno, que no se leía como botón tocable).
+
+**Decisión (exportar/compartir):** se agrega `share_plus` como dependencia nueva y un ícono de compartir en el `AppBar` de `CredencialMascotaScreen`, que captura la tarjeta como imagen PNG (`RepaintBoundary` + `RenderRepaintBoundary.toImage()`) y abre la hoja de "compartir" nativa del sistema con esa imagen.
+
+**Por qué:** decisión explícita del usuario, como siguiente paso ya previsto al construir la primera versión "solo vista" (ver la entrada anterior del mismo día). `share_plus` es la misma clase de excepción a dependencias mínimas ya aceptada para `file_picker`/`open_filex`/`flutter_svg`/`table_calendar` — Flutter no tiene forma nativa de abrir la hoja de "compartir" del sistema operativo. No se agregó `path_provider`: para el archivo PNG temporal alcanza con `Directory.systemTemp` de `dart:io`, ya que `share_plus` copia el archivo a su propia carpeta de caché antes de compartirlo (con su propio `FileProvider`, declarado en su manifiesto y fusionado automático por Gradle — no requirió tocar `AndroidManifest.xml` a mano).
+
+---
+
 ## De aquí en adelante
 
 Cada vez que se tome una decisión de arquitectura nueva (enfoque, tecnología, estructura — no un simple fix o ajuste de código), se agrega una entrada acá con: fecha, la decisión, el porqué, y alternativas consideradas si las hubo.

@@ -8,13 +8,6 @@ import 'package:patas_al_dia/presentation/screens/formulario_mascota_screen.dart
 import 'package:patas_al_dia/presentation/widgets/separador_seccion_ficha.dart';
 import 'package:patas_al_dia/providers/mascota_provider.dart';
 
-String _especieTexto(MascotaModel mascota) {
-  if (mascota.especie == 'Otro' && mascota.especiePersonalizada != null) {
-    return mascota.especiePersonalizada!;
-  }
-  return mascota.especie ?? 'No especificada';
-}
-
 class DetalleMascotaScreen extends ConsumerWidget {
   final String mascotaId;
   const DetalleMascotaScreen({super.key, required this.mascotaId});
@@ -44,7 +37,7 @@ class DetalleMascotaScreen extends ConsumerWidget {
     final grupoMascota = [
       ListTile(
         title: const Text('Especie'),
-        subtitle: Text(_especieTexto(mascota)),
+        subtitle: Text(mascota.especieTexto),
       ),
       ListTile(
         title: const Text('Raza'),
