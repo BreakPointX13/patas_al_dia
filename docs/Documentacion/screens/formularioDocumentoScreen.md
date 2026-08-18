@@ -43,10 +43,22 @@ Un documento creado desde acá nunca queda vinculado a un evento (`eventoId` sie
 
 ```dart
 SwitchListTile(
-  title: const Text('Recordatorio de vencimiento'),
-  subtitle: const Text('Por ahora solo queda guardado como dato, todavía no envía una notificación.'),
+  title: Text(l10n.recordatorioVencimientoLabel),
+  subtitle: Text(l10n.recordatorioVencimientoAviso),
   ...
 )
 ```
 
 Decisión explícita del usuario: por ahora `recordatorioVencimiento` (bool) se guarda pero no dispara ninguna notificación real — a diferencia de `recordatorioHorasAntes` en Agenda, que sí programa avisos reales vía `NotificacionService`. El subtítulo del switch se lo aclara al usuario directamente en la UI, para que no espere un aviso que todavía no existe. El campo de fecha de vencimiento también se etiqueta como "(opcional)" cuando no tiene valor, por el mismo motivo: dejar claro que no es obligatorio completarlo.
+
+### 4. Traducido (2026-08-18, pasada de Documentos)
+
+Todo el texto de esta pantalla pasa a `AppLocalizations` (ver `sistemaIdiomas.md`, punto 6). El tipo "Carnet de vacunación" (único de este formulario, no existe en la versión reducida de Agenda) se traduce vía `tipoDocumentoMostrar` igual que el resto de los tipos — se le agregó su propia clave `tipoDocumentoCarnetVacunacion` en los tres `.arb` (ver `etiquetasLocalizadas.md`, punto 4).
+
+### 5. `tiposDocumentoDisponibles` — pasó de privada a pública (2026-08-18)
+
+```dart
+const tiposDocumentoDisponibles = ['Carnet de vacunación', 'Receta', 'Examen', 'Certificado', 'Boleta', 'Otro'];
+```
+
+Antes `_tiposDocumento`, privada de este archivo. Al agrupar `DocumentosScreen` por tipo (ver `documentosScreen.md`, punto 4), se necesitaba el mismo orden fijo en dos pantallas — se sacó el guion bajo para que `DocumentosScreen` la importe y la reuse tal cual, en vez de duplicar la lista o crear un archivo de constantes nuevo solo para esto.

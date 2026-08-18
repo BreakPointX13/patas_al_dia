@@ -4,9 +4,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:uuid/uuid.dart';
 import 'package:patas_al_dia/data/models/documento_model.dart';
+import 'package:patas_al_dia/l10n/app_localizations.dart';
+import 'package:patas_al_dia/presentation/utils/etiquetas_localizadas.dart';
 import 'package:patas_al_dia/providers/documento_provider.dart';
 
-const _tiposDocumento = [
+const tiposDocumentoDisponibles = [
   'Carnet de vacunación',
   'Receta',
   'Examen',
@@ -38,7 +40,7 @@ class _FormularioDocumentoScreenState
   final _notasController = TextEditingController();
   final ImagePicker _picker = ImagePicker();
 
-  String _tipoDocumento = _tiposDocumento.first;
+  String _tipoDocumento = tiposDocumentoDisponibles.first;
   String? _filePath;
   String? _fileExtension;
   DateTime? _fechaEmision;
@@ -72,6 +74,7 @@ class _FormularioDocumentoScreenState
   }
 
   Future<void> _elegirArchivo() async {
+    final l10n = AppLocalizations.of(context);
     final opcion = await showModalBottomSheet<String>(
       context: context,
       builder: (context) => SafeArea(
@@ -80,17 +83,17 @@ class _FormularioDocumentoScreenState
           children: [
             ListTile(
               leading: const Icon(Icons.photo_camera),
-              title: const Text('Tomar foto'),
+              title: Text(l10n.tomarFoto),
               onTap: () => Navigator.of(context).pop('camara'),
             ),
             ListTile(
               leading: const Icon(Icons.photo_library),
-              title: const Text('Elegir imagen de galería'),
+              title: Text(l10n.elegirImagenGaleria),
               onTap: () => Navigator.of(context).pop('galeria'),
             ),
             ListTile(
               leading: const Icon(Icons.picture_as_pdf),
-              title: const Text('Elegir PDF'),
+              title: Text(l10n.elegirPdf),
               onTap: () => Navigator.of(context).pop('pdf'),
             ),
           ],
@@ -153,7 +156,7 @@ class _FormularioDocumentoScreenState
     }
     if (_filePath == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Elige una foto o un PDF')),
+        SnackBar(content: Text(AppLocalizations.of(context).eligeFotoOPdf)),
       );
       return;
     }
@@ -196,12 +199,13 @@ class _FormularioDocumentoScreenState
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Scaffold(
       appBar: AppBar(
         title: Text(
           widget.documentoExistente == null
-              ? 'Agregar documento'
-              : 'Editar documento',
+              ? l10n.agregarDocumentoLabel
+              : l10n.editarDocumentoLabel,
         ),
       ),
       body: Form(
@@ -215,20 +219,20 @@ class _FormularioDocumentoScreenState
                 _fileExtension == 'pdf' ? Icons.picture_as_pdf : Icons.image,
               ),
               title: Text(
-                _filePath == null ? 'Sin archivo elegido' : 'Archivo elegido',
+                _filePath == null ? l10n.sinArchivoElegido : l10n.archivoElegido,
               ),
               trailing: TextButton(
                 onPressed: _elegirArchivo,
-                child: Text(_filePath == null ? 'Elegir' : 'Cambiar'),
+                child: Text(_filePath == null ? l10n.accionElegir : l10n.accionCambiar),
               ),
             ),
             const SizedBox(height: 16),
             TextFormField(
               controller: _tituloController,
-              decoration: const InputDecoration(labelText: 'Título *'),
+              decoration: InputDecoration(labelText: l10n.campoTituloObligatorio),
               validator: (valor) {
                 if (valor == null || valor.trim().isEmpty) {
-                  return 'El título es obligatorio';
+                  return l10n.errorTituloObligatorio;
                 }
                 return null;
               },
@@ -236,19 +240,24 @@ class _FormularioDocumentoScreenState
             const SizedBox(height: 16),
             DropdownButtonFormField<String>(
               initialValue: _tipoDocumento,
-              decoration: const InputDecoration(labelText: 'Tipo'),
-              items: _tiposDocumento
-                  .map((t) => DropdownMenuItem(value: t, child: Text(t)))
+              decoration: InputDecoration(labelText: l10n.campoTipo),
+              items: tiposDocumentoDisponibles
+                  .map(
+                    (t) => DropdownMenuItem(
+                      value: t,
+                      child: Text(tipoDocumentoMostrar(l10n, t)),
+                    ),
+                  )
                   .toList(),
               onChanged: (valor) =>
-                  setState(() => _tipoDocumento = valor ?? _tiposDocumento.first),
+                  setState(() => _tipoDocumento = valor ?? tiposDocumentoDisponibles.first),
             ),
             if (_tipoDocumento == 'Otro') ...[
               const SizedBox(height: 16),
               TextFormField(
                 controller: _tipoPersonalizadoController,
-                decoration: const InputDecoration(
-                  labelText: 'Especifica el tipo',
+                decoration: InputDecoration(
+                  labelText: l10n.campoEspecificaElTipo,
                 ),
               ),
             ],
@@ -257,36 +266,37 @@ class _FormularioDocumentoScreenState
               contentPadding: EdgeInsets.zero,
               title: Text(
                 _fechaEmision == null
-                    ? 'Fecha de emisión no especificada'
-                    : 'Emitido: ${_fechaEmision!.day}/'
-                          '${_fechaEmision!.month}/${_fechaEmision!.year}',
+                    ? l10n.fechaEmisionNoEspecificada
+                    : l10n.fechaEmitidaConValor(
+                        '${_fechaEmision!.day}/'
+                        '${_fechaEmision!.month}/${_fechaEmision!.year}',
+                      ),
               ),
               trailing: TextButton(
                 onPressed: () => _seleccionarFecha(esVencimiento: false),
-                child: const Text('Elegir'),
+                child: Text(l10n.accionElegir),
               ),
             ),
             ListTile(
               contentPadding: EdgeInsets.zero,
               title: Text(
                 _fechaVencimiento == null
-                    ? 'Fecha de vencimiento (opcional)'
-                    : 'Vence: ${_fechaVencimiento!.day}/'
-                          '${_fechaVencimiento!.month}/${_fechaVencimiento!.year}',
+                    ? l10n.fechaVencimientoOpcional
+                    : l10n.fechaVenceConValor(
+                        '${_fechaVencimiento!.day}/'
+                        '${_fechaVencimiento!.month}/${_fechaVencimiento!.year}',
+                      ),
               ),
               trailing: TextButton(
                 onPressed: () => _seleccionarFecha(esVencimiento: true),
-                child: const Text('Elegir'),
+                child: Text(l10n.accionElegir),
               ),
             ),
             if (_fechaVencimiento != null)
               SwitchListTile(
                 contentPadding: EdgeInsets.zero,
-                title: const Text('Recordatorio de vencimiento'),
-                subtitle: const Text(
-                  'Por ahora solo queda guardado como dato, todavía no '
-                  'envía una notificación.',
-                ),
+                title: Text(l10n.recordatorioVencimientoLabel),
+                subtitle: Text(l10n.recordatorioVencimientoAviso),
                 value: _recordatorioVencimiento,
                 onChanged: (valor) =>
                     setState(() => _recordatorioVencimiento = valor),
@@ -294,11 +304,11 @@ class _FormularioDocumentoScreenState
             const SizedBox(height: 16),
             TextFormField(
               controller: _notasController,
-              decoration: const InputDecoration(labelText: 'Notas'),
+              decoration: InputDecoration(labelText: l10n.campoNotas),
               maxLines: 3,
             ),
             const SizedBox(height: 32),
-            ElevatedButton(onPressed: _guardar, child: const Text('Guardar')),
+            ElevatedButton(onPressed: _guardar, child: Text(l10n.accionGuardar)),
           ],
         ),
       ),

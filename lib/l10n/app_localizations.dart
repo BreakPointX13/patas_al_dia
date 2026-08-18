@@ -658,6 +658,12 @@ abstract class AppLocalizations {
   /// **'Examen'**
   String get tipoEventoExamen;
 
+  /// No description provided for @tipoDocumentoCarnetVacunacion.
+  ///
+  /// In es, this message translates to:
+  /// **'Carnet de vacunación'**
+  String get tipoDocumentoCarnetVacunacion;
+
   /// No description provided for @tipoDocumentoReceta.
   ///
   /// In es, this message translates to:
@@ -1167,6 +1173,138 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Selecciona fecha y hora'**
   String get errorFechaYHora;
+
+  /// No description provided for @agregarDocumentoLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Agregar documento'**
+  String get agregarDocumentoLabel;
+
+  /// No description provided for @editarDocumentoLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Editar documento'**
+  String get editarDocumentoLabel;
+
+  /// No description provided for @sinArchivoElegido.
+  ///
+  /// In es, this message translates to:
+  /// **'Sin archivo elegido'**
+  String get sinArchivoElegido;
+
+  /// No description provided for @archivoElegido.
+  ///
+  /// In es, this message translates to:
+  /// **'Archivo elegido'**
+  String get archivoElegido;
+
+  /// No description provided for @accionCambiar.
+  ///
+  /// In es, this message translates to:
+  /// **'Cambiar'**
+  String get accionCambiar;
+
+  /// No description provided for @fechaEmisionNoEspecificada.
+  ///
+  /// In es, this message translates to:
+  /// **'Fecha de emisión no especificada'**
+  String get fechaEmisionNoEspecificada;
+
+  /// No description provided for @fechaEmitidaConValor.
+  ///
+  /// In es, this message translates to:
+  /// **'Emitido: {fecha}'**
+  String fechaEmitidaConValor(Object fecha);
+
+  /// No description provided for @fechaVencimientoOpcional.
+  ///
+  /// In es, this message translates to:
+  /// **'Fecha de vencimiento (opcional)'**
+  String get fechaVencimientoOpcional;
+
+  /// No description provided for @fechaVenceConValor.
+  ///
+  /// In es, this message translates to:
+  /// **'Vence: {fecha}'**
+  String fechaVenceConValor(Object fecha);
+
+  /// No description provided for @recordatorioVencimientoLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Recordatorio de vencimiento'**
+  String get recordatorioVencimientoLabel;
+
+  /// No description provided for @recordatorioVencimientoAviso.
+  ///
+  /// In es, this message translates to:
+  /// **'Por ahora solo queda guardado como dato, todavía no envía una notificación.'**
+  String get recordatorioVencimientoAviso;
+
+  /// No description provided for @campoNotas.
+  ///
+  /// In es, this message translates to:
+  /// **'Notas'**
+  String get campoNotas;
+
+  /// No description provided for @eligeFotoOPdf.
+  ///
+  /// In es, this message translates to:
+  /// **'Elige una foto o un PDF'**
+  String get eligeFotoOPdf;
+
+  /// No description provided for @eliminarDocumentoTitulo.
+  ///
+  /// In es, this message translates to:
+  /// **'Eliminar documento'**
+  String get eliminarDocumentoTitulo;
+
+  /// No description provided for @eliminarDocumentoContenido.
+  ///
+  /// In es, this message translates to:
+  /// **'¿Eliminar \"{titulo}\"?'**
+  String eliminarDocumentoContenido(Object titulo);
+
+  /// No description provided for @fechaEmisionLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Fecha de emisión'**
+  String get fechaEmisionLabel;
+
+  /// No description provided for @fechaVencimientoLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Fecha de vencimiento'**
+  String get fechaVencimientoLabel;
+
+  /// No description provided for @conRecordatorioSufijo.
+  ///
+  /// In es, this message translates to:
+  /// **' (con recordatorio)'**
+  String get conRecordatorioSufijo;
+
+  /// No description provided for @sinNotas.
+  ///
+  /// In es, this message translates to:
+  /// **'Sin notas'**
+  String get sinNotas;
+
+  /// No description provided for @vinculadoAlEventoLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Vinculado al evento'**
+  String get vinculadoAlEventoLabel;
+
+  /// No description provided for @abrirDocumentoLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Abrir documento'**
+  String get abrirDocumentoLabel;
+
+  /// No description provided for @verPantallaCompletaLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Ver a pantalla completa'**
+  String get verPantallaCompletaLabel;
 }
 
 class _AppLocalizationsDelegate

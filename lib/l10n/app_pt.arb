@@ -106,6 +106,7 @@
   "tipoEventoControl": "Consulta",
   "tipoEventoExamen": "Exame",
 
+  "tipoDocumentoCarnetVacunacion": "Carteira de vacinação",
   "tipoDocumentoReceta": "Receita",
   "tipoDocumentoExamen": "Resultado de exame",
   "tipoDocumentoCertificado": "Certificado",
@@ -195,5 +196,28 @@
   "elegirImagenGaleria": "Escolher imagem da galeria",
   "elegirPdf": "Escolher PDF",
   "seleccionaMascotaPrimero": "Selecione um pet primeiro",
-  "errorFechaYHora": "Selecione data e hora"
+  "errorFechaYHora": "Selecione data e hora",
+
+  "agregarDocumentoLabel": "Adicionar documento",
+  "editarDocumentoLabel": "Editar documento",
+  "sinArchivoElegido": "Nenhum arquivo selecionado",
+  "archivoElegido": "Arquivo selecionado",
+  "accionCambiar": "Trocar",
+  "fechaEmisionNoEspecificada": "Data de emissão não especificada",
+  "fechaEmitidaConValor": "Emitido em: {fecha}",
+  "fechaVencimientoOpcional": "Data de validade (opcional)",
+  "fechaVenceConValor": "Válido até: {fecha}",
+  "recordatorioVencimientoLabel": "Lembrete de vencimento",
+  "recordatorioVencimientoAviso": "Por enquanto isso só fica salvo como informação, ainda não envia uma notificação.",
+  "campoNotas": "Notas",
+  "eligeFotoOPdf": "Escolha uma foto ou um PDF",
+  "eliminarDocumentoTitulo": "Excluir documento",
+  "eliminarDocumentoContenido": "Excluir \"{titulo}\"?",
+  "fechaEmisionLabel": "Data de emissão",
+  "fechaVencimientoLabel": "Data de validade",
+  "conRecordatorioSufijo": " (com lembrete)",
+  "sinNotas": "Sem notas",
+  "vinculadoAlEventoLabel": "Vinculado ao evento",
+  "abrirDocumentoLabel": "Abrir documento",
+  "verPantallaCompletaLabel": "Ver em tela cheia"
 }

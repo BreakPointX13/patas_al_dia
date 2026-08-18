@@ -62,6 +62,7 @@ String tipoEventoMostrar(AppLocalizations l10n, String? tipoEvento) {
 /// adjuntos a un evento de agenda como en la sección Documentos).
 String tipoDocumentoMostrar(AppLocalizations l10n, String? tipoDocumento) {
   final etiquetas = {
+    'Carnet de vacunación': l10n.tipoDocumentoCarnetVacunacion,
     'Receta': l10n.tipoDocumentoReceta,
     'Examen': l10n.tipoDocumentoExamen,
     'Certificado': l10n.tipoDocumentoCertificado,

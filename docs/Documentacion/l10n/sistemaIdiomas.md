@@ -102,8 +102,9 @@ A diferencia de `_etiquetasTema`/`_etiquetasEscalaTexto` (que sí se traducen se
 
 - **Pasada 1 (Mascotas):** Login, navbar, `HomeScreen`, `FormularioMascotaScreen`, `DetalleMascotaScreen`, `CredencialMascotaScreen`, `MenuUsuarioAvatar`, `AjustesScreen` completo (incluido el selector de idioma en sí).
 - **Pasada 2 (Agenda):** `AgendaScreen`, `DetalleAgendaEventoScreen`, `FormularioAgendaEventoScreen` — ver punto 7 para los detalles específicos de este módulo (tipos de evento/documento/presentación, fechas con locale dinámico).
+- **Pasada 3 (Documentos):** `DocumentosScreen`, `FormularioDocumentoScreen`, `DetalleDocumentoScreen` — mismo mecanismo, sin particularidades nuevas más allá de un tipo de documento extra (`tipoDocumentoCarnetVacunacion`, ver `etiquetasLocalizadas.md`, punto 4) que no existía en la versión reducida de Agenda.
 
-Documentos (la pantalla general, fuera del contexto de un evento) y el resto quedan para las siguientes pasadas — hasta que se traduzcan, esas pantallas siguen mostrando su texto en español fijo sin importar el idioma elegido.
+Con esta pasada quedan traducidas todas las pantallas del core (Mascotas, Agenda, Documentos). Pantallas nuevas que se agreguen a futuro (ej. Mascotas extraviadas, v2) deben seguir el mismo patrón desde el principio.
 
 ### 7. Particularidades del módulo Agenda
 

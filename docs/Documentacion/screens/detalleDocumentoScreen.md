@@ -36,3 +36,7 @@ Si el documento viene de un evento de agenda (`eventoId != null`), se busca el e
 ### 2. Guarda contra documento inexistente
 
 Mismo patrón que `DetalleAgendaEventoScreen`/`DetalleMascotaScreen` (ver `decisiones_arquitectura.md`, entrada del 2026-08-15): si el documento ya no está en `documentosProvider` (se borró, o se cerró sesión mientras la pantalla seguía abierta), se vuelve atrás en vez de crashear con un `firstWhere` sin red de seguridad.
+
+### 3. Traducido (2026-08-18, pasada de Documentos)
+
+Todo el texto pasa a `AppLocalizations`, incluido el tipo de documento (vía `tipoDocumentoMostrar`). El botón de eliminar sigue en el `AppBar` (tooltip + diálogo de confirmación traducidos) — no se movió al patrón de `ListTile` rojo que ya usan `DetalleAgendaEventoScreen`/`DetalleMascotaScreen`, por quedar fuera del alcance de esta pasada (era una traducción, no un rediseño).

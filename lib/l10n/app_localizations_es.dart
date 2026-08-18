@@ -301,6 +301,9 @@ class AppLocalizationsEs extends AppLocalizations {
   String get tipoEventoExamen => 'Examen';
 
   @override
+  String get tipoDocumentoCarnetVacunacion => 'Carnet de vacunación';
+
+  @override
   String get tipoDocumentoReceta => 'Receta';
 
   @override
@@ -566,4 +569,77 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get errorFechaYHora => 'Selecciona fecha y hora';
+
+  @override
+  String get agregarDocumentoLabel => 'Agregar documento';
+
+  @override
+  String get editarDocumentoLabel => 'Editar documento';
+
+  @override
+  String get sinArchivoElegido => 'Sin archivo elegido';
+
+  @override
+  String get archivoElegido => 'Archivo elegido';
+
+  @override
+  String get accionCambiar => 'Cambiar';
+
+  @override
+  String get fechaEmisionNoEspecificada => 'Fecha de emisión no especificada';
+
+  @override
+  String fechaEmitidaConValor(Object fecha) {
+    return 'Emitido: $fecha';
+  }
+
+  @override
+  String get fechaVencimientoOpcional => 'Fecha de vencimiento (opcional)';
+
+  @override
+  String fechaVenceConValor(Object fecha) {
+    return 'Vence: $fecha';
+  }
+
+  @override
+  String get recordatorioVencimientoLabel => 'Recordatorio de vencimiento';
+
+  @override
+  String get recordatorioVencimientoAviso =>
+      'Por ahora solo queda guardado como dato, todavía no envía una notificación.';
+
+  @override
+  String get campoNotas => 'Notas';
+
+  @override
+  String get eligeFotoOPdf => 'Elige una foto o un PDF';
+
+  @override
+  String get eliminarDocumentoTitulo => 'Eliminar documento';
+
+  @override
+  String eliminarDocumentoContenido(Object titulo) {
+    return '¿Eliminar \"$titulo\"?';
+  }
+
+  @override
+  String get fechaEmisionLabel => 'Fecha de emisión';
+
+  @override
+  String get fechaVencimientoLabel => 'Fecha de vencimiento';
+
+  @override
+  String get conRecordatorioSufijo => ' (con recordatorio)';
+
+  @override
+  String get sinNotas => 'Sin notas';
+
+  @override
+  String get vinculadoAlEventoLabel => 'Vinculado al evento';
+
+  @override
+  String get abrirDocumentoLabel => 'Abrir documento';
+
+  @override
+  String get verPantallaCompletaLabel => 'Ver a pantalla completa';
 }

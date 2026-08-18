@@ -3,8 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:open_filex/open_filex.dart';
 import 'package:patas_al_dia/data/models/documento_model.dart';
+import 'package:patas_al_dia/l10n/app_localizations.dart';
 import 'package:patas_al_dia/presentation/screens/formulario_documento_screen.dart';
 import 'package:patas_al_dia/presentation/screens/visor_imagen_screen.dart';
+import 'package:patas_al_dia/presentation/utils/etiquetas_localizadas.dart';
 import 'package:patas_al_dia/providers/agenda_evento_provider.dart';
 import 'package:patas_al_dia/providers/documento_provider.dart';
 
@@ -67,19 +69,20 @@ class _DetalleDocumentoScreenState
   }
 
   Future<void> _eliminarDocumento(DocumentoModel documento) async {
+    final l10n = AppLocalizations.of(context);
     final confirmar = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Eliminar documento'),
-        content: Text('¿Eliminar "${documento.titulo}"?'),
+        title: Text(l10n.eliminarDocumentoTitulo),
+        content: Text(l10n.eliminarDocumentoContenido(documento.titulo)),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Cancelar'),
+            child: Text(l10n.accionCancelar),
           ),
           ElevatedButton(
             onPressed: () => Navigator.of(context).pop(true),
-            child: const Text('Eliminar'),
+            child: Text(l10n.accionEliminar),
           ),
         ],
       ),
@@ -114,6 +117,7 @@ class _DetalleDocumentoScreenState
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
     final documento = documentoEncontrado;
+    final l10n = AppLocalizations.of(context);
 
     return Scaffold(
       appBar: AppBar(
@@ -121,7 +125,7 @@ class _DetalleDocumentoScreenState
         actions: [
           IconButton(
             icon: const Icon(Icons.delete_outline),
-            tooltip: 'Eliminar documento',
+            tooltip: l10n.eliminarDocumentoTitulo,
             onPressed: () => _eliminarDocumento(documento),
           ),
         ],
@@ -154,40 +158,40 @@ class _DetalleDocumentoScreenState
               ),
             ),
           ListTile(
-            title: const Text('Tipo'),
+            title: Text(l10n.campoTipo),
             subtitle: Text(
               documento.tipoDocumento == 'Otro' &&
                       documento.tipoDocumentoPersonalizado != null
                   ? documento.tipoDocumentoPersonalizado!
-                  : documento.tipoDocumento,
+                  : tipoDocumentoMostrar(l10n, documento.tipoDocumento),
             ),
           ),
           ListTile(
-            title: const Text('Fecha de emisión'),
+            title: Text(l10n.fechaEmisionLabel),
             subtitle: Text(
               documento.fechaEmision == null
-                  ? 'No especificada'
+                  ? l10n.noEspecificada
                   : '${documento.fechaEmision!.day}/'
                         '${documento.fechaEmision!.month}/${documento.fechaEmision!.year}',
             ),
           ),
           ListTile(
-            title: const Text('Fecha de vencimiento'),
+            title: Text(l10n.fechaVencimientoLabel),
             subtitle: Text(
               documento.fechaVencimiento == null
-                  ? 'No especificada'
+                  ? l10n.noEspecificada
                   : '${documento.fechaVencimiento!.day}/'
                         '${documento.fechaVencimiento!.month}/${documento.fechaVencimiento!.year}'
-                        '${documento.recordatorioVencimiento ? ' (con recordatorio)' : ''}',
+                        '${documento.recordatorioVencimiento ? l10n.conRecordatorioSufijo : ''}',
             ),
           ),
           ListTile(
-            title: const Text('Notas'),
-            subtitle: Text(documento.notasAsociadas ?? 'Sin notas'),
+            title: Text(l10n.campoNotas),
+            subtitle: Text(documento.notasAsociadas ?? l10n.sinNotas),
           ),
           if (_tituloEventoVinculado != null)
             ListTile(
-              title: const Text('Vinculado al evento'),
+              title: Text(l10n.vinculadoAlEventoLabel),
               subtitle: Text(_tituloEventoVinculado!),
             ),
           const Divider(height: 32),
@@ -199,15 +203,15 @@ class _DetalleDocumentoScreenState
             ),
             title: Text(
               documento.fileExtension == 'pdf'
-                  ? 'Abrir documento'
-                  : 'Ver a pantalla completa',
+                  ? l10n.abrirDocumentoLabel
+                  : l10n.verPantallaCompletaLabel,
             ),
             trailing: const Icon(Icons.chevron_right),
             onTap: () => _abrirArchivo(documento),
           ),
           ListTile(
             leading: const Icon(Icons.edit),
-            title: const Text('Editar documento'),
+            title: Text(l10n.editarDocumentoLabel),
             trailing: const Icon(Icons.chevron_right),
             onTap: () {
               Navigator.of(context).push(

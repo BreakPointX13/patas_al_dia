@@ -37,3 +37,18 @@ Si el documento se adjuntó desde un evento de agenda (`eventoId != null`), apar
 ### 2. Botón flotante centrado
 
 Mismo patrón que `AgendaScreen`/`HomeScreen` (ver `decisiones_arquitectura.md`, entrada del 2026-08-12): `FloatingActionButton.extended` con ícono + texto, centrado abajo.
+
+### 3. Traducido (2026-08-18, pasada de Documentos)
+
+Título de AppBar, estado vacío y el tipo mostrado en cada fila (vía `tipoDocumentoMostrar`) pasan a `AppLocalizations` — cierra la pasada de i18n de Agenda/Documentos (ver `sistemaIdiomas.md`, punto 6).
+
+### 4. Agrupado por tipo, con `SeparadorSeccionFicha` (2026-08-18)
+
+```dart
+for (final tipo in tiposDocumentoDisponibles)
+  ..._seccionTipo(context, l10n, tipo, documentos.where((d) => d.tipoDocumento == tipo).toList()),
+```
+
+La lista ya no es plana — se agrupa por `tipoDocumento`, en el mismo orden fijo de `tiposDocumentoDisponibles` (la constante que antes era privada de `FormularioDocumentoScreen`, ver `formularioDocumentoScreen.md`, punto 5). `_seccionTipo` arma, por cada tipo con al menos un documento, un separador (`SeparadorSeccionFicha`, ver `separadorSeccionFicha.md`, punto 4) seguido de sus tarjetas; los tipos sin documentos no generan sección (`if (documentosDelTipo.isEmpty) return const []`). Mismo mecanismo visual que ya usan `FormularioMascotaScreen`/`DetalleMascotaScreen`, pedido explícitamente por el usuario para "ordenar por tipo de documento y facilitar la vista".
+
+**Ícono + texto, no solo ícono:** a diferencia de las tres secciones fijas de Mascota (que no llevan texto, el usuario ya sabe de memoria qué sección es cada una), acá las secciones son dinámicas — cambian según qué documentos existan — así que se agregó el nombre del tipo al lado del ícono, decisión consultada explícitamente con el usuario. El ícono (`_iconoTipoDocumento`, un `Icons.xxx` de Material por tipo — no hay SVG a medida para esto) queda fijo entre modo claro/oscuro igual que el resto de `SeparadorSeccionFicha`; el texto sí necesita variante oscura (`_colorTextoSeparador`, mismo patrón que `_colorTextoSobreFondo` de `agenda_screen.dart`) porque va directo sobre el fondo de la pantalla, sin tarjeta clara detrás.

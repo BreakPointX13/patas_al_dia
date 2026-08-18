@@ -119,6 +119,7 @@
   "tipoEventoControl": "Control",
   "tipoEventoExamen": "Examen",
 
+  "tipoDocumentoCarnetVacunacion": "Carnet de vacunación",
   "tipoDocumentoReceta": "Receta",
   "tipoDocumentoExamen": "Examen",
   "tipoDocumentoCertificado": "Certificado",
@@ -223,5 +224,37 @@
   "elegirImagenGaleria": "Elegir imagen de galería",
   "elegirPdf": "Elegir PDF",
   "seleccionaMascotaPrimero": "Selecciona una mascota primero",
-  "errorFechaYHora": "Selecciona fecha y hora"
+  "errorFechaYHora": "Selecciona fecha y hora",
+
+  "agregarDocumentoLabel": "Agregar documento",
+  "editarDocumentoLabel": "Editar documento",
+  "sinArchivoElegido": "Sin archivo elegido",
+  "archivoElegido": "Archivo elegido",
+  "accionCambiar": "Cambiar",
+  "fechaEmisionNoEspecificada": "Fecha de emisión no especificada",
+  "fechaEmitidaConValor": "Emitido: {fecha}",
+  "@fechaEmitidaConValor": {
+    "placeholders": { "fecha": {} }
+  },
+  "fechaVencimientoOpcional": "Fecha de vencimiento (opcional)",
+  "fechaVenceConValor": "Vence: {fecha}",
+  "@fechaVenceConValor": {
+    "placeholders": { "fecha": {} }
+  },
+  "recordatorioVencimientoLabel": "Recordatorio de vencimiento",
+  "recordatorioVencimientoAviso": "Por ahora solo queda guardado como dato, todavía no envía una notificación.",
+  "campoNotas": "Notas",
+  "eligeFotoOPdf": "Elige una foto o un PDF",
+  "eliminarDocumentoTitulo": "Eliminar documento",
+  "eliminarDocumentoContenido": "¿Eliminar \"{titulo}\"?",
+  "@eliminarDocumentoContenido": {
+    "placeholders": { "titulo": {} }
+  },
+  "fechaEmisionLabel": "Fecha de emisión",
+  "fechaVencimientoLabel": "Fecha de vencimiento",
+  "conRecordatorioSufijo": " (con recordatorio)",
+  "sinNotas": "Sin notas",
+  "vinculadoAlEventoLabel": "Vinculado al evento",
+  "abrirDocumentoLabel": "Abrir documento",
+  "verPantallaCompletaLabel": "Ver a pantalla completa"
 }

@@ -106,6 +106,7 @@
   "tipoEventoControl": "Check-up",
   "tipoEventoExamen": "Exam",
 
+  "tipoDocumentoCarnetVacunacion": "Vaccination record",
   "tipoDocumentoReceta": "Prescription",
   "tipoDocumentoExamen": "Test result",
   "tipoDocumentoCertificado": "Certificate",
@@ -195,5 +196,28 @@
   "elegirImagenGaleria": "Choose image from gallery",
   "elegirPdf": "Choose PDF",
   "seleccionaMascotaPrimero": "Select a pet first",
-  "errorFechaYHora": "Select a date and time"
+  "errorFechaYHora": "Select a date and time",
+
+  "agregarDocumentoLabel": "Add document",
+  "editarDocumentoLabel": "Edit document",
+  "sinArchivoElegido": "No file chosen",
+  "archivoElegido": "File chosen",
+  "accionCambiar": "Change",
+  "fechaEmisionNoEspecificada": "Issue date not specified",
+  "fechaEmitidaConValor": "Issued: {fecha}",
+  "fechaVencimientoOpcional": "Expiration date (optional)",
+  "fechaVenceConValor": "Expires: {fecha}",
+  "recordatorioVencimientoLabel": "Expiration reminder",
+  "recordatorioVencimientoAviso": "For now this is just saved as a note, it doesn't send a notification yet.",
+  "campoNotas": "Notes",
+  "eligeFotoOPdf": "Choose a photo or a PDF",
+  "eliminarDocumentoTitulo": "Delete document",
+  "eliminarDocumentoContenido": "Delete \"{titulo}\"?",
+  "fechaEmisionLabel": "Issue date",
+  "fechaVencimientoLabel": "Expiration date",
+  "conRecordatorioSufijo": " (with reminder)",
+  "sinNotas": "No notes",
+  "vinculadoAlEventoLabel": "Linked to event",
+  "abrirDocumentoLabel": "Open document",
+  "verPantallaCompletaLabel": "View full screen"
 }

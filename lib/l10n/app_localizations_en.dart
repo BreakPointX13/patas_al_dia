@@ -299,6 +299,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get tipoEventoExamen => 'Exam';
 
   @override
+  String get tipoDocumentoCarnetVacunacion => 'Vaccination record';
+
+  @override
   String get tipoDocumentoReceta => 'Prescription';
 
   @override
@@ -564,4 +567,77 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get errorFechaYHora => 'Select a date and time';
+
+  @override
+  String get agregarDocumentoLabel => 'Add document';
+
+  @override
+  String get editarDocumentoLabel => 'Edit document';
+
+  @override
+  String get sinArchivoElegido => 'No file chosen';
+
+  @override
+  String get archivoElegido => 'File chosen';
+
+  @override
+  String get accionCambiar => 'Change';
+
+  @override
+  String get fechaEmisionNoEspecificada => 'Issue date not specified';
+
+  @override
+  String fechaEmitidaConValor(Object fecha) {
+    return 'Issued: $fecha';
+  }
+
+  @override
+  String get fechaVencimientoOpcional => 'Expiration date (optional)';
+
+  @override
+  String fechaVenceConValor(Object fecha) {
+    return 'Expires: $fecha';
+  }
+
+  @override
+  String get recordatorioVencimientoLabel => 'Expiration reminder';
+
+  @override
+  String get recordatorioVencimientoAviso =>
+      'For now this is just saved as a note, it doesn\'t send a notification yet.';
+
+  @override
+  String get campoNotas => 'Notes';
+
+  @override
+  String get eligeFotoOPdf => 'Choose a photo or a PDF';
+
+  @override
+  String get eliminarDocumentoTitulo => 'Delete document';
+
+  @override
+  String eliminarDocumentoContenido(Object titulo) {
+    return 'Delete \"$titulo\"?';
+  }
+
+  @override
+  String get fechaEmisionLabel => 'Issue date';
+
+  @override
+  String get fechaVencimientoLabel => 'Expiration date';
+
+  @override
+  String get conRecordatorioSufijo => ' (with reminder)';
+
+  @override
+  String get sinNotas => 'No notes';
+
+  @override
+  String get vinculadoAlEventoLabel => 'Linked to event';
+
+  @override
+  String get abrirDocumentoLabel => 'Open document';
+
+  @override
+  String get verPantallaCompletaLabel => 'View full screen';
 }
