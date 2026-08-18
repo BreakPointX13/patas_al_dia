@@ -19,7 +19,7 @@ const _iconosTema = [Icons.brightness_auto, Icons.light_mode, Icons.dark_mode];
 // el idioma activo) — así el usuario siempre reconoce su idioma, aunque no
 // entienda el que esté puesto en ese momento.
 const _idiomas = ['sistema', 'es', 'en', 'pt'];
-const _etiquetasIdioma = ['Sistema', 'Español', 'English', 'Português'];
+const _etiquetasIdioma = ['Sistema', 'ES', 'EN', 'PT'];
 const _iconosIdioma = [
   Icons.brightness_auto,
   Icons.language,

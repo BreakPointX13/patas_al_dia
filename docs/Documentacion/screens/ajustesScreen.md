@@ -122,13 +122,15 @@ Segunda pieza del pedido de accesibilidad del usuario (modo oscuro, tamaño de l
 - **`'sistema'` como valor por defecto, no `'claro'`:** decisión explícita del usuario — la preferencia se guarda en el usuario (igual que `escalaTexto`), pero por defecto la app debe seguir lo que diga el sistema operativo, no forzar claro. Ver cómo se traduce a `ThemeMode` en `main.dart` (`'claro'` → `ThemeMode.light`, `'oscuro'` → `ThemeMode.dark`, cualquier otro valor incluido `'sistema'` → `ThemeMode.system`).
 - **Colores de la app en modo oscuro:** ver `temaApp.md` para el detalle completo — en resumen, toda la paleta de acento (Naranja, Naranja marca, Durazno, Amarillo cálido) se mantiene igual en los dos modos; solo cambia el fondo del `Scaffold` (Crema → gris oscuro cálido) y el "café texto" que aparece directo sobre ese fondo (sin tarjeta detrás), que se invierte a un tono claro para seguir siendo legible.
 
-### 6. "Idioma" — Sistema / Español / English / Português (2026-08-18)
+### 6. "Idioma" — Sistema / ES / EN / PT (2026-08-18)
 
 ```dart
 const _idiomas = ['sistema', 'es', 'en', 'pt'];
-const _etiquetasIdioma = ['Sistema', 'Español', 'English', 'Português'];
+const _etiquetasIdioma = ['Sistema', 'ES', 'EN', 'PT'];
 ```
 
 Tercera pieza del pedido de accesibilidad del usuario, ver `sistemaIdiomas.md` para el sistema completo (`.arb`, `AppLocalizations`, etc.) — acá solo el control en sí, mismo patrón que "Tema" (`SegmentedButton<String>`, `'sistema'` por defecto).
 
-**Diferencia clave con "Tema":** las etiquetas de "Tema" (`temaSistema`/`temaClaro`/`temaOscuro`) SÍ salen de `AppLocalizations` y cambian según el idioma activo. Las de "Idioma" (`_etiquetasIdioma`) son una constante fija en código, **no** traducida — cada opción se muestra siempre en su propio idioma nativo ("Español", "English", "Português"), para que el usuario reconozca su idioma sin importar cuál esté puesto en ese momento. Traducir el nombre de un idioma según el idioma activo sería contraproducente: alguien que puso la app en portugués sin querer necesita poder encontrar "Español" en la lista, no "Espanhol".
+**Diferencia clave con "Tema":** las etiquetas de "Tema" (`temaSistema`/`temaClaro`/`temaOscuro`) SÍ salen de `AppLocalizations` y cambian según el idioma activo. Las de "Idioma" (`_etiquetasIdioma`) son una constante fija en código, **no** traducida — cada opción se muestra siempre en su propio idioma nativo, para que el usuario reconozca su idioma sin importar cuál esté puesto en ese momento. Traducir el nombre de un idioma según el idioma activo sería contraproducente: alguien que puso la app en portugués sin querer necesita poder encontrar la opción de español en la lista, no una versión traducida al portugués.
+
+**De nombre completo a sigla (2026-08-18):** con el tamaño de letra en "Normal" o "Grande", los cuatro segmentos (`Sistema`/`Español`/`English`/`Português`) no entraban en una sola línea dentro del `SegmentedButton` y el texto se cortaba a una segunda línea, deformando el control. Se acortaron los tres idiomas a su sigla de dos letras (`ES`/`EN`/`PT`) — "Sistema" queda igual, no era la palabra que desbordaba. Se descartó usar banderas de países (alternativa que el usuario propuso): una bandera representa un país, no un idioma, y el portugués en particular no tiene una bandera única sin ambigüedad (Brasil vs. Portugal) — las siglas evitan esa confusión y son un estándar ya reconocido (mismo criterio que usan selectores de idioma de sistemas operativos y navegadores).
