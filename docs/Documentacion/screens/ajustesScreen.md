@@ -8,7 +8,7 @@ Se accede desde `MenuUsuarioAvatar` (ver `menuUsuarioAvatar.md`), presente en el
 
 ## 🎯 Propósito del Archivo
 
-Pantalla de ajustes de la app. Tiene dos opciones: "Aportes voluntarios" (2026-08-17, ver punto 3) y "Cerrar sesión"; es el lugar natural donde agregar más adelante otras preferencias (notificaciones, cuenta, etc.) sin volver a tocar `HomeScreen`.
+Pantalla de ajustes de la app. Tiene tres opciones: "Tamaño de letra" (2026-08-18, ver punto 4), "Aportes voluntarios" (2026-08-17, ver punto 3) y "Cerrar sesión"; es el lugar natural donde agregar más adelante otras preferencias (notificaciones, cuenta, etc.) sin volver a tocar `HomeScreen`.
 
 ---
 
@@ -73,3 +73,30 @@ Future<void> _abrirKoFi(BuildContext context) async {
 - **`launchUrl` devuelve `bool`, no lanza excepción si falla:** a diferencia de otras integraciones (`OpenFilex.open`, por ejemplo), acá se chequea el resultado y se muestra un `SnackBar` de error si no se pudo abrir (ej. sin navegador disponible) — sin este chequeo, un fallo pasaría completamente desapercibido, sin ningún feedback al usuario.
 - **`android:queries` en `AndroidManifest.xml`:** Android 11+ restringe qué paquetes puede "ver" una app por defecto (*package visibility*). Sin declarar `<intent><action android:name="android.intent.action.VIEW"/><data android:scheme="https"/></intent>` dentro de `<queries>`, `launchUrl` puede fallar en dispositivos con Android 11+ aunque el navegador esté instalado — no es un requisito específico de este proyecto, es el comportamiento documentado del propio paquete `url_launcher`.
 - **Ubicación discreta, dentro de `AjustesScreen`:** decisión explícita del usuario — no un ítem en el menú desplegable del perfil (`MenuUsuarioAvatar`), que se mantiene con una sola opción ("Ajustes"), sino un `ListTile` más dentro de la pantalla de ajustes, dos pasos de distancia en vez de estar a la vista todo el tiempo.
+
+### 4. "Tamaño de letra" — primer paso de accesibilidad (2026-08-18)
+
+```dart
+const _escalasTexto = [0.85, 1.0, 1.2];
+const _etiquetasEscalaTexto = ['Pequeño', 'Normal', 'Grande'];
+
+final escalaActual = ref.watch(usuarioProvider)?.escalaTexto ?? 1.0;
+var indiceActual = _escalasTexto.indexOf(escalaActual);
+if (indiceActual == -1) indiceActual = 1;
+
+Slider(
+  value: indiceActual.toDouble(),
+  min: 0, max: 2, divisions: 2,
+  label: _etiquetasEscalaTexto[indiceActual],
+  onChanged: (valor) => ref.read(usuarioProvider.notifier).actualizarEscalaTexto(_escalasTexto[valor.round()]),
+)
+```
+
+Primera pieza de un pedido más grande del usuario sobre accesibilidad (modo oscuro, tamaño de letra e idiomas — ver `decisiones_arquitectura.md`, entrada del 2026-08-18). Se empezó por tamaño de letra por ser, de las tres, la más chica y la de mayor impacto real de accesibilidad.
+
+- **Solo texto, no toda la UI:** deliberadamente escala únicamente las fuentes (vía `MediaQuery.textScaler`, ver más abajo), no íconos/paddings/tamaños de tarjetas. Es el mismo criterio que usan los ajustes de tamaño de letra del sistema operativo (Android/iOS) o apps como Gmail/WhatsApp — más robusto que intentar escalar "todo" a mano multiplicando decenas de valores fijos por archivo, que además rompería layouts con más facilidad.
+- **3 pasos fijos, no un slider continuo:** decisión explícita del usuario. `_escalasTexto`/`_etiquetasEscalaTexto` son dos listas paralelas (índice 0 = "Pequeño"/0.85, etc.) — el `Slider` en sí no conoce las etiquetas ni los valores reales, solo mueve un índice entre 0 y 2 (`divisions: 2` lo fuerza a saltar en pasos enteros, sin valores intermedios).
+- **`indexOf` con salvaguarda a "Normal" (índice 1):** si `escalaTexto` guardada no calza con ninguno de los 3 valores exactos de `_escalasTexto` (no debería pasar en uso normal, pero es una salvaguarda barata), el slider no se rompe — cae a "Normal" en vez de a `indexOf` devolviendo `-1` y crashear al indexar `_etiquetasEscalaTexto[-1]`.
+- **`escalaTexto` vive en `UsuarioModel`, no en un paquete de preferencias nuevo** (`shared_preferences` u otro): se guarda junto al resto de los datos del usuario en SQLite, con el mismo comportamiento que "sesión activa" — es una preferencia atada al usuario invitado actual, que se pierde si se desinstala la app (igual que todos sus demás datos), decisión explícita del usuario para no sumar una dependencia nueva. Ver `usuario.model.md` y `usuarioNotifier.md`.
+- **Aplicado una sola vez, en `main.dart`, no pantalla por pantalla:** `MyApp` pasó de `StatelessWidget` a `ConsumerWidget`, y el `builder` de `MaterialApp` envuelve el árbol completo en un `MediaQuery` con `textScaler: TextScaler.linear(escalaTexto)` leído de `usuarioProvider`. Como todas las pantallas de la app cuelgan de ese mismo árbol, el cambio de tamaño de letra se aplica a toda la app de una sola vez — no hace falta tocar cada `Text` ni cada pantalla individualmente. Si `usuarioProvider` todavía es `null` (por ejemplo, mientras `SesionInicialScreen` está cargando al usuario), se usa `1.0` como valor por defecto.
+- **Pendiente de revisión:** pantallas con alturas fijas o layouts ajustados (por ejemplo `CredencialMascotaScreen`) podrían verse mal con el tamaño "Grande" — no se auditó cada pantalla todavía, queda como tarea de revisión visual pantalla por pantalla, tal como se conversó con el usuario antes de implementar.

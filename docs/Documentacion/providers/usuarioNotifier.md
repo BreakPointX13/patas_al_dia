@@ -96,3 +96,16 @@ El más particular de los cuatro:
 - **Retorno temprano (`if (state == null) return;`)** — evita intentar borrar algo que no existe.
 - **El operador `!` en `state!.id`** — le dice a Dart "en este punto estoy seguro de que `state` no es `null`" (porque el `if` de arriba ya lo garantizó). Es distinto de `!=` (desigualdad): acá el `!` va *después* de una variable para "desenvolverla" de su nulabilidad, no antes de una expresión para negarla.
 - **Orden importa:** `state = null;` va al final, después de usar `state!.id` — si se pusiera antes, `state!.id` fallaría en tiempo de ejecución porque ya no habría nada que desenvolver.
+
+### 5. `actualizarEscalaTexto(double escalaTexto)` (2026-08-18)
+
+```dart
+Future<void> actualizarEscalaTexto(double escalaTexto) async {
+  if (state == null) {
+    return;
+  }
+  await actualizarUsuario(state!.copyWith(escalaTexto: escalaTexto));
+}
+```
+
+Método de conveniencia sobre `actualizarUsuario` — en vez de que cada pantalla que necesite cambiar el tamaño de letra tenga que escribir `ref.read(usuarioProvider.notifier).actualizarUsuario(usuario.copyWith(escalaTexto: ...))` a mano (y acordarse de manejar el caso `state == null`), esto lo encapsula en un solo método con un nombre que dice qué hace. Ver el uso en `ajustesScreen.md` y cómo se aplica globalmente en `main.dart`.

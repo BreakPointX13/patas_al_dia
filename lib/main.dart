@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:patas_al_dia/presentation/screens/sesion_inicial_screen.dart';
+import 'package:patas_al_dia/providers/usuario_provider.dart';
 import 'package:patas_al_dia/services/notificacion_service.dart';
 
 void main() async {
@@ -11,12 +12,21 @@ void main() async {
   runApp(const ProviderScope(child: MyApp()));
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends ConsumerWidget {
   const MyApp({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final escalaTexto = ref.watch(usuarioProvider)?.escalaTexto ?? 1.0;
     return MaterialApp(
+      builder: (context, child) {
+        return MediaQuery(
+          data: MediaQuery.of(
+            context,
+          ).copyWith(textScaler: TextScaler.linear(escalaTexto)),
+          child: child!,
+        );
+      },
       title: 'Patas al Día',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(

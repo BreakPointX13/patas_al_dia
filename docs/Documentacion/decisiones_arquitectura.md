@@ -312,6 +312,20 @@ Dos bugs reales en el navbar armado el 2026-08-12, recién visibles al probar co
 
 ---
 
+## 2026-08-18 — Accesibilidad: tres pedidos (modo oscuro, tamaño de letra, idiomas), abordados por separado
+
+**Contexto:** el usuario planteó tres funciones de accesibilidad juntas: modo oscuro, tamaño de letra ajustable e idiomas (español/inglés/portugués). Se evaluaron por separado antes de empezar, porque son de tamaño muy distinto:
+
+- **Modo oscuro:** requiere primero un refactor — casi todos los colores de la app están escritos como `Color(0xFF...)` literal en cada widget, no a través de un `ColorScheme`/tema centralizado. No se puede agregar un modo oscuro real sin antes mover esos colores a un sistema de tokens claro/oscuro.
+- **Idiomas (ES/EN/PT):** la más grande de las tres — hay texto en español escrito literal en decenas de pantallas; internacionalizar de verdad implica extraer todos esos strings a un sistema de traducción (`flutter_localizations` + `.arb`) y traducir cada uno a los otros dos idiomas.
+- **Tamaño de letra:** la más chica y, según el usuario preguntó explícitamente, la de mayor impacto real de accesibilidad — Flutter la resuelve casi de fábrica con `MediaQuery.textScaler`.
+
+**Decisión:** no implementar las tres en la misma sesión — son tres proyectos separados en la práctica. Se empezó por tamaño de letra (ver `ajustesScreen.md`, punto 4); modo oscuro e idiomas quedan pendientes, cada uno como su propio bloque de trabajo cuando el usuario decida retomarlos.
+
+**De paso, se ajustó el alcance de "tamaño de letra":** el pedido original mencionaba "aumentar o disminuir todos los elementos de la app" (un zoom general de la UI). Se acotó a escalar solo el texto (no íconos/paddings/tamaños fijos) tras compararlo con el usuario — es el estándar real de accesibilidad (así funcionan los ajustes de tamaño de letra de Android/iOS) y muchísimo más robusto de implementar que un escalado general, que en Flutter no tiene una forma nativa de aplicarse de forma consistente sin tocar cada valor fijo a mano.
+
+---
+
 ## De aquí en adelante
 
 Cada vez que se tome una decisión de arquitectura nueva (enfoque, tecnología, estructura — no un simple fix o ajuste de código), se agrega una entrada acá con: fecha, la decisión, el porqué, y alternativas consideradas si las hubo.

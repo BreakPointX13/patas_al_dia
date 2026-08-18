@@ -6,6 +6,7 @@ class UsuarioModel {
   final DateTime? ultimaSincronizacion;
   final String? dispositivoId;
   final bool sesionActiva;
+  final double escalaTexto;
 
   UsuarioModel({
     required this.id,
@@ -15,6 +16,7 @@ class UsuarioModel {
     this.ultimaSincronizacion,
     this.dispositivoId,
     this.sesionActiva = true,
+    this.escalaTexto = 1.0,
   });
 
   // ADUANA DE ENTRADA: De mapas de SQLite a objetos de Flutter
@@ -31,6 +33,9 @@ class UsuarioModel {
           : null,
       dispositivoId: map['dispositivo_id'] as String?,
       sesionActiva: (map['sesion_activa'] as int?) == 1,
+      escalaTexto: map['escala_texto'] != null
+          ? (map['escala_texto'] as num).toDouble()
+          : 1.0,
     );
   }
 
@@ -44,6 +49,7 @@ class UsuarioModel {
       'ultima_sincronizacion': ultimaSincronizacion?.toIso8601String(),
       'dispositivo_id': dispositivoId,
       'sesion_activa': sesionActiva ? 1 : 0,
+      'escala_texto': escalaTexto,
     };
   }
 
@@ -56,6 +62,7 @@ class UsuarioModel {
     DateTime? ultimaSincronizacion,
     String? dispositivoId,
     bool? sesionActiva,
+    double? escalaTexto,
   }) {
     return UsuarioModel(
       id: id ?? this.id,
@@ -65,6 +72,7 @@ class UsuarioModel {
       ultimaSincronizacion: ultimaSincronizacion ?? this.ultimaSincronizacion,
       dispositivoId: dispositivoId ?? this.dispositivoId,
       sesionActiva: sesionActiva ?? this.sesionActiva,
+      escalaTexto: escalaTexto ?? this.escalaTexto,
     );
   }
 }

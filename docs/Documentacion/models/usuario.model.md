@@ -47,6 +47,7 @@ El modelo de usuario implementa conversiones estrictas debido a las limitaciones
 | `bool esInvitado` | `INTEGER` (0 o 1) | Evaluación lógica binaria | Permite al usuario usar la app de inmediato sin barreras de registro obligatorio |
 | `DateTime? fechaRegistro`| `TEXT` (ISO 8601) | `DateTime.parse()` / `.toIso8601String()` | Mantiene la precisión milimétrica del registro local para auditorías de datos |
 | `bool sesionActiva` | `INTEGER` (0 o 1) | Evaluación lógica binaria (igual que `esInvitado`) | Distingue "existe un usuario en este dispositivo" de "es la sesión que debe cargarse al abrir la app" — permite cerrar sesión sin borrar al usuario invitado ni sus datos |
+| `double escalaTexto` | `REAL DEFAULT 1.0` | Directo (`as num).toDouble()`) | Preferencia de accesibilidad (tamaño de letra), guardada junto al usuario igual que el resto — un invitado que desinstala la app pierde esta preferencia junto con todo lo demás, mismo criterio ya usado para `sesionActiva` (ver `ajustesScreen.md`) |
 
 ### Ventaja de la Inmutabilidad (`final`)
 Al declarar todas las variables como `final`, aseguramos que una vez que el usuario inicia sesión o abre la app, sus datos no puedan ser modificados de forma accidental por procesos en segundo plano. Si el usuario se registra y deja de ser invitado, la arquitectura nos obliga a generar un nuevo estado limpio, cumpliendo con los principios de **Código Limpio y Reactivo**.

@@ -10,6 +10,9 @@ import 'package:url_launcher/url_launcher.dart';
 
 final _urlKoFi = Uri.parse('https://ko-fi.com/breakpointx');
 
+const _escalasTexto = [0.85, 1.0, 1.2];
+const _etiquetasEscalaTexto = ['Pequeño', 'Normal', 'Grande'];
+
 class AjustesScreen extends ConsumerWidget {
   const AjustesScreen({super.key});
 
@@ -79,10 +82,36 @@ class AjustesScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final escalaActual = ref.watch(usuarioProvider)?.escalaTexto ?? 1.0;
+    var indiceActual = _escalasTexto.indexOf(escalaActual);
+    if (indiceActual == -1) {
+      indiceActual = 1;
+    }
+
     return Scaffold(
       appBar: AppBar(title: const Text('Ajustes')),
       body: ListView(
         children: [
+          ListTile(
+            leading: const Icon(Icons.text_fields),
+            title: const Text('Tamaño de letra'),
+            subtitle: Text(_etiquetasEscalaTexto[indiceActual]),
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Slider(
+              value: indiceActual.toDouble(),
+              min: 0,
+              max: 2,
+              divisions: 2,
+              label: _etiquetasEscalaTexto[indiceActual],
+              onChanged: (valor) {
+                ref
+                    .read(usuarioProvider.notifier)
+                    .actualizarEscalaTexto(_escalasTexto[valor.round()]);
+              },
+            ),
+          ),
           ListTile(
             leading: const Icon(Icons.favorite_border),
             title: const Text('Aportes voluntarios'),

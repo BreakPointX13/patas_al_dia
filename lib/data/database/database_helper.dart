@@ -35,7 +35,8 @@ class DatabaseHelper {
         fecha_registro TEXT DEFAULT CURRENT_TIMESTAMP,
         ultima_sincronizacion TEXT,
         dispositivo_id TEXT,
-        sesion_activa INTEGER DEFAULT 1
+        sesion_activa INTEGER DEFAULT 1,
+        escala_texto REAL DEFAULT 1.0
       )
     ''');
 
