@@ -6,6 +6,7 @@ import 'package:patas_al_dia/presentation/screens/agenda_screen.dart';
 import 'package:patas_al_dia/presentation/screens/documentos_screen.dart';
 import 'package:patas_al_dia/presentation/screens/formulario_mascota_screen.dart';
 import 'package:patas_al_dia/presentation/widgets/separador_seccion_ficha.dart';
+import 'package:patas_al_dia/presentation/widgets/tarjeta_clara.dart';
 import 'package:patas_al_dia/providers/mascota_provider.dart';
 
 Future<void> _eliminarMascota(
@@ -148,11 +149,11 @@ class DetalleMascotaScreen extends ConsumerWidget {
             ),
           ),
           SeparadorSeccionFicha.mascota(),
-          for (final tile in grupoMascota) Card(child: tile),
+          for (final tile in grupoMascota) TarjetaClara(child: tile),
           SeparadorSeccionFicha.identificacion(),
-          for (final tile in grupoIdentificacion) Card(child: tile),
+          for (final tile in grupoIdentificacion) TarjetaClara(child: tile),
           SeparadorSeccionFicha.datos(),
-          for (final tile in grupoDatos) Card(child: tile),
+          for (final tile in grupoDatos) TarjetaClara(child: tile),
           const SizedBox(height: 16),
           ListTile(
             leading: const Icon(Icons.edit),

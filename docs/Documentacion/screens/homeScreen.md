@@ -126,3 +126,7 @@ trailing: IconButton(
 ```
 
 Cada fila tiene ahora dos formas de navegación independientes: tocar el resto de la fila (`onTap` del `ListTile`) sigue abriendo `DetalleMascotaScreen`; tocar el ícono `trailing` abre `CredencialMascotaScreen` directo — el carnet digital de la mascota (ver `credencialMascotaScreen.md`). `trailing` es una zona de toque propia dentro del `ListTile`, no necesita lógica para distinguir ambos toques.
+
+### 9. `Card` → `TarjetaClara` (2026-08-18)
+
+Al implementar modo oscuro, el `Card` que envuelve cada `ListTile` de la lista pasó a ser `TarjetaClara` (ver `tarjetaClara.md`) — mismo aspecto visual en modo claro, pero protege el texto/íconos de adentro para que no se vuelvan claros (heredados del tema oscuro) sobre la tarjeta Durazno, que se mantiene clara siempre.

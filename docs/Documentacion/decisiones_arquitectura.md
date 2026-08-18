@@ -326,6 +326,21 @@ Dos bugs reales en el navbar armado el 2026-08-12, recién visibles al probar co
 
 ---
 
+## 2026-08-18 — Modo oscuro: paleta de acento fija, solo el fondo y el "café texto" directo se invierten
+
+**Decisión:** `AjustesScreen` suma un selector Sistema/Claro/Oscuro (`SegmentedButton`, guardado en `UsuarioModel.tema`, mismo criterio que `escalaTexto`). El sistema de temas se separó a `lib/presentation/theme/tema_app.dart` (`temaClaro`/`temaOscuro`, ver `temaApp.md`), aplicados en `main.dart` vía `theme`/`darkTheme`/`themeMode` de `MaterialApp`.
+
+**Paleta:** el usuario definió el criterio antes de implementar — la paleta de acento (Naranja, Naranja marca, Durazno, Amarillo cálido) se mantiene idéntica en los dos modos; solo el fondo del `Scaffold` cambia de Crema (`#FBF0E2`) a un gris oscuro cálido (`#1E1811`, no negro puro, para no perder la calidez de la paleta de marca).
+
+**El hallazgo que amplió el alcance real del cambio:** al auditar el código (grep de `Color(0xFF` en todo `lib/`, solo 7 archivos con colores hardcodeados en total — bastante menos que lo estimado al principio), aparecieron dos problemas de contraste que "solo cambiar el fondo" no resolvía solo:
+
+1. **Texto "café texto" directo sobre el fondo, sin tarjeta detrás:** 3 lugares en `agenda_screen.dart` (etiquetas de sección, fecha/"sin eventos" del día seleccionado) muestran texto café oscuro directo sobre el `Scaffold` — con el fondo nuevo oscuro, ese texto quedaría casi ilegible. Se resolvió con dos funciones (`_colorTextoSobreFondo`/`_colorTextoSecundarioSobreFondo`) que devuelven el color de siempre en claro y una variante clara en oscuro, según `Theme.of(context).brightness`. El resto de los colores hardcodeados de la app (la enorme mayoría) van dentro de tarjetas/paneles de acento (Durazno, Crema clara con borde Naranja) que no cambian de color entre temas, así que no hicieron falta variantes ahí — ver el detalle completo en `agendaScreen.md`.
+2. **Tarjetas Durazno con texto que se volvería claro solo:** las `Card` (fondo Durazno fijo en los dos temas) no controlan el color del texto que Flutter les pone adentro por defecto — ese sale de `colorScheme.onSurface`, que en modo oscuro es un color claro. Sin corregirlo, cualquier `ListTile` dentro de una tarjeta Durazno tendría texto claro sobre fondo claro en modo oscuro. Se resolvió con `TarjetaClara` (widget nuevo, ver `tarjetaClara.md`): envuelve el `Card` en un `Theme(data: temaClaro, ...)` anidado, forzando ese subárbol a verse siempre en modo claro sin importar el tema real de la app. Reemplazó los 5 usos de `Card` que había en el proyecto (`HomeScreen`, `DetalleMascotaScreen` ×3, `DocumentosScreen`).
+
+**Por qué importa dejarlo anotado:** el primer diagnóstico ("hay que mover los colores a un sistema de tokens") resultó ser parcialmente cierto pero incompleto — el problema real no era solo "¿de dónde sale cada color?", sino "¿qué widgets dependen implícitamente del tema para su texto, cuando su fondo en realidad no cambia con el tema?". Vale la pena repetir esta pregunta si se agregan más tarjetas o paneles de color fijo en el futuro.
+
+---
+
 ## De aquí en adelante
 
 Cada vez que se tome una decisión de arquitectura nueva (enfoque, tecnología, estructura — no un simple fix o ajuste de código), se agrega una entrada acá con: fecha, la decisión, el porqué, y alternativas consideradas si las hubo.

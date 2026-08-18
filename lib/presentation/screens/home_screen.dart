@@ -6,6 +6,7 @@ import 'package:patas_al_dia/presentation/screens/detalle_mascota_screen.dart';
 import 'package:patas_al_dia/presentation/screens/formulario_mascota_screen.dart';
 import 'package:patas_al_dia/presentation/widgets/logo_barra_superior.dart';
 import 'package:patas_al_dia/presentation/widgets/menu_usuario_avatar.dart';
+import 'package:patas_al_dia/presentation/widgets/tarjeta_clara.dart';
 import 'package:patas_al_dia/providers/mascota_provider.dart';
 import 'package:patas_al_dia/providers/usuario_provider.dart';
 
@@ -46,7 +47,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               itemCount: mascotas.length,
               itemBuilder: (context, index) {
                 final mascota = mascotas[index];
-                return Card(
+                return TarjetaClara(
                   child: ListTile(
                     leading: Container(
                       decoration: BoxDecoration(

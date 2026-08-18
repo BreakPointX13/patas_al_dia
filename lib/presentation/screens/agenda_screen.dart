@@ -26,6 +26,33 @@ const _iconosPorTipoEvento = {
 String _iconoEvento(String? tipoEvento) =>
     _iconosPorTipoEvento[tipoEvento] ?? _iconosPorTipoEvento['Otro']!;
 
+// Los textos de `agenda_screen.dart` casi siempre van dentro de tarjetas
+// claras (Durazno/Crema clara) que no cambian con el tema, así que su color
+// hardcodeado (Café texto/texto secundario) queda bien en los dos modos. Las
+// únicas excepciones son los textos que van directo sobre el fondo de la
+// pantalla (sin tarjeta detrás) — esos sí necesitan invertirse en modo
+// oscuro, o quedarían ilegibles sobre el fondo oscuro nuevo.
+Color _colorTextoSobreFondo(BuildContext context) =>
+    Theme.of(context).brightness == Brightness.dark
+    ? const Color(0xFFFFF7EC)
+    : const Color(0xFF7A4A22);
+
+Color _colorTextoSecundarioSobreFondo(BuildContext context) =>
+    Theme.of(context).brightness == Brightness.dark
+    ? const Color(0xFFFFF7EC).withValues(alpha: 0.7)
+    : const Color(0xFFA06A35);
+
+// Las tarjetas de "Próximo evento" y del timeline usan Crema clara de fondo
+// en modo claro (más sutil, casi el mismo tono que el fondo Crema de la
+// pantalla). En modo oscuro, Crema clara se vería demasiado brillante contra
+// el fondo oscuro nuevo — se usa Durazno en su lugar, el mismo tono que ya
+// usan todas las demás tarjetas de la app (`TarjetaClara`), para que las
+// tarjetas se vean consistentes entre sí.
+Color _colorTarjetaAgenda(BuildContext context) =>
+    Theme.of(context).brightness == Brightness.dark
+    ? const Color(0xFFF3C98F)
+    : const Color(0xFFFFF7EC);
+
 String _tipoEventoTexto(AgendaEventoModel evento) {
   if (evento.tipoEvento == 'Otro' && evento.tipoEventoPersonalizado != null) {
     return evento.tipoEventoPersonalizado!;
@@ -234,11 +261,11 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
       padding: const EdgeInsets.only(top: 6, bottom: 10),
       child: Text(
         texto,
-        style: const TextStyle(
+        style: TextStyle(
           fontFamily: 'Nunito',
           fontWeight: FontWeight.w700,
           fontSize: 12,
-          color: Color(0xFFA06A35),
+          color: _colorTextoSecundarioSobreFondo(context),
           letterSpacing: 0.6,
         ),
       ),
@@ -277,7 +304,7 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
         child: Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: const Color(0xFFFFF7EC),
+            color: _colorTarjetaAgenda(context),
             border: Border.all(color: const Color(0xFFE0812F), width: 2),
             borderRadius: BorderRadius.circular(16),
           ),
@@ -392,7 +419,7 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
           margin: const EdgeInsets.only(bottom: 10),
           padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 13),
           decoration: BoxDecoration(
-            color: const Color(0xFFFFF7EC),
+            color: _colorTarjetaAgenda(context),
             border: Border.all(color: const Color(0xFFF0DCC0)),
             borderRadius: BorderRadius.circular(14),
           ),
@@ -550,7 +577,22 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
                 calendarFormat: CalendarFormat.month,
                 rowHeight: 42,
                 daysOfWeekHeight: 20,
-                headerStyle: const HeaderStyle(formatButtonVisible: false),
+                headerStyle: const HeaderStyle(
+                  formatButtonVisible: false,
+                  titleTextStyle: TextStyle(
+                    color: Color(0xFF7A4A22),
+                    fontSize: 17,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  leftChevronIcon: Icon(
+                    Icons.chevron_left,
+                    color: Color(0xFF7A4A22),
+                  ),
+                  rightChevronIcon: Icon(
+                    Icons.chevron_right,
+                    color: Color(0xFF7A4A22),
+                  ),
+                ),
                 calendarStyle: const CalendarStyle(
                   defaultTextStyle: TextStyle(color: Color(0xFF7A4A22)),
                   weekendTextStyle: TextStyle(color: Color(0xFF7A4A22)),
@@ -639,11 +681,11 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
           padding: const EdgeInsets.fromLTRB(16, 12, 16, 2),
           child: Text(
             DateFormat('d MMM y', 'es_ES').format(dia),
-            style: const TextStyle(
+            style: TextStyle(
               fontFamily: 'Nunito',
               fontWeight: FontWeight.w700,
               fontSize: 14,
-              color: Color(0xFF7A4A22),
+              color: _colorTextoSobreFondo(context),
             ),
           ),
         ),
@@ -651,7 +693,10 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Text(
             'Sin eventos este día',
-            style: const TextStyle(fontSize: 12, color: Color(0xFFA06A35)),
+            style: TextStyle(
+              fontSize: 12,
+              color: _colorTextoSecundarioSobreFondo(context),
+            ),
           ),
         ),
         if (proximos.isEmpty)

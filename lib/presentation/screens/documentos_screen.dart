@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:patas_al_dia/data/models/documento_model.dart';
 import 'package:patas_al_dia/presentation/screens/detalle_documento_screen.dart';
 import 'package:patas_al_dia/presentation/screens/formulario_documento_screen.dart';
+import 'package:patas_al_dia/presentation/widgets/tarjeta_clara.dart';
 import 'package:patas_al_dia/providers/documento_provider.dart';
 
 class DocumentosScreen extends ConsumerStatefulWidget {
@@ -73,7 +74,7 @@ class _DocumentosScreenState extends ConsumerState<DocumentosScreen> {
         ? documento.tipoDocumentoPersonalizado!
         : documento.tipoDocumento;
 
-    return Card(
+    return TarjetaClara(
       child: ListTile(
         leading: Icon(
           documento.fileExtension == 'pdf'

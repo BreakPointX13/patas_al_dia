@@ -32,7 +32,7 @@ Si el documento se adjuntó desde un evento de agenda (`eventoId != null`), apar
 
 ### 1b. Cada fila en su propia `Card` (2026-08-16)
 
-`_tileDocumento` devuelve `Card(child: ListTile(...))`, no un `ListTile` suelto — mismo `CardTheme` global (fondo Durazno, bordes redondeados) que las listas de `HomeScreen` y `AgendaScreen`, parte de la misma pasada de colores.
+`_tileDocumento` devuelve `TarjetaClara(child: ListTile(...))` (antes `Card(...)` directo — ver `tarjetaClara.md`, cambio del 2026-08-18 al implementar modo oscuro), no un `ListTile` suelto — mismo `CardTheme` global (fondo Durazno, bordes redondeados) que las listas de `HomeScreen` y `AgendaScreen`, parte de la misma pasada de colores.
 
 ### 2. Botón flotante centrado
 

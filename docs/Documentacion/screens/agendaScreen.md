@@ -122,3 +122,22 @@ final esPantallaRaiz = widget.mascotaIdInicial == null;
 ```
 
 `AgendaScreen` se usa en dos contextos distintos: como pestaña raíz del navbar (`AgendaScreen()`, sin `mascotaIdInicial`) y empujada desde `DetalleMascotaScreen` (`AgendaScreen(mascotaIdInicial: mascotaId)`, ver `detalleMascotaScreen.md`). Antes, el `AppBar` no distinguía entre ambos casos: siempre mostraba `LogoBarraSuperior` como `leading` (tapando el espacio donde Flutter pondría la flecha de "atrás" automática al haber sido empujada) y siempre mostraba el ícono de filtro por mascota (sin sentido si ya se llegó con el filtro fijo a una sola mascota). `esPantallaRaiz` controla ambos: `leading: esPantallaRaiz ? const LogoBarraSuperior() : null` (con `null`, Flutter pone la flecha sola) y el `IconButton` de filtro se envuelve en `if (esPantallaRaiz)`.
+
+### 13. Colores que sí necesitan variante para modo oscuro (2026-08-18)
+
+```dart
+Color _colorTextoSobreFondo(BuildContext context) =>
+    Theme.of(context).brightness == Brightness.dark ? const Color(0xFFFFF7EC) : const Color(0xFF7A4A22);
+
+Color _colorTextoSecundarioSobreFondo(BuildContext context) =>
+    Theme.of(context).brightness == Brightness.dark ? const Color(0xFFFFF7EC).withValues(alpha: 0.7) : const Color(0xFFA06A35);
+```
+
+Este archivo es el que tiene más colores hardcodeados de toda la app, pero la mayoría de los textos (café texto/texto secundario) van dentro de tarjetas claras (la del "Próximo evento", las del timeline, el calendario) — no necesitaron tocarse. Las únicas tres excepciones son textos que van **directo sobre el fondo de la pantalla**, sin ninguna tarjeta detrás: la etiqueta de sección (`_etiquetaSeccion`, ej. "PRÓXIMO EVENTO"/nombre del mes) y, dentro de `_sinEventosDelDia`, la fecha del día elegido y el texto "Sin eventos este día". Esos tres pasaron de un `Color(0xFF...)` fijo a llamar a estas dos funciones, que devuelven el color de siempre en modo claro y una variante clara (Crema clara, con transparencia para el texto secundario) en modo oscuro — si no se hiciera este cambio, ese texto quedaría con su color café/marrón oscuro original sobre el nuevo fondo oscuro de la app, prácticamente ilegible.
+
+### 14. Ajustes tras probar en el dispositivo (2026-08-18, mismo día)
+
+Dos correcciones que surgieron al probar el modo oscuro en el teléfono — la primera revisión de código (punto 13) no las detectó porque no eran `Color(0xFF...)` literales fáciles de encontrar con una búsqueda:
+
+- **Encabezado del mes del calendario (`HeaderStyle`), en blanco sobre Durazno:** `TableCalendar` no traía `titleTextStyle`/`leftChevronIcon`/`rightChevronIcon` configurados — a diferencia de `calendarStyle` (que sí tenía cada color fijado a mano, ver punto 13 original), el `HeaderStyle` original (`const HeaderStyle(formatButtonVisible: false)`) dejaba esos tres sin `color` explícito, así que heredaban el color de texto por defecto del `Theme` — que en modo oscuro es claro, e ilegible sobre el fondo Durazno del calendario (que no cambia con el tema). Se agregó `titleTextStyle`/`leftChevronIcon`/`rightChevronIcon` con Café texto fijo, mismo criterio que el resto del calendario.
+- **Tarjetas de "Próximo evento" y del timeline, Crema clara → Durazno en modo oscuro:** decisión del usuario tras verlas en el dispositivo — Crema clara (el tono que usaban antes, en los dos modos) se veía demasiado brillante contra el nuevo fondo oscuro, en contraste con el resto de las tarjetas de la app (`TarjetaClara`), que son Durazno. `_colorTarjetaAgenda(context)` devuelve Crema clara en modo claro (sin cambios ahí) y Durazno en modo oscuro — el borde de cada tarjeta (Naranja para "Próximo evento", un tono claro para el timeline) se dejó igual en los dos modos, solo cambió el color de fondo.

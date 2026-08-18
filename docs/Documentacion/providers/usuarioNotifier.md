@@ -109,3 +109,16 @@ Future<void> actualizarEscalaTexto(double escalaTexto) async {
 ```
 
 Método de conveniencia sobre `actualizarUsuario` — en vez de que cada pantalla que necesite cambiar el tamaño de letra tenga que escribir `ref.read(usuarioProvider.notifier).actualizarUsuario(usuario.copyWith(escalaTexto: ...))` a mano (y acordarse de manejar el caso `state == null`), esto lo encapsula en un solo método con un nombre que dice qué hace. Ver el uso en `ajustesScreen.md` y cómo se aplica globalmente en `main.dart`.
+
+### 6. `actualizarTema(String tema)` (2026-08-18)
+
+```dart
+Future<void> actualizarTema(String tema) async {
+  if (state == null) {
+    return;
+  }
+  await actualizarUsuario(state!.copyWith(tema: tema));
+}
+```
+
+Mismo patrón exacto que `actualizarEscalaTexto` — método de conveniencia sobre `actualizarUsuario`, para la preferencia de modo claro/oscuro/sistema. Ver `ajustesScreen.md` y `temaApp.md`.

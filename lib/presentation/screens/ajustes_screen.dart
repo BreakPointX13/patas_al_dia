@@ -13,6 +13,10 @@ final _urlKoFi = Uri.parse('https://ko-fi.com/breakpointx');
 const _escalasTexto = [0.85, 1.0, 1.2];
 const _etiquetasEscalaTexto = ['Pequeño', 'Normal', 'Grande'];
 
+const _temas = ['sistema', 'claro', 'oscuro'];
+const _etiquetasTema = ['Sistema', 'Claro', 'Oscuro'];
+const _iconosTema = [Icons.brightness_auto, Icons.light_mode, Icons.dark_mode];
+
 class AjustesScreen extends ConsumerWidget {
   const AjustesScreen({super.key});
 
@@ -82,16 +86,45 @@ class AjustesScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final escalaActual = ref.watch(usuarioProvider)?.escalaTexto ?? 1.0;
+    final usuario = ref.watch(usuarioProvider);
+    final escalaActual = usuario?.escalaTexto ?? 1.0;
     var indiceActual = _escalasTexto.indexOf(escalaActual);
     if (indiceActual == -1) {
       indiceActual = 1;
+    }
+    final temaActual = usuario?.tema ?? 'sistema';
+    var indiceTema = _temas.indexOf(temaActual);
+    if (indiceTema == -1) {
+      indiceTema = 0;
     }
 
     return Scaffold(
       appBar: AppBar(title: const Text('Ajustes')),
       body: ListView(
         children: [
+          const ListTile(
+            leading: Icon(Icons.dark_mode_outlined),
+            title: Text('Tema'),
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: SegmentedButton<String>(
+              segments: [
+                for (var i = 0; i < _temas.length; i++)
+                  ButtonSegment(
+                    value: _temas[i],
+                    label: Text(_etiquetasTema[i]),
+                    icon: Icon(_iconosTema[i]),
+                  ),
+              ],
+              selected: {_temas[indiceTema]},
+              onSelectionChanged: (seleccion) {
+                ref
+                    .read(usuarioProvider.notifier)
+                    .actualizarTema(seleccion.first);
+              },
+            ),
+          ),
           ListTile(
             leading: const Icon(Icons.text_fields),
             title: const Text('Tamaño de letra'),

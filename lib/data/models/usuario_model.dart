@@ -7,6 +7,9 @@ class UsuarioModel {
   final String? dispositivoId;
   final bool sesionActiva;
   final double escalaTexto;
+  // 'sistema' (sigue el modo oscuro/claro del sistema operativo), 'claro' o
+  // 'oscuro' — preferencia explícita del usuario, ver ajustesScreen.md.
+  final String tema;
 
   UsuarioModel({
     required this.id,
@@ -17,6 +20,7 @@ class UsuarioModel {
     this.dispositivoId,
     this.sesionActiva = true,
     this.escalaTexto = 1.0,
+    this.tema = 'sistema',
   });
 
   // ADUANA DE ENTRADA: De mapas de SQLite a objetos de Flutter
@@ -36,6 +40,7 @@ class UsuarioModel {
       escalaTexto: map['escala_texto'] != null
           ? (map['escala_texto'] as num).toDouble()
           : 1.0,
+      tema: map['tema'] as String? ?? 'sistema',
     );
   }
 
@@ -50,6 +55,7 @@ class UsuarioModel {
       'dispositivo_id': dispositivoId,
       'sesion_activa': sesionActiva ? 1 : 0,
       'escala_texto': escalaTexto,
+      'tema': tema,
     };
   }
 
@@ -63,6 +69,7 @@ class UsuarioModel {
     String? dispositivoId,
     bool? sesionActiva,
     double? escalaTexto,
+    String? tema,
   }) {
     return UsuarioModel(
       id: id ?? this.id,
@@ -73,6 +80,7 @@ class UsuarioModel {
       dispositivoId: dispositivoId ?? this.dispositivoId,
       sesionActiva: sesionActiva ?? this.sesionActiva,
       escalaTexto: escalaTexto ?? this.escalaTexto,
+      tema: tema ?? this.tema,
     );
   }
 }

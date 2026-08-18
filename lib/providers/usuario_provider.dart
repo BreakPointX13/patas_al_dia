@@ -52,6 +52,13 @@ class UsuarioNotifier extends Notifier<UsuarioModel?> {
     await actualizarUsuario(state!.copyWith(escalaTexto: escalaTexto));
   }
 
+  Future<void> actualizarTema(String tema) async {
+    if (state == null) {
+      return;
+    }
+    await actualizarUsuario(state!.copyWith(tema: tema));
+  }
+
   Future<void> eliminarUsuario() async {
     if (state == null) {
       return;

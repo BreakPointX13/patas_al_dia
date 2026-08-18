@@ -8,7 +8,7 @@ Se accede desde `MenuUsuarioAvatar` (ver `menuUsuarioAvatar.md`), presente en el
 
 ## 🎯 Propósito del Archivo
 
-Pantalla de ajustes de la app. Tiene tres opciones: "Tamaño de letra" (2026-08-18, ver punto 4), "Aportes voluntarios" (2026-08-17, ver punto 3) y "Cerrar sesión"; es el lugar natural donde agregar más adelante otras preferencias (notificaciones, cuenta, etc.) sin volver a tocar `HomeScreen`.
+Pantalla de ajustes de la app. Tiene cuatro opciones: "Tema" (2026-08-18, ver punto 5), "Tamaño de letra" (2026-08-18, ver punto 4), "Aportes voluntarios" (2026-08-17, ver punto 3) y "Cerrar sesión"; es el lugar natural donde agregar más adelante otras preferencias (notificaciones, cuenta, etc.) sin volver a tocar `HomeScreen`.
 
 ---
 
@@ -100,3 +100,24 @@ Primera pieza de un pedido más grande del usuario sobre accesibilidad (modo osc
 - **`escalaTexto` vive en `UsuarioModel`, no en un paquete de preferencias nuevo** (`shared_preferences` u otro): se guarda junto al resto de los datos del usuario en SQLite, con el mismo comportamiento que "sesión activa" — es una preferencia atada al usuario invitado actual, que se pierde si se desinstala la app (igual que todos sus demás datos), decisión explícita del usuario para no sumar una dependencia nueva. Ver `usuario.model.md` y `usuarioNotifier.md`.
 - **Aplicado una sola vez, en `main.dart`, no pantalla por pantalla:** `MyApp` pasó de `StatelessWidget` a `ConsumerWidget`, y el `builder` de `MaterialApp` envuelve el árbol completo en un `MediaQuery` con `textScaler: TextScaler.linear(escalaTexto)` leído de `usuarioProvider`. Como todas las pantallas de la app cuelgan de ese mismo árbol, el cambio de tamaño de letra se aplica a toda la app de una sola vez — no hace falta tocar cada `Text` ni cada pantalla individualmente. Si `usuarioProvider` todavía es `null` (por ejemplo, mientras `SesionInicialScreen` está cargando al usuario), se usa `1.0` como valor por defecto.
 - **Pendiente de revisión:** pantallas con alturas fijas o layouts ajustados (por ejemplo `CredencialMascotaScreen`) podrían verse mal con el tamaño "Grande" — no se auditó cada pantalla todavía, queda como tarea de revisión visual pantalla por pantalla, tal como se conversó con el usuario antes de implementar.
+
+### 5. "Tema" — Sistema / Claro / Oscuro (2026-08-18)
+
+```dart
+const _temas = ['sistema', 'claro', 'oscuro'];
+const _etiquetasTema = ['Sistema', 'Claro', 'Oscuro'];
+const _iconosTema = [Icons.brightness_auto, Icons.light_mode, Icons.dark_mode];
+
+SegmentedButton<String>(
+  segments: [for (var i = 0; i < _temas.length; i++) ButtonSegment(value: _temas[i], label: Text(_etiquetasTema[i]), icon: Icon(_iconosTema[i]))],
+  selected: {_temas[indiceTema]},
+  onSelectionChanged: (seleccion) => ref.read(usuarioProvider.notifier).actualizarTema(seleccion.first),
+)
+```
+
+Segunda pieza del pedido de accesibilidad del usuario (modo oscuro, tamaño de letra, idiomas — ver `decisiones_arquitectura.md`), después de tamaño de letra.
+
+- **`SegmentedButton<String>`, no `Slider`:** a diferencia de "Tamaño de letra", acá las tres opciones no tienen un orden natural de "menos a más" — es una elección categórica (Sistema/Claro/Oscuro), no una escala. `SegmentedButton` es el widget de Material 3 pensado justo para este caso: 2 a 4 opciones excluyentes entre sí, todas visibles al mismo tiempo.
+- **`selected: {_temas[indiceTema]}` — un `Set`, no un valor suelto:** `SegmentedButton` soporta selección múltiple por diseño (`multiSelectionEnabled`, no usado acá), así que su API pide un `Set` incluso cuando solo se permite una selección a la vez (comportamiento por defecto, `multiSelectionEnabled: false`).
+- **`'sistema'` como valor por defecto, no `'claro'`:** decisión explícita del usuario — la preferencia se guarda en el usuario (igual que `escalaTexto`), pero por defecto la app debe seguir lo que diga el sistema operativo, no forzar claro. Ver cómo se traduce a `ThemeMode` en `main.dart` (`'claro'` → `ThemeMode.light`, `'oscuro'` → `ThemeMode.dark`, cualquier otro valor incluido `'sistema'` → `ThemeMode.system`).
+- **Colores de la app en modo oscuro:** ver `temaApp.md` para el detalle completo — en resumen, toda la paleta de acento (Naranja, Naranja marca, Durazno, Amarillo cálido) se mantiene igual en los dos modos; solo cambia el fondo del `Scaffold` (Crema → gris oscuro cálido) y el "café texto" que aparece directo sobre ese fondo (sin tarjeta detrás), que se invierte a un tono claro para seguir siendo legible.
