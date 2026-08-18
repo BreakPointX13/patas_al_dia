@@ -72,6 +72,7 @@ class _CredencialMascotaScreenState
     final razaTexto = mascota.raza == null || mascota.raza!.trim().isEmpty
         ? mascota.especieTexto
         : '${mascota.especieTexto} · ${mascota.raza}';
+    final edadTexto = _edadTexto(mascota.fechaNacimiento);
 
     return Scaffold(
       appBar: AppBar(
@@ -98,13 +99,13 @@ class _CredencialMascotaScreenState
           child: RepaintBoundary(
             key: _tarjetaKey,
             child: Container(
-              constraints: const BoxConstraints(maxWidth: 440),
+              constraints: const BoxConstraints(maxWidth: 396),
               decoration: BoxDecoration(
                 color: const Color(0xFFF3C98F),
-                borderRadius: BorderRadius.circular(28),
+                borderRadius: BorderRadius.circular(25),
                 border: Border.all(color: const Color(0xFFD06D1F), width: 3),
               ),
-              padding: const EdgeInsets.all(32),
+              padding: const EdgeInsets.all(29),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -119,58 +120,82 @@ class _CredencialMascotaScreenState
                         ),
                       ),
                       child: CircleAvatar(
-                        radius: 84,
+                        radius: 76,
                         backgroundImage: mascota.fotoUrl != null
                             ? FileImage(File(mascota.fotoUrl!))
                             : null,
                         child: mascota.fotoUrl == null
-                            ? const Icon(Icons.pets, size: 84)
+                            ? const Icon(Icons.pets, size: 76)
                             : null,
                       ),
                     ),
                   ),
-                  const SizedBox(height: 20),
-                  Text(
-                    mascota.nombre,
-                    style: const TextStyle(
-                      fontSize: 32,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFF7A4A22),
+                  const SizedBox(height: 18),
+                  Center(
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Flexible(
+                          child: Text(
+                            mascota.nombre,
+                            style: const TextStyle(
+                              fontSize: 29,
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xFF7A4A22),
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                        if (mascota.sexo == 'Macho' ||
+                            mascota.sexo == 'Hembra') ...[
+                          const SizedBox(width: 7),
+                          Text(
+                            mascota.sexo == 'Macho' ? '♂' : '♀',
+                            style: TextStyle(
+                              fontSize: 27,
+                              fontWeight: FontWeight.bold,
+                              color: mascota.sexo == 'Macho'
+                                  ? Colors.blue
+                                  : Colors.pink,
+                            ),
+                          ),
+                        ],
+                      ],
                     ),
-                    textAlign: TextAlign.center,
                   ),
-                  const SizedBox(height: 6),
+                  const SizedBox(height: 5),
                   Text(
                     razaTexto,
                     style: const TextStyle(
-                      fontSize: 20,
+                      fontSize: 18,
                       color: Color(0xFF7A4A22),
                     ),
                     textAlign: TextAlign.center,
                   ),
-                  const SizedBox(height: 28),
+                  const SizedBox(height: 25),
                   const Divider(color: Color(0xFFD06D1F), thickness: 1.5),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 11),
                   _filaCredencial('RUT de la mascota', mascota.rutMascota),
                   _filaCredencial('Número de chip', mascota.numeroChip),
+                  _filaCredencial('Edad', edadTexto),
                   _filaCredencial(
                     'Esterilizado',
                     mascota.esterilizado ? 'Sí' : 'No',
                   ),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 18),
                   Center(
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Image.asset(
                           'assets/images/logo_patas_al_dia.png',
-                          height: 20,
+                          height: 18,
                         ),
-                        const SizedBox(width: 6),
+                        const SizedBox(width: 5),
                         const Text(
                           'Patas al Día',
                           style: TextStyle(
-                            fontSize: 14,
+                            fontSize: 13,
                             fontWeight: FontWeight.w600,
                             color: Color(0xFF7A4A22),
                           ),
@@ -187,16 +212,31 @@ class _CredencialMascotaScreenState
     );
   }
 
+  String? _edadTexto(DateTime? fechaNacimiento) {
+    if (fechaNacimiento == null) {
+      return null;
+    }
+    final hoy = DateTime.now();
+    var edad = hoy.year - fechaNacimiento.year;
+    final aunNoCumpleEsteAnio =
+        hoy.month < fechaNacimiento.month ||
+        (hoy.month == fechaNacimiento.month && hoy.day < fechaNacimiento.day);
+    if (aunNoCumpleEsteAnio) {
+      edad--;
+    }
+    return '$edad años';
+  }
+
   Widget _filaCredencial(String etiqueta, String? valor) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 10),
+      padding: const EdgeInsets.symmetric(vertical: 9),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             etiqueta,
             style: const TextStyle(
-              fontSize: 16,
+              fontSize: 14,
               color: Color(0xFF7A4A22),
               fontWeight: FontWeight.w600,
             ),
@@ -204,7 +244,7 @@ class _CredencialMascotaScreenState
           const SizedBox(height: 2),
           Text(
             valor == null || valor.trim().isEmpty ? 'No especificado' : valor,
-            style: const TextStyle(fontSize: 20, color: Color(0xFF7A4A22)),
+            style: const TextStyle(fontSize: 18, color: Color(0xFF7A4A22)),
           ),
         ],
       ),

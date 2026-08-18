@@ -8,7 +8,7 @@ Se abre desde `HomeScreen`: cada fila de la lista de mascotas tiene, además del
 
 ## 🎯 Propósito del Archivo
 
-Muestra una "credencial" o carnet digital de la mascota: una tarjeta visual con foto grande, nombre, especie/raza, RUT, número de chip y esterilizado — pensada para mostrarse rápido (por ejemplo, en una veterinaria), a diferencia de `DetalleMascotaScreen`, que muestra *todos* los datos en un formato de lista. La primera versión era solo vista en pantalla; el ícono de compartir del `AppBar` (2026-08-17, segunda pasada) exporta la tarjeta como imagen PNG y abre la hoja de "compartir" nativa del sistema.
+Muestra una "credencial" o carnet digital de la mascota: una tarjeta visual con foto grande, nombre (con el símbolo de sexo al lado), especie/raza, RUT, número de chip, edad y esterilizado — pensada para mostrarse rápido (por ejemplo, en una veterinaria), a diferencia de `DetalleMascotaScreen`, que muestra *todos* los datos en un formato de lista. La primera versión era solo vista en pantalla; el ícono de compartir del `AppBar` (2026-08-17, segunda pasada) exporta la tarjeta como imagen PNG y abre la hoja de "compartir" nativa del sistema.
 
 ---
 
@@ -100,3 +100,26 @@ El ícono de compartir del `AppBar` convierte la tarjeta (no la pantalla complet
 ### 6. Watermark "Patas al Día" al pie de la tarjeta (2026-08-17)
 
 Logo chico (`assets/images/logo_patas_al_dia.png`, el mismo PNG rasterizado que usa `LogoBarraSuperior`) + texto "Patas al Día", centrados, al final del `Column` de la tarjeta — *dentro* del `RepaintBoundary`, no agregado aparte sobre la imagen ya exportada. Al capturarse como parte del mismo widget que se ve en pantalla, la imagen compartida siempre lleva la marca sin necesidad de dibujarla por separado con `Canvas`/`ui.PictureRecorder` después de exportar — y el usuario ve exactamente lo mismo que va a compartir, sin sorpresas. Sugerido para que, si la credencial se comparte fuera de la app (con un veterinario, por ejemplo), quede claro de dónde viene.
+
+### 7. Sexo como símbolo junto al nombre, y Edad calculada (2026-08-18)
+
+```dart
+if (mascota.sexo == 'Macho' || mascota.sexo == 'Hembra') ...[
+  const SizedBox(width: 8),
+  Text(
+    mascota.sexo == 'Macho' ? '♂' : '♀',
+    style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold, color: mascota.sexo == 'Macho' ? Colors.blue : Colors.pink),
+  ),
+],
+```
+
+Faltaban dos datos: sexo y edad. Se agregaron con tratamiento distinto a propósito, decidido con el usuario:
+
+- **Sexo → símbolo, no fila de texto:** en vez de sumar una fila más a la lista de datos (como en `DetalleMascotaScreen`), el símbolo (♂/♀) va pegado al nombre, dentro de un `Row` dentro de un `Center` — ahorra una fila entera y es más "visual", acorde al espíritu de carnet. Usa `Colors.blue`/`Colors.pink`, colores fuera de la paleta de marca de la app (Naranja/Café/Durazno) — excepción deliberada: es una convención visual tan reconocida universalmente para sexo que se prefirió sobre mantener la paleta a rajatabla, decisión tomada junto con el usuario.
+- **`Flexible` alrededor del nombre:** dentro del `Row` que ahora contiene nombre + símbolo, el nombre necesita `Flexible` para poder achicarse/hacer wrap si es muy largo, en vez de que el `Row` (con `mainAxisSize: MainAxisSize.min`) intente crecer sin límite y desborde el ancho de la tarjeta.
+- **`_edadTexto(DateTime? fechaNacimiento)`:** calcula la edad en años a partir de `fechaNacimiento`, restando un año si todavía no pasó el cumpleaños de este año (compara mes y día, no solo el año como hace el cálculo rápido de `DetalleMascotaScreen` para "Edad estimada"). Se usa el mismo cálculo tanto si la fecha es exacta como si es estimada (`fechaEstimada`) — a diferencia de `DetalleMascotaScreen`, que muestra la fecha de nacimiento cruda cuando es exacta, acá siempre se quiere un número de años (más apto para un carnet compacto), sea cual sea el origen del dato.
+- **Edad como fila más, junto a RUT/Número de chip/Esterilizado** (no símbolo, a diferencia de sexo) — es un dato numérico variable sin una representación visual corta y reconocible como el sexo, así que sigue el mismo formato de fila etiqueta/valor que el resto.
+
+### 8. Tarjeta reducida ~10% (2026-08-18)
+
+Con los datos nuevos (sexo, edad), la tarjeta dejó de entrar completa en pantalla sin hacer scroll. En vez de sacar contenido, se redujeron ~10% todas las dimensiones (`maxWidth` 440→396, padding 32→29, radio de foto 84→76, tamaño de fuente del nombre 32→29, del resto de textos proporcionalmente, y los espaciados entre secciones) — la tarjeta se ve igual, solo más chica, sin cambiar el diseño.

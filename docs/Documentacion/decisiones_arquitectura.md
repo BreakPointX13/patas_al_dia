@@ -304,6 +304,14 @@ Dos bugs reales en el navbar armado el 2026-08-12, recién visibles al probar co
 
 ---
 
+## 2026-08-18 — Credencial: sexo como símbolo (no fila), fuera de la paleta de marca
+
+**Decisión:** `CredencialMascotaScreen` sumó los datos de sexo y edad que le faltaban. Edad se agregó como una fila más (etiqueta/valor, igual que RUT/Número de chip/Esterilizado). Sexo, en cambio, se muestra como un símbolo (♂/♀) junto al nombre, en `Colors.blue`/`Colors.pink` — colores fuera de la paleta de marca del proyecto (Naranja/Café/Durazno/Crema).
+
+**Por qué:** decisión consultada con el usuario (preguntó explícitamente su opinión sobre ubicación y color antes de implementar). El sexo, a diferencia de la edad, tiene una representación visual corta y universalmente reconocida — mostrarlo como símbolo junto al nombre ahorra una fila entera de la tarjeta y es más "de un vistazo", coherente con el espíritu de carnet. El azul/rosa convencional se prefirió sobre mantener la paleta de marca a rajatabla, porque la reconocibilidad de esa convención pesó más que la consistencia visual en este caso puntual — no se extiende a ningún otro lugar de la app.
+
+---
+
 ## De aquí en adelante
 
 Cada vez que se tome una decisión de arquitectura nueva (enfoque, tecnología, estructura — no un simple fix o ajuste de código), se agrega una entrada acá con: fecha, la decisión, el porqué, y alternativas consideradas si las hubo.
