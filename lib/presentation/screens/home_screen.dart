@@ -1,9 +1,11 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:patas_al_dia/l10n/app_localizations.dart';
 import 'package:patas_al_dia/presentation/screens/credencial_mascota_screen.dart';
 import 'package:patas_al_dia/presentation/screens/detalle_mascota_screen.dart';
 import 'package:patas_al_dia/presentation/screens/formulario_mascota_screen.dart';
+import 'package:patas_al_dia/presentation/utils/etiquetas_localizadas.dart';
 import 'package:patas_al_dia/presentation/widgets/logo_barra_superior.dart';
 import 'package:patas_al_dia/presentation/widgets/menu_usuario_avatar.dart';
 import 'package:patas_al_dia/presentation/widgets/tarjeta_clara.dart';
@@ -34,15 +36,16 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     final mascotas = ref.watch(mascotasProvider);
+    final l10n = AppLocalizations.of(context);
 
     return Scaffold(
       appBar: AppBar(
         leading: const LogoBarraSuperior(),
-        title: const Text('Mis Mascotas'),
+        title: Text(l10n.homeTitulo),
         actions: const [MenuUsuarioAvatar()],
       ),
       body: mascotas.isEmpty
-          ? const Center(child: Text('Aún no tienes mascotas registradas'))
+          ? Center(child: Text(l10n.homeVacio))
           : ListView.builder(
               itemCount: mascotas.length,
               itemBuilder: (context, index) {
@@ -67,7 +70,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       ),
                     ),
                     title: Text(mascota.nombre),
-                    subtitle: Text(mascota.especieTexto),
+                    subtitle: Text(especieMostrar(context, mascota)),
                     trailing: Container(
                       decoration: const BoxDecoration(
                         color: Color(0xFFD06D1F),
@@ -78,7 +81,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                           Icons.badge_outlined,
                           color: Color(0xFFFFF7EC),
                         ),
-                        tooltip: 'Credencial',
+                        tooltip: l10n.credencialTooltip,
                         onPressed: () {
                           Navigator.of(context).push(
                             MaterialPageRoute(
@@ -105,7 +108,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _irAAgregarMascota,
         icon: const Icon(Icons.add),
-        label: const Text('Agregar mascota'),
+        label: Text(l10n.homeAgregarMascota),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
     );

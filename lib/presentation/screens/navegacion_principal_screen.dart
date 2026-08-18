@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:patas_al_dia/l10n/app_localizations.dart';
 import 'package:patas_al_dia/presentation/screens/agenda_screen.dart';
 import 'package:patas_al_dia/presentation/screens/home_screen.dart';
 import 'package:patas_al_dia/presentation/screens/mapa_screen.dart';
@@ -25,11 +26,7 @@ class _NavegacionPrincipalScreenState
 
   static const _pantallasRaiz = [HomeScreen(), AgendaScreen(), MapaScreen()];
 
-  static const _destinos = [
-    (icono: Icons.pets, etiqueta: 'Mascotas'),
-    (icono: Icons.event_note, etiqueta: 'Agenda'),
-    (icono: Icons.map, etiqueta: 'Mapa'),
-  ];
+  static const _iconosDestino = [Icons.pets, Icons.event_note, Icons.map];
 
   void _cambiarPestana(int indice) {
     if (indice == _indiceActual) {
@@ -53,8 +50,9 @@ class _NavegacionPrincipalScreenState
   // Barra propia (en vez del NavigationBar de Material) para que la "luz"
   // de la pestaña activa sea un panel que envuelve ícono + texto juntos,
   // en vez de solo el ícono como hace el indicador estándar de Material 3.
-  Widget _construirItemBarra(int indice) {
-    final destino = _destinos[indice];
+  Widget _construirItemBarra(BuildContext context, int indice) {
+    final l10n = AppLocalizations.of(context);
+    final etiquetas = [l10n.navMascotas, l10n.navAgenda, l10n.navMapa];
     final seleccionado = indice == _indiceActual;
     return Expanded(
       child: InkWell(
@@ -74,10 +72,14 @@ class _NavegacionPrincipalScreenState
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(destino.icono, color: const Color(0xFF7A4A22), size: 22),
+                Icon(
+                  _iconosDestino[indice],
+                  color: const Color(0xFF7A4A22),
+                  size: 22,
+                ),
                 const SizedBox(height: 2),
                 Text(
-                  destino.etiqueta,
+                  etiquetas[indice],
                   style: const TextStyle(
                     color: Color(0xFF7A4A22),
                     fontSize: 12,
@@ -128,8 +130,8 @@ class _NavegacionPrincipalScreenState
               top: false,
               child: Row(
                 children: List.generate(
-                  _destinos.length,
-                  _construirItemBarra,
+                  _iconosDestino.length,
+                  (indice) => _construirItemBarra(context, indice),
                 ),
               ),
             ),

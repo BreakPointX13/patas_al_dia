@@ -123,3 +123,7 @@ Faltaban dos datos: sexo y edad. Se agregaron con tratamiento distinto a propós
 ### 8. Tarjeta reducida ~10% (2026-08-18)
 
 Con los datos nuevos (sexo, edad), la tarjeta dejó de entrar completa en pantalla sin hacer scroll. En vez de sacar contenido, se redujeron ~10% todas las dimensiones (`maxWidth` 440→396, padding 32→29, radio de foto 84→76, tamaño de fuente del nombre 32→29, del resto de textos proporcionalmente, y los espaciados entre secciones) — la tarjeta se ve igual, solo más chica, sin cambiar el diseño.
+
+### 9. Textos vía `AppLocalizations`, especie traducida, edad como texto localizado (2026-08-18)
+
+Etiquetas y título del `AppBar` salen de `AppLocalizations.of(context)` (ver `sistemaIdiomas.md`). La especie combinada con la raza (`razaTexto`) usa `especieMostrar(context, mascota)` en vez del getter `especieTexto` ya borrado (ver `etiquetasLocalizadas.md`). `_edadTexto` pasó a recibir `BuildContext` como primer parámetro, porque ahora devuelve `l10n.aniosCantidad(edad)` (con placeholder `{n}`) en vez de armar el string `'$edad años'` a mano — mismo cálculo de edad de siempre, solo cambió cómo se arma el texto final.

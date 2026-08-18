@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:patas_al_dia/data/models/mascota_model.dart';
+import 'package:patas_al_dia/l10n/app_localizations.dart';
+import 'package:patas_al_dia/presentation/utils/etiquetas_localizadas.dart';
 import 'package:patas_al_dia/providers/mascota_provider.dart';
 import 'package:share_plus/share_plus.dart';
 
@@ -42,7 +44,7 @@ class _CredencialMascotaScreenState
       await SharePlus.instance.share(
         ShareParams(
           files: [XFile(archivo.path)],
-          text: 'Credencial de $nombreMascota',
+          text: AppLocalizations.of(context).compartirTexto(nombreMascota),
         ),
       );
     } finally {
@@ -69,14 +71,16 @@ class _CredencialMascotaScreenState
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
     final mascota = mascotaEncontrada;
+    final l10n = AppLocalizations.of(context);
+    final especie = especieMostrar(context, mascota);
     final razaTexto = mascota.raza == null || mascota.raza!.trim().isEmpty
-        ? mascota.especieTexto
-        : '${mascota.especieTexto} · ${mascota.raza}';
-    final edadTexto = _edadTexto(mascota.fechaNacimiento);
+        ? especie
+        : '$especie · ${mascota.raza}';
+    final edadTexto = _edadTexto(context, mascota.fechaNacimiento);
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Credencial'),
+        title: Text(l10n.credencialTooltip),
         actions: [
           IconButton(
             icon: _compartiendo
@@ -86,7 +90,7 @@ class _CredencialMascotaScreenState
                     child: CircularProgressIndicator(strokeWidth: 2),
                   )
                 : const Icon(Icons.share),
-            tooltip: 'Compartir',
+            tooltip: l10n.compartirTooltip,
             onPressed: _compartiendo
                 ? null
                 : () => _compartirCredencial(mascota.nombre),
@@ -175,12 +179,21 @@ class _CredencialMascotaScreenState
                   const SizedBox(height: 25),
                   const Divider(color: Color(0xFFD06D1F), thickness: 1.5),
                   const SizedBox(height: 11),
-                  _filaCredencial('RUT de la mascota', mascota.rutMascota),
-                  _filaCredencial('Número de chip', mascota.numeroChip),
-                  _filaCredencial('Edad', edadTexto),
                   _filaCredencial(
-                    'Esterilizado',
-                    mascota.esterilizado ? 'Sí' : 'No',
+                    context,
+                    l10n.rutMascotaLabel,
+                    mascota.rutMascota,
+                  ),
+                  _filaCredencial(
+                    context,
+                    l10n.campoNumeroChip,
+                    mascota.numeroChip,
+                  ),
+                  _filaCredencial(context, l10n.edadLabel, edadTexto),
+                  _filaCredencial(
+                    context,
+                    l10n.campoEsterilizado,
+                    mascota.esterilizado ? l10n.valorSi : l10n.valorNo,
                   ),
                   const SizedBox(height: 18),
                   Center(
@@ -192,9 +205,9 @@ class _CredencialMascotaScreenState
                           height: 18,
                         ),
                         const SizedBox(width: 5),
-                        const Text(
-                          'Patas al Día',
-                          style: TextStyle(
+                        Text(
+                          l10n.appTitulo,
+                          style: const TextStyle(
                             fontSize: 13,
                             fontWeight: FontWeight.w600,
                             color: Color(0xFF7A4A22),
@@ -212,7 +225,7 @@ class _CredencialMascotaScreenState
     );
   }
 
-  String? _edadTexto(DateTime? fechaNacimiento) {
+  String? _edadTexto(BuildContext context, DateTime? fechaNacimiento) {
     if (fechaNacimiento == null) {
       return null;
     }
@@ -224,10 +237,10 @@ class _CredencialMascotaScreenState
     if (aunNoCumpleEsteAnio) {
       edad--;
     }
-    return '$edad años';
+    return AppLocalizations.of(context).aniosCantidad(edad);
   }
 
-  Widget _filaCredencial(String etiqueta, String? valor) {
+  Widget _filaCredencial(BuildContext context, String etiqueta, String? valor) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 9),
       child: Column(
@@ -243,7 +256,9 @@ class _CredencialMascotaScreenState
           ),
           const SizedBox(height: 2),
           Text(
-            valor == null || valor.trim().isEmpty ? 'No especificado' : valor,
+            valor == null || valor.trim().isEmpty
+                ? AppLocalizations.of(context).noEspecificado
+                : valor,
             style: const TextStyle(fontSize: 18, color: Color(0xFF7A4A22)),
           ),
         ],

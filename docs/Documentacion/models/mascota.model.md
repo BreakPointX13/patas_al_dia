@@ -85,17 +85,8 @@ Para evitar la sobrecarga que un ORM pesado implicaría en un dispositivo móvil
 
 ### 5. `especiePersonalizada` (2026-08-17)
 
-Igual que `tipoEventoPersonalizado` en `AgendaEventoModel`, este campo nuevo (`String?`, columna `especie_personalizada`) guarda el texto libre solo cuando `especie == 'Otro'` — `especie` en sí dejó de ser texto libre para pasar a una lista fija de opciones, elegida desde un `DropdownButtonFormField` en `FormularioMascotaScreen` (ver `formularioMascotaScreen.md`). Las pantallas que muestran la especie (`HomeScreen`, `DetalleMascotaScreen`, `CredencialMascotaScreen`) resuelven cuál de los dos campos mostrar con el getter `especieTexto` (ver punto 6).
+Igual que `tipoEventoPersonalizado` en `AgendaEventoModel`, este campo nuevo (`String?`, columna `especie_personalizada`) guarda el texto libre solo cuando `especie == 'Otro'` — `especie` en sí dejó de ser texto libre para pasar a una lista fija de opciones, elegida desde un `DropdownButtonFormField` en `FormularioMascotaScreen` (ver `formularioMascotaScreen.md`).
 
-### 6. `especieTexto` — getter, no función suelta (2026-08-17)
+### 6. `especieTexto` — getter borrado al llegar los idiomas (2026-08-17 → eliminado 2026-08-18)
 
-```dart
-String get especieTexto {
-  if (especie == 'Otro' && especiePersonalizada != null) {
-    return especiePersonalizada!;
-  }
-  return especie ?? 'No especificada';
-}
-```
-
-Al agregar `CredencialMascotaScreen`, la misma lógica de "¿muestro `especie` o `especiePersonalizada`?" iba a existir por tercera vez, duplicada en tres archivos (ya vivía como función privada `_especieTexto` en `home_screen.dart` y `detalle_mascota_screen.dart`). Se subió a `MascotaModel` como getter — cualquier pantalla que tenga una `MascotaModel` en mano puede pedir `mascota.especieTexto` directamente, sin importar una función aparte ni repetir la condición.
+Este modelo tuvo, por un día, un getter `especieTexto` que resolvía si mostrar `especie` o `especiePersonalizada`. Al implementar idiomas (ver `sistemaIdiomas.md`), dejó de alcanzar: mostrar la especie ahora requiere *traducirla* según el idioma activo, y un getter no puede recibir el `BuildContext` que hace falta para eso. Se borró por completo (no se dejó como alias ni se mantuvo por compatibilidad) y se reemplazó por la función `especieMostrar(context, mascota)` en `presentation/utils/etiquetas_localizadas.dart` (ver `etiquetasLocalizadas.md`), que sí puede traducir porque vive en la capa de presentación, no en el modelo de datos.

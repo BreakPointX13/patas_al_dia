@@ -5,8 +5,10 @@ import 'package:open_filex/open_filex.dart';
 import 'package:patas_al_dia/data/models/agenda_evento_model.dart';
 import 'package:patas_al_dia/data/models/documento_model.dart';
 import 'package:patas_al_dia/data/models/mascota_model.dart';
+import 'package:patas_al_dia/l10n/app_localizations.dart';
 import 'package:patas_al_dia/presentation/screens/formulario_agenda_evento_screen.dart';
 import 'package:patas_al_dia/presentation/screens/visor_imagen_screen.dart';
+import 'package:patas_al_dia/presentation/utils/etiquetas_localizadas.dart';
 import 'package:patas_al_dia/providers/agenda_evento_provider.dart';
 import 'package:patas_al_dia/providers/documento_provider.dart';
 import 'package:patas_al_dia/providers/mascota_provider.dart';
@@ -42,13 +44,17 @@ class _DetalleAgendaEventoScreenState
         .actualizarAgendaEvento(eventoActualizado);
   }
 
-  String _nombreMascota(List<MascotaModel> mascotas, String mascotaId) {
+  String _nombreMascota(
+    AppLocalizations l10n,
+    List<MascotaModel> mascotas,
+    String mascotaId,
+  ) {
     for (final mascota in mascotas) {
       if (mascota.id == mascotaId) {
         return mascota.nombre;
       }
     }
-    return 'Mascota';
+    return l10n.mascotaFallback;
   }
 
   Future<void> _abrirDocumento(DocumentoModel documento) async {
@@ -70,24 +76,21 @@ class _DetalleAgendaEventoScreenState
   }
 
   Future<void> _eliminarEvento(AgendaEventoModel evento) async {
+    final l10n = AppLocalizations.of(context);
     final confirmar = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Eliminar evento'),
-        content: Text(
-          '¿Eliminar "${evento.titulo}"? Los medicamentos registrados se '
-          'eliminan con el evento; los documentos adjuntos se conservan, '
-          'solo pierden el vínculo con este evento.',
-        ),
+        title: Text(l10n.eliminarEventoTitulo),
+        content: Text(l10n.eliminarEventoContenido(evento.titulo)),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Cancelar'),
+            child: Text(l10n.accionCancelar),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
             onPressed: () => Navigator.of(context).pop(true),
-            child: const Text('Eliminar'),
+            child: Text(l10n.accionEliminar),
           ),
         ],
       ),
@@ -127,9 +130,10 @@ class _DetalleAgendaEventoScreenState
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
     final evento = eventoEncontrado;
+    final l10n = AppLocalizations.of(context);
 
     final mascotas = ref.watch(mascotasProvider);
-    final nombreMascota = _nombreMascota(mascotas, evento.mascotaId);
+    final nombreMascota = _nombreMascota(l10n, mascotas, evento.mascotaId);
     final medicamentos = ref.watch(medicamentoEventoProvider);
     final documentos = ref.watch(documentosProvider);
 
@@ -138,18 +142,21 @@ class _DetalleAgendaEventoScreenState
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          ListTile(title: const Text('Mascota'), subtitle: Text(nombreMascota)),
           ListTile(
-            title: const Text('Tipo de evento'),
+            title: Text(l10n.campoMascota),
+            subtitle: Text(nombreMascota),
+          ),
+          ListTile(
+            title: Text(l10n.campoTipoEvento),
             subtitle: Text(
               evento.tipoEvento == 'Otro' &&
                       evento.tipoEventoPersonalizado != null
                   ? evento.tipoEventoPersonalizado!
-                  : evento.tipoEvento ?? 'No especificado',
+                  : tipoEventoMostrar(l10n, evento.tipoEvento),
             ),
           ),
           ListTile(
-            title: const Text('Fecha programada'),
+            title: Text(l10n.campoFechaProgramada),
             subtitle: Text(
               '${evento.fechaProgramada.day}/'
               '${evento.fechaProgramada.month}/${evento.fechaProgramada.year} '
@@ -158,16 +165,16 @@ class _DetalleAgendaEventoScreenState
             ),
           ),
           ListTile(
-            title: const Text('Observaciones'),
-            subtitle: Text(evento.observaciones ?? 'Sin observaciones'),
+            title: Text(l10n.campoObservaciones),
+            subtitle: Text(evento.observaciones ?? l10n.sinObservaciones),
           ),
           ListTile(
-            title: const Text('Recordatorio'),
+            title: Text(l10n.campoRecordatorio),
             subtitle: Text(
               evento.recordatorioHorasAntes.isEmpty
-                  ? 'Sin recordatorio'
+                  ? l10n.sinRecordatorio
                   : evento.recordatorioHorasAntes
-                        .map((h) => '$h horas antes')
+                        .map((h) => l10n.recordatorioHorasGenerico(h))
                         .join(', '),
             ),
           ),
@@ -176,7 +183,7 @@ class _DetalleAgendaEventoScreenState
             ListTile(
               contentPadding: EdgeInsets.zero,
               leading: const Icon(Icons.check_circle),
-              title: const Text('Realizado'),
+              title: Text(l10n.realizadoLabel),
               subtitle: Text(
                 '${evento.fechaRealizada!.day}/'
                 '${evento.fechaRealizada!.month}/${evento.fechaRealizada!.year}',
@@ -185,14 +192,14 @@ class _DetalleAgendaEventoScreenState
           else
             SwitchListTile(
               contentPadding: EdgeInsets.zero,
-              title: const Text('Marcar como realizado'),
+              title: Text(l10n.marcarComoRealizado),
               value: false,
               onChanged: (_) => _marcarRealizado(evento),
             ),
           const Divider(height: 32),
-          Text('Medicamentos', style: Theme.of(context).textTheme.titleMedium),
+          Text(l10n.medicamentosLabel, style: Theme.of(context).textTheme.titleMedium),
           if (medicamentos.isEmpty)
-            const Text('Sin medicamentos registrados')
+            Text(l10n.sinMedicamentosRegistrados)
           else
             for (final medicamento in medicamentos)
               ListTile(
@@ -200,17 +207,17 @@ class _DetalleAgendaEventoScreenState
                 title: Text(medicamento.nombre),
                 subtitle: Text(
                   medicamento.observaciones == null
-                      ? medicamento.tipoPresentacion
-                      : '${medicamento.tipoPresentacion} · ${medicamento.observaciones}',
+                      ? tipoPresentacionMostrar(l10n, medicamento.tipoPresentacion)
+                      : '${tipoPresentacionMostrar(l10n, medicamento.tipoPresentacion)} · ${medicamento.observaciones}',
                 ),
               ),
           const Divider(height: 32),
           Text(
-            'Documentos adjuntos',
+            l10n.documentosAdjuntosLabel,
             style: Theme.of(context).textTheme.titleMedium,
           ),
           if (documentos.isEmpty)
-            const Text('Sin documentos adjuntos')
+            Text(l10n.sinDocumentosAdjuntos)
           else
             for (final documento in documentos)
               ListTile(
@@ -227,14 +234,14 @@ class _DetalleAgendaEventoScreenState
                         ),
                       ),
                 title: Text(documento.titulo),
-                subtitle: Text(documento.tipoDocumento),
+                subtitle: Text(tipoDocumentoMostrar(l10n, documento.tipoDocumento)),
                 trailing: const Icon(Icons.chevron_right),
                 onTap: () => _abrirDocumento(documento),
               ),
           const Divider(height: 32),
           ListTile(
             leading: const Icon(Icons.edit),
-            title: const Text('Editar evento'),
+            title: Text(l10n.accionEditar),
             trailing: const Icon(Icons.chevron_right),
             onTap: () {
               Navigator.of(context).push(
@@ -248,9 +255,9 @@ class _DetalleAgendaEventoScreenState
           const SizedBox(height: 16),
           ListTile(
             leading: const Icon(Icons.delete_outline, color: Colors.red),
-            title: const Text(
-              'Eliminar evento',
-              style: TextStyle(color: Colors.red),
+            title: Text(
+              l10n.eliminarEventoTitulo,
+              style: const TextStyle(color: Colors.red),
             ),
             onTap: () => _eliminarEvento(evento),
           ),

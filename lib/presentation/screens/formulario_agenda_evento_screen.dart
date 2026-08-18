@@ -6,17 +6,19 @@ import 'package:uuid/uuid.dart';
 import 'package:patas_al_dia/data/models/agenda_evento_model.dart';
 import 'package:patas_al_dia/data/models/documento_model.dart';
 import 'package:patas_al_dia/data/models/medicamento_evento_model.dart';
+import 'package:patas_al_dia/l10n/app_localizations.dart';
+import 'package:patas_al_dia/presentation/utils/etiquetas_localizadas.dart';
 import 'package:patas_al_dia/providers/agenda_evento_provider.dart';
 import 'package:patas_al_dia/providers/documento_provider.dart';
 import 'package:patas_al_dia/providers/mascota_provider.dart';
 import 'package:patas_al_dia/providers/medicamento_evento_provider.dart';
 import 'package:patas_al_dia/services/notificacion_service.dart';
 
-const _opcionesRecordatorio = {
-  24: '1 día antes',
-  12: '12 horas antes',
-  6: '6 horas antes',
-  1: '1 hora antes',
+Map<int, String> _opcionesRecordatorio(AppLocalizations l10n) => {
+  24: l10n.recordatorio1Dia,
+  12: l10n.recordatorio12Horas,
+  6: l10n.recordatorio6Horas,
+  1: l10n.recordatorio1Hora,
 };
 
 const _tiposPresentacion = [
@@ -111,10 +113,13 @@ class _FormularioAgendaEventoScreenState
   }
 
   String get _tituloAppBar {
+    final l10n = AppLocalizations.of(context);
     if (widget.eventoExistente != null) {
-      return 'Editar evento';
+      return l10n.formEventoTituloEditar;
     }
-    return widget.esEventoPasado ? 'Agregar evento pasado' : 'Agregar evento futuro';
+    return widget.esEventoPasado
+        ? l10n.formEventoTituloAgregarPasado
+        : l10n.formEventoTituloAgregarFuturo;
   }
 
   @override
@@ -228,11 +233,7 @@ class _FormularioAgendaEventoScreenState
         return;
       }
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(
-            'La hora elegida todavía no pasó. Elige una hora anterior a la actual.',
-          ),
-        ),
+        SnackBar(content: Text(AppLocalizations.of(context).horaNoPaso)),
       );
       return;
     }
@@ -264,13 +265,16 @@ class _FormularioAgendaEventoScreenState
       text: existente?.observaciones ?? '',
     );
     String tipo = existente?.tipoPresentacion ?? _tiposPresentacion.first;
+    final l10n = AppLocalizations.of(context);
 
     final resultado = await showDialog<MedicamentoEventoModel>(
       context: context,
       builder: (context) => StatefulBuilder(
         builder: (context, setStateDialogo) => AlertDialog(
           title: Text(
-            existente == null ? 'Agregar medicamento' : 'Editar medicamento',
+            existente == null
+                ? l10n.agregarMedicamentoTitulo
+                : l10n.editarMedicamentoTitulo,
           ),
           content: SingleChildScrollView(
             child: Column(
@@ -278,10 +282,13 @@ class _FormularioAgendaEventoScreenState
               children: [
                 DropdownButtonFormField<String>(
                   initialValue: tipo,
-                  decoration: const InputDecoration(labelText: 'Presentación'),
+                  decoration: InputDecoration(labelText: l10n.campoPresentacion),
                   items: _tiposPresentacion
                       .map(
-                        (t) => DropdownMenuItem(value: t, child: Text(t)),
+                        (t) => DropdownMenuItem(
+                          value: t,
+                          child: Text(tipoPresentacionMostrar(l10n, t)),
+                        ),
                       )
                       .toList(),
                   onChanged: (valor) =>
@@ -290,13 +297,15 @@ class _FormularioAgendaEventoScreenState
                 const SizedBox(height: 8),
                 TextField(
                   controller: nombreController,
-                  decoration: const InputDecoration(labelText: 'Nombre *'),
+                  decoration: InputDecoration(
+                    labelText: l10n.campoNombreObligatorio,
+                  ),
                 ),
                 const SizedBox(height: 8),
                 TextField(
                   controller: observacionesController,
-                  decoration: const InputDecoration(
-                    labelText: 'Observaciones',
+                  decoration: InputDecoration(
+                    labelText: l10n.campoObservaciones,
                   ),
                   maxLines: 2,
                 ),
@@ -306,7 +315,7 @@ class _FormularioAgendaEventoScreenState
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
-              child: const Text('Cancelar'),
+              child: Text(l10n.accionCancelar),
             ),
             ElevatedButton(
               onPressed: () {
@@ -325,7 +334,7 @@ class _FormularioAgendaEventoScreenState
                   ),
                 );
               },
-              child: const Text('Guardar'),
+              child: Text(l10n.accionGuardar),
             ),
           ],
         ),
@@ -348,9 +357,10 @@ class _FormularioAgendaEventoScreenState
   }
 
   Future<void> _abrirSelectorDocumento() async {
+    final l10n = AppLocalizations.of(context);
     if (_mascotaId == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Selecciona una mascota primero')),
+        SnackBar(content: Text(l10n.seleccionaMascotaPrimero)),
       );
       return;
     }
@@ -363,17 +373,17 @@ class _FormularioAgendaEventoScreenState
           children: [
             ListTile(
               leading: const Icon(Icons.photo_camera),
-              title: const Text('Tomar foto'),
+              title: Text(l10n.tomarFoto),
               onTap: () => Navigator.of(context).pop('camara'),
             ),
             ListTile(
               leading: const Icon(Icons.photo_library),
-              title: const Text('Elegir imagen de galería'),
+              title: Text(l10n.elegirImagenGaleria),
               onTap: () => Navigator.of(context).pop('galeria'),
             ),
             ListTile(
               leading: const Icon(Icons.picture_as_pdf),
-              title: const Text('Elegir PDF'),
+              title: Text(l10n.elegirPdf),
               onTap: () => Navigator.of(context).pop('pdf'),
             ),
           ],
@@ -415,27 +425,33 @@ class _FormularioAgendaEventoScreenState
       text: existente?.titulo ?? '',
     );
     String tipo = existente?.tipoDocumento ?? _tiposDocumento.first;
+    final l10n = AppLocalizations.of(context);
 
     final resultado = await showDialog<DocumentoModel>(
       context: context,
       builder: (context) => StatefulBuilder(
         builder: (context, setStateDialogo) => AlertDialog(
-          title: const Text('Datos del documento'),
+          title: Text(l10n.datosDocumentoTitulo),
           content: SingleChildScrollView(
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
                 TextField(
                   controller: tituloController,
-                  decoration: const InputDecoration(labelText: 'Título *'),
+                  decoration: InputDecoration(
+                    labelText: l10n.campoTituloObligatorio,
+                  ),
                 ),
                 const SizedBox(height: 8),
                 DropdownButtonFormField<String>(
                   initialValue: tipo,
-                  decoration: const InputDecoration(labelText: 'Tipo'),
+                  decoration: InputDecoration(labelText: l10n.campoTipo),
                   items: _tiposDocumento
                       .map(
-                        (t) => DropdownMenuItem(value: t, child: Text(t)),
+                        (t) => DropdownMenuItem(
+                          value: t,
+                          child: Text(tipoDocumentoMostrar(l10n, t)),
+                        ),
                       )
                       .toList(),
                   onChanged: (valor) =>
@@ -447,7 +463,7 @@ class _FormularioAgendaEventoScreenState
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
-              child: const Text('Cancelar'),
+              child: Text(l10n.accionCancelar),
             ),
             ElevatedButton(
               onPressed: () {
@@ -469,7 +485,7 @@ class _FormularioAgendaEventoScreenState
                   ),
                 );
               },
-              child: const Text('Guardar'),
+              child: Text(l10n.accionGuardar),
             ),
           ],
         ),
@@ -495,15 +511,16 @@ class _FormularioAgendaEventoScreenState
     if (!_formKey.currentState!.validate()) {
       return;
     }
+    final l10n = AppLocalizations.of(context);
     if (_mascotaId == null) {
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(const SnackBar(content: Text('Selecciona una mascota')));
+      ).showSnackBar(SnackBar(content: Text(l10n.errorSeleccionaMascota)));
       return;
     }
     if (_fechaProgramada == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Selecciona fecha y hora')),
+        SnackBar(content: Text(l10n.errorFechaYHora)),
       );
       return;
     }
@@ -606,6 +623,7 @@ class _FormularioAgendaEventoScreenState
   @override
   Widget build(BuildContext context) {
     final mascotas = ref.watch(mascotasProvider);
+    final l10n = AppLocalizations.of(context);
 
     return Scaffold(
       appBar: AppBar(title: Text(_tituloAppBar)),
@@ -616,7 +634,7 @@ class _FormularioAgendaEventoScreenState
           children: [
             DropdownButtonFormField<String>(
               initialValue: _mascotaId,
-              decoration: const InputDecoration(labelText: 'Mascota *'),
+              decoration: InputDecoration(labelText: l10n.campoMascotaObligatorio),
               items: mascotas
                   .map(
                     (m) =>
@@ -625,15 +643,15 @@ class _FormularioAgendaEventoScreenState
                   .toList(),
               onChanged: (valor) => setState(() => _mascotaId = valor),
               validator: (valor) =>
-                  valor == null ? 'Selecciona una mascota' : null,
+                  valor == null ? l10n.errorSeleccionaMascota : null,
             ),
             const SizedBox(height: 16),
             TextFormField(
               controller: _tituloController,
-              decoration: const InputDecoration(labelText: 'Título *'),
+              decoration: InputDecoration(labelText: l10n.campoTituloObligatorio),
               validator: (valor) {
                 if (valor == null || valor.trim().isEmpty) {
-                  return 'El título es obligatorio';
+                  return l10n.errorTituloObligatorio;
                 }
                 return null;
               },
@@ -641,9 +659,14 @@ class _FormularioAgendaEventoScreenState
             const SizedBox(height: 16),
             DropdownButtonFormField<String>(
               initialValue: _tipoEvento,
-              decoration: const InputDecoration(labelText: 'Tipo de evento'),
+              decoration: InputDecoration(labelText: l10n.campoTipoEvento),
               items: _tiposEvento
-                  .map((t) => DropdownMenuItem(value: t, child: Text(t)))
+                  .map(
+                    (t) => DropdownMenuItem(
+                      value: t,
+                      child: Text(tipoEventoMostrar(l10n, t)),
+                    ),
+                  )
                   .toList(),
               onChanged: (valor) =>
                   setState(() => _tipoEvento = valor ?? _tiposEvento.first),
@@ -652,8 +675,8 @@ class _FormularioAgendaEventoScreenState
               const SizedBox(height: 16),
               TextFormField(
                 controller: _tipoEventoPersonalizadoController,
-                decoration: const InputDecoration(
-                  labelText: 'Especifica el tipo',
+                decoration: InputDecoration(
+                  labelText: l10n.campoEspecificaElTipo,
                 ),
               ),
             ],
@@ -662,28 +685,30 @@ class _FormularioAgendaEventoScreenState
               contentPadding: EdgeInsets.zero,
               title: Text(
                 _fechaProgramada == null
-                    ? 'Fecha y hora no seleccionadas'
-                    : 'Fecha: ${_fechaProgramada!.day}/'
-                          '${_fechaProgramada!.month}/${_fechaProgramada!.year} '
-                          '${_fechaProgramada!.hour.toString().padLeft(2, '0')}:'
-                          '${_fechaProgramada!.minute.toString().padLeft(2, '0')}',
+                    ? l10n.fechaHoraNoSeleccionadas
+                    : l10n.fechaConValor(
+                        '${_fechaProgramada!.day}/'
+                        '${_fechaProgramada!.month}/${_fechaProgramada!.year} '
+                        '${_fechaProgramada!.hour.toString().padLeft(2, '0')}:'
+                        '${_fechaProgramada!.minute.toString().padLeft(2, '0')}',
+                      ),
               ),
               trailing: TextButton(
                 onPressed: _seleccionarFechaHora,
-                child: const Text('Elegir'),
+                child: Text(l10n.accionElegir),
               ),
             ),
             if (_esFechaFutura) ...[
               const SizedBox(height: 16),
               SwitchListTile(
                 contentPadding: EdgeInsets.zero,
-                title: const Text('Recordatorio'),
+                title: Text(l10n.campoRecordatorio),
                 value: _recordatorioActivo,
                 onChanged: (valor) => setState(() => _recordatorioActivo = valor),
               ),
               if (_recordatorioActivo) ...[
-                Text('Avisar', style: Theme.of(context).textTheme.bodySmall),
-                for (final opcion in _opcionesRecordatorio.entries)
+                Text(l10n.avisarLabel, style: Theme.of(context).textTheme.bodySmall),
+                for (final opcion in _opcionesRecordatorio(l10n).entries)
                   CheckboxListTile(
                     contentPadding: EdgeInsets.zero,
                     controlAffinity: ListTileControlAffinity.leading,
@@ -707,7 +732,7 @@ class _FormularioAgendaEventoScreenState
               const Divider(height: 32),
               TextFormField(
                 controller: _observacionesController,
-                decoration: const InputDecoration(labelText: 'Observaciones'),
+                decoration: InputDecoration(labelText: l10n.campoObservaciones),
                 maxLines: 3,
               ),
               const SizedBox(height: 24),
@@ -715,24 +740,26 @@ class _FormularioAgendaEventoScreenState
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    'Medicamentos',
+                    l10n.medicamentosLabel,
                     style: Theme.of(context).textTheme.titleMedium,
                   ),
                   TextButton.icon(
                     onPressed: () => _abrirDialogoMedicamento(),
                     icon: const Icon(Icons.add),
-                    label: const Text('Agregar'),
+                    label: Text(l10n.accionAgregar),
                   ),
                 ],
               ),
               if (_medicamentos.isEmpty)
-                const Text('Sin medicamentos registrados')
+                Text(l10n.sinMedicamentosRegistrados)
               else
                 for (final medicamento in _medicamentos)
                   ListTile(
                     contentPadding: EdgeInsets.zero,
                     title: Text(medicamento.nombre),
-                    subtitle: Text(medicamento.tipoPresentacion),
+                    subtitle: Text(
+                      tipoPresentacionMostrar(l10n, medicamento.tipoPresentacion),
+                    ),
                     onTap: () =>
                         _abrirDialogoMedicamento(existente: medicamento),
                     trailing: IconButton(
@@ -749,18 +776,18 @@ class _FormularioAgendaEventoScreenState
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    'Documentos adjuntos',
+                    l10n.documentosAdjuntosLabel,
                     style: Theme.of(context).textTheme.titleMedium,
                   ),
                   TextButton.icon(
                     onPressed: _abrirSelectorDocumento,
                     icon: const Icon(Icons.attach_file),
-                    label: const Text('Agregar'),
+                    label: Text(l10n.accionAgregar),
                   ),
                 ],
               ),
               if (_documentos.isEmpty)
-                const Text('Sin documentos adjuntos')
+                Text(l10n.sinDocumentosAdjuntos)
               else
                 for (final documento in _documentos)
                   ListTile(
@@ -771,7 +798,9 @@ class _FormularioAgendaEventoScreenState
                           : Icons.image,
                     ),
                     title: Text(documento.titulo),
-                    subtitle: Text(documento.tipoDocumento),
+                    subtitle: Text(
+                      tipoDocumentoMostrar(l10n, documento.tipoDocumento),
+                    ),
                     onTap: () => _abrirDialogoDatosDocumento(
                       documento.filePath,
                       existente: documento,
@@ -788,7 +817,7 @@ class _FormularioAgendaEventoScreenState
               const SizedBox(height: 16),
               SwitchListTile(
                 contentPadding: EdgeInsets.zero,
-                title: const Text('Programar próxima consulta'),
+                title: Text(l10n.campoProgramarProximaConsulta),
                 value: _proximaConsultaActiva,
                 onChanged: (valor) =>
                     setState(() => _proximaConsultaActiva = valor),
@@ -798,26 +827,25 @@ class _FormularioAgendaEventoScreenState
                   contentPadding: EdgeInsets.zero,
                   title: Text(
                     _proximaConsultaFecha == null
-                        ? 'Elige el día'
+                        ? l10n.elegirElDia
                         : '${_proximaConsultaFecha!.day}/'
                               '${_proximaConsultaFecha!.month}/${_proximaConsultaFecha!.year}',
                   ),
                   trailing: TextButton(
                     onPressed: _seleccionarFechaProximaConsulta,
-                    child: const Text('Elegir fecha'),
+                    child: Text(l10n.elegirFecha),
                   ),
                 ),
             ] else if (_esFechaFutura)
               Padding(
                 padding: const EdgeInsets.only(top: 16),
                 child: Text(
-                  'El resto de la información (observaciones, medicamentos, '
-                  'documentos) se habilita cuando llegue la fecha del evento.',
+                  l10n.segundaMitadDeshabilitadaAviso,
                   style: Theme.of(context).textTheme.bodySmall,
                 ),
               ),
             const SizedBox(height: 32),
-            ElevatedButton(onPressed: _guardar, child: const Text('Guardar')),
+            ElevatedButton(onPressed: _guardar, child: Text(l10n.accionGuardar)),
           ],
         ),
       ),

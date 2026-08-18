@@ -41,3 +41,7 @@ PopupMenuButton<void>(
 ```
 
 Widget nativo de Flutter para menús desplegables — no hace falta ningún paquete nuevo. El tipo genérico (`<void>`) indica que no nos interesa el valor que devuelve el menú al cerrarse (a diferencia de un `PopupMenuButton<String>`, por ejemplo, donde cada opción devolvería un valor distinto); en vez de eso, cada opción dispara su propia acción directamente en su `onTap`.
+
+### Tooltip y etiqueta vía `AppLocalizations` (2026-08-18)
+
+`tooltip: l10n.cuentaTooltip` y `title: Text(l10n.ajustesTitulo)` — ver `sistemaIdiomas.md`. `ajustesTitulo` es la misma clave que usa `AjustesScreen` para el título de su propio `AppBar`, ya que es el mismo texto ("Ajustes") en los dos lugares.

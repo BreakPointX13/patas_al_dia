@@ -2,9 +2,11 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:patas_al_dia/data/models/mascota_model.dart';
+import 'package:patas_al_dia/l10n/app_localizations.dart';
 import 'package:patas_al_dia/presentation/screens/agenda_screen.dart';
 import 'package:patas_al_dia/presentation/screens/documentos_screen.dart';
 import 'package:patas_al_dia/presentation/screens/formulario_mascota_screen.dart';
+import 'package:patas_al_dia/presentation/utils/etiquetas_localizadas.dart';
 import 'package:patas_al_dia/presentation/widgets/separador_seccion_ficha.dart';
 import 'package:patas_al_dia/presentation/widgets/tarjeta_clara.dart';
 import 'package:patas_al_dia/providers/mascota_provider.dart';
@@ -14,23 +16,21 @@ Future<void> _eliminarMascota(
   WidgetRef ref,
   MascotaModel mascota,
 ) async {
+  final l10n = AppLocalizations.of(context);
   final confirmar = await showDialog<bool>(
     context: context,
     builder: (context) => AlertDialog(
-      title: const Text('Eliminar mascota'),
-      content: Text(
-        '¿Eliminar a ${mascota.nombre}? Se van a borrar también su agenda '
-        'y sus documentos. Esta acción no se puede deshacer.',
-      ),
+      title: Text(l10n.eliminarMascotaTitulo),
+      content: Text(l10n.eliminarMascotaContenido(mascota.nombre)),
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(false),
-          child: const Text('Cancelar'),
+          child: Text(l10n.accionCancelar),
         ),
         ElevatedButton(
           style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
           onPressed: () => Navigator.of(context).pop(true),
-          child: const Text('Eliminar'),
+          child: Text(l10n.accionEliminar),
         ),
       ],
     ),
@@ -53,6 +53,7 @@ class DetalleMascotaScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
     final mascotas = ref.watch(mascotasProvider);
     MascotaModel? mascotaEncontrada;
     for (final m in mascotas) {
@@ -75,56 +76,60 @@ class DetalleMascotaScreen extends ConsumerWidget {
 
     final grupoMascota = [
       ListTile(
-        title: const Text('Especie'),
-        subtitle: Text(mascota.especieTexto),
+        title: Text(l10n.campoEspecie),
+        subtitle: Text(especieMostrar(context, mascota)),
       ),
       ListTile(
-        title: const Text('Raza'),
-        subtitle: Text(mascota.raza ?? 'No especificada'),
+        title: Text(l10n.campoRaza),
+        subtitle: Text(mascota.raza ?? l10n.noEspecificada),
       ),
     ];
 
     final grupoIdentificacion = [
       ListTile(
-        title: const Text('RUT de la mascota'),
-        subtitle: Text(mascota.rutMascota ?? 'No especificado'),
+        title: Text(l10n.rutMascotaLabel),
+        subtitle: Text(mascota.rutMascota ?? l10n.noEspecificado),
       ),
       ListTile(
-        title: const Text('Número de chip'),
-        subtitle: Text(mascota.numeroChip ?? 'No especificado'),
+        title: Text(l10n.campoNumeroChip),
+        subtitle: Text(mascota.numeroChip ?? l10n.noEspecificado),
       ),
     ];
 
     final grupoDatos = [
       ListTile(
-        title: const Text('Sexo'),
-        subtitle: Text(mascota.sexo ?? 'No especificado'),
+        title: Text(l10n.campoSexo),
+        subtitle: Text(sexoMostrar(context, mascota.sexo)),
       ),
       ListTile(
-        title: const Text('Colores'),
-        subtitle: Text(mascota.colores ?? 'No especificado'),
+        title: Text(l10n.campoColores),
+        subtitle: Text(mascota.colores ?? l10n.noEspecificado),
       ),
       ListTile(
-        title: const Text('Peso'),
+        title: Text(l10n.pesoLabel),
         subtitle: Text(
           mascota.pesoActual == null
-              ? 'No especificado'
+              ? l10n.noEspecificado
               : '${mascota.pesoActual} kg',
         ),
       ),
       ListTile(
-        title: const Text('Esterilizado'),
-        subtitle: Text(mascota.esterilizado ? 'Sí' : 'No'),
+        title: Text(l10n.campoEsterilizado),
+        subtitle: Text(mascota.esterilizado ? l10n.valorSi : l10n.valorNo),
       ),
       ListTile(
         title: Text(
-          mascota.fechaEstimada ? 'Edad estimada' : 'Fecha de nacimiento',
+          mascota.fechaEstimada
+              ? l10n.edadEstimadaLabel
+              : l10n.fechaNacimientoLabel,
         ),
         subtitle: Text(
           mascota.fechaNacimiento == null
-              ? 'No especificada'
+              ? l10n.noEspecificada
               : mascota.fechaEstimada
-              ? '${DateTime.now().year - mascota.fechaNacimiento!.year} años'
+              ? l10n.aniosCantidad(
+                  DateTime.now().year - mascota.fechaNacimiento!.year,
+                )
               : '${mascota.fechaNacimiento!.day}/'
                     '${mascota.fechaNacimiento!.month}/'
                     '${mascota.fechaNacimiento!.year}',
@@ -157,7 +162,7 @@ class DetalleMascotaScreen extends ConsumerWidget {
           const SizedBox(height: 16),
           ListTile(
             leading: const Icon(Icons.edit),
-            title: const Text('Editar datos'),
+            title: Text(l10n.accionEditar),
             trailing: const Icon(Icons.chevron_right),
             onTap: () {
               Navigator.of(context).push(
@@ -170,7 +175,7 @@ class DetalleMascotaScreen extends ConsumerWidget {
           ),
           ListTile(
             leading: const Icon(Icons.event_note),
-            title: const Text('Agenda'),
+            title: Text(l10n.accionAgenda),
             trailing: const Icon(Icons.chevron_right),
             onTap: () {
               Navigator.of(context).push(
@@ -183,7 +188,7 @@ class DetalleMascotaScreen extends ConsumerWidget {
           ),
           ListTile(
             leading: const Icon(Icons.description),
-            title: const Text('Documentos'),
+            title: Text(l10n.accionDocumentos),
             trailing: const Icon(Icons.chevron_right),
             onTap: () {
               Navigator.of(context).push(
@@ -196,9 +201,9 @@ class DetalleMascotaScreen extends ConsumerWidget {
           const SizedBox(height: 16),
           ListTile(
             leading: const Icon(Icons.delete_outline, color: Colors.red),
-            title: const Text(
-              'Eliminar mascota',
-              style: TextStyle(color: Colors.red),
+            title: Text(
+              l10n.eliminarMascotaTitulo,
+              style: const TextStyle(color: Colors.red),
             ),
             onTap: () => _eliminarMascota(context, ref, mascota),
           ),

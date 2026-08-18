@@ -5,8 +5,10 @@ import 'package:intl/intl.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:patas_al_dia/data/models/agenda_evento_model.dart';
 import 'package:patas_al_dia/data/models/mascota_model.dart';
+import 'package:patas_al_dia/l10n/app_localizations.dart';
 import 'package:patas_al_dia/presentation/screens/detalle_agenda_evento_screen.dart';
 import 'package:patas_al_dia/presentation/screens/formulario_agenda_evento_screen.dart';
+import 'package:patas_al_dia/presentation/utils/etiquetas_localizadas.dart';
 import 'package:patas_al_dia/presentation/widgets/logo_barra_superior.dart';
 import 'package:patas_al_dia/presentation/widgets/menu_usuario_avatar.dart';
 import 'package:patas_al_dia/providers/agenda_evento_provider.dart';
@@ -53,11 +55,22 @@ Color _colorTarjetaAgenda(BuildContext context) =>
     ? const Color(0xFFF3C98F)
     : const Color(0xFFFFF7EC);
 
-String _tipoEventoTexto(AgendaEventoModel evento) {
+// DateFormat necesita un identificador de locale completo ('es_ES'), no el
+// código corto de dos letras que usa AppLocalizations ('es') — este mapeo
+// evita que las fechas queden en español fijo sin importar el idioma
+// elegido (`main.dart` ya inicializa los datos de formato de los tres).
+String _localeIntl(BuildContext context) =>
+    switch (AppLocalizations.of(context).localeName) {
+      'en' => 'en_US',
+      'pt' => 'pt_BR',
+      _ => 'es_ES',
+    };
+
+String _tipoEventoTexto(AppLocalizations l10n, AgendaEventoModel evento) {
   if (evento.tipoEvento == 'Otro' && evento.tipoEventoPersonalizado != null) {
     return evento.tipoEventoPersonalizado!;
   }
-  return evento.tipoEvento ?? 'Otro';
+  return tipoEventoMostrar(l10n, evento.tipoEvento);
 }
 
 String _capitalizar(String texto) =>
@@ -109,6 +122,7 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
   }
 
   Future<void> _abrirFiltro(List<MascotaModel> mascotas) async {
+    final l10n = AppLocalizations.of(context);
     var seleccionTemporal = Set<String>.from(
       _mascotaIdsFiltro ?? mascotas.map((m) => m.id),
     );
@@ -117,13 +131,13 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
       context: context,
       builder: (context) => StatefulBuilder(
         builder: (context, setStateDialogo) => AlertDialog(
-          title: const Text('Filtrar por mascota'),
+          title: Text(l10n.filtrarPorMascotaTitulo),
           content: SingleChildScrollView(
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
                 CheckboxListTile(
-                  title: const Text('Todas'),
+                  title: Text(l10n.filtroTodas),
                   value: seleccionTemporal.length == mascotas.length,
                   onChanged: (marcado) {
                     setStateDialogo(() {
@@ -156,11 +170,11 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(false),
-              child: const Text('Cancelar'),
+              child: Text(l10n.accionCancelar),
             ),
             ElevatedButton(
               onPressed: () => Navigator.of(context).pop(true),
-              child: const Text('Aplicar'),
+              child: Text(l10n.accionAplicar),
             ),
           ],
         ),
@@ -178,6 +192,7 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
   }
 
   Future<void> _irAAgregarEvento() async {
+    final l10n = AppLocalizations.of(context);
     final esPasado = await showModalBottomSheet<bool>(
       context: context,
       builder: (context) => SafeArea(
@@ -186,14 +201,14 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
           children: [
             ListTile(
               leading: const Icon(Icons.event_available),
-              title: const Text('Evento futuro'),
-              subtitle: const Text('Recordatorio para una próxima cita'),
+              title: Text(l10n.eventoFuturoTitulo),
+              subtitle: Text(l10n.eventoFuturoSubtitulo),
               onTap: () => Navigator.of(context).pop(false),
             ),
             ListTile(
               leading: const Icon(Icons.history),
-              title: const Text('Evento pasado'),
-              subtitle: const Text('Registrar una consulta ya realizada'),
+              title: Text(l10n.eventoPasadoTitulo),
+              subtitle: Text(l10n.eventoPasadoSubtitulo),
               onTap: () => Navigator.of(context).pop(true),
             ),
           ],
@@ -225,16 +240,16 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
     );
   }
 
-  String _tituloFiltro(List<MascotaModel> mascotas) {
+  String _tituloFiltro(AppLocalizations l10n, List<MascotaModel> mascotas) {
     if (_mascotaIdsFiltro == null ||
         _mascotaIdsFiltro!.length == mascotas.length) {
-      return 'Todas las mascotas';
+      return l10n.filtroTodasLasMascotas;
     }
     final nombres = mascotas
         .where((m) => _mascotaIdsFiltro!.contains(m.id))
         .map((m) => m.nombre)
         .join(', ');
-    return nombres.isEmpty ? 'Sin mascotas seleccionadas' : nombres;
+    return nombres.isEmpty ? l10n.filtroSinMascotasSeleccionadas : nombres;
   }
 
   List<AgendaEventoModel> _eventosDelDia(
@@ -244,7 +259,11 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
     return eventos.where((e) => isSameDay(e.fechaProgramada, dia)).toList();
   }
 
-  String _nombreMascota(List<MascotaModel> mascotas, String mascotaId) {
+  String _nombreMascota(
+    AppLocalizations l10n,
+    List<MascotaModel> mascotas,
+    String mascotaId,
+  ) {
     for (final mascota in mascotas) {
       if (mascota.id == mascotaId) {
         return mascota.nombre;
@@ -253,7 +272,7 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
     // Puede pasar momentáneamente al cerrar sesión: mascotasProvider ya se
     // vació para la sesión nueva, pero un evento viejo todavía no terminó
     // de recargarse — no hay que crashear por eso, solo mostrar algo.
-    return 'Mascota';
+    return l10n.mascotaFallback;
   }
 
   Widget _etiquetaSeccion(String texto) {
@@ -277,24 +296,25 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
     List<MascotaModel> mascotas,
     bool mostrarNombreMascota,
   ) {
+    final l10n = AppLocalizations.of(context);
     final dias = evento.fechaProgramada
         .difference(DateTime.now())
         .inDays;
     final etiquetaDias = dias < 0
-        ? 'Atrasado'
+        ? l10n.diasAtrasado
         : dias == 0
-        ? 'Hoy'
+        ? l10n.diasHoy
         : dias == 1
-        ? 'Mañana'
-        : 'En $dias días';
+        ? l10n.diasManana
+        : l10n.diasEnNumero(dias);
     final fechaTexto = DateFormat(
       'd MMM y',
-      'es_ES',
+      _localeIntl(context),
     ).format(evento.fechaProgramada);
     final subtitulo = mostrarNombreMascota
-        ? '${_nombreMascota(mascotas, evento.mascotaId)} · '
-              '${_tipoEventoTexto(evento)}'
-        : _tipoEventoTexto(evento);
+        ? '${_nombreMascota(l10n, mascotas, evento.mascotaId)} · '
+              '${_tipoEventoTexto(l10n, evento)}'
+        : _tipoEventoTexto(l10n, evento);
 
     return Material(
       color: Colors.transparent,
@@ -322,9 +342,9 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
                       color: const Color(0xFFFBF0E2),
                       borderRadius: BorderRadius.circular(20),
                     ),
-                    child: const Text(
-                      'PRÓXIMO',
-                      style: TextStyle(
+                    child: Text(
+                      l10n.etiquetaProximo,
+                      style: const TextStyle(
                         fontFamily: 'Nunito',
                         fontWeight: FontWeight.w700,
                         fontSize: 11,
@@ -397,16 +417,17 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
     List<MascotaModel> mascotas,
     bool mostrarNombreMascota,
   ) {
+    final l10n = AppLocalizations.of(context);
     final fechaTexto = DateFormat(
       'd MMM y',
-      'es_ES',
+      _localeIntl(context),
     ).format(evento.fechaProgramada);
-    final tipoTexto = _tipoEventoTexto(evento);
+    final tipoTexto = _tipoEventoTexto(l10n, evento);
     final detalle = evento.observaciones?.trim().isNotEmpty == true
         ? evento.observaciones!.trim()
         : tipoTexto;
     final subtitulo = mostrarNombreMascota
-        ? '${_nombreMascota(mascotas, evento.mascotaId)} · $detalle'
+        ? '${_nombreMascota(l10n, mascotas, evento.mascotaId)} · $detalle'
         : detalle;
     final tieneDocumento = _eventoIdsConDocumento.contains(evento.id);
 
@@ -470,18 +491,18 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
                           color: const Color(0xFFFBF0E2),
                           borderRadius: BorderRadius.circular(8),
                         ),
-                        child: const Row(
+                        child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Icon(
+                            const Icon(
                               Icons.attach_file,
                               size: 12,
                               color: Color(0xFFD06D1F),
                             ),
-                            SizedBox(width: 4),
+                            const SizedBox(width: 4),
                             Text(
-                              'Documento adjunto',
-                              style: TextStyle(
+                              l10n.documentoAdjuntoLabel,
+                              style: const TextStyle(
                                 fontSize: 11,
                                 fontWeight: FontWeight.w600,
                                 color: Color(0xFFD06D1F),
@@ -505,7 +526,9 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
     List<MascotaModel> mascotas,
   ) {
     if (eventos.isEmpty) {
-      return const Center(child: Text('No hay eventos programados'));
+      return Center(
+        child: Text(AppLocalizations.of(context).noEventosProgramados),
+      );
     }
 
     final mostrarNombreMascota =
@@ -527,7 +550,7 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
     for (final evento in restoOrdenado) {
       final clave = DateFormat(
         'MMMM y',
-        'es_ES',
+        _localeIntl(context),
       ).format(evento.fechaProgramada);
       grupos.putIfAbsent(clave, () => []).add(evento);
     }
@@ -536,7 +559,7 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
       padding: const EdgeInsets.all(16),
       children: [
         if (proximo != null) ...[
-          _etiquetaSeccion('Próximo evento'),
+          _etiquetaSeccion(AppLocalizations.of(context).proximoEventoLabel),
           _tarjetaProximoEvento(proximo, mascotas, mostrarNombreMascota),
           const SizedBox(height: 8),
         ],
@@ -569,7 +592,7 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
               color: const Color(0xFFF3C98F),
               padding: const EdgeInsets.only(bottom: 10),
               child: TableCalendar<AgendaEventoModel>(
-                locale: 'es_ES',
+                locale: _localeIntl(context),
                 firstDay: DateTime(2000),
                 lastDay: DateTime(2100),
                 focusedDay: _diaEnfocado,
@@ -637,7 +660,11 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
         const Divider(height: 1),
         Expanded(
           child: diaSeleccionado == null
-              ? const Center(child: Text('Toca un día para ver sus eventos'))
+              ? Center(
+                  child: Text(
+                    AppLocalizations.of(context).tocaUnDiaParaVerEventos,
+                  ),
+                )
               : eventosDelDiaSeleccionado.isEmpty
               ? _sinEventosDelDia(diaSeleccionado, eventos, mascotas)
               : ListView.builder(
@@ -663,6 +690,7 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
     List<AgendaEventoModel> eventos,
     List<MascotaModel> mascotas,
   ) {
+    final l10n = AppLocalizations.of(context);
     final mostrarNombreMascota =
         _mascotaIdsFiltro == null || _mascotaIdsFiltro!.length != 1;
     final proximos =
@@ -680,7 +708,7 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
         Padding(
           padding: const EdgeInsets.fromLTRB(16, 12, 16, 2),
           child: Text(
-            DateFormat('d MMM y', 'es_ES').format(dia),
+            DateFormat('d MMM y', _localeIntl(context)).format(dia),
             style: TextStyle(
               fontFamily: 'Nunito',
               fontWeight: FontWeight.w700,
@@ -692,7 +720,7 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Text(
-            'Sin eventos este día',
+            l10n.sinEventosEsteDia,
             style: TextStyle(
               fontSize: 12,
               color: _colorTextoSecundarioSobreFondo(context),
@@ -700,8 +728,8 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
           ),
         ),
         if (proximos.isEmpty)
-          const Expanded(
-            child: Center(child: Text('No hay más eventos programados')),
+          Expanded(
+            child: Center(child: Text(l10n.noMasEventosProgramados)),
           )
         else
           Expanded(
@@ -710,7 +738,7 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
               itemCount: proximos.length + 1,
               itemBuilder: (context, index) {
                 if (index == 0) {
-                  return _etiquetaSeccion('Próximos eventos');
+                  return _etiquetaSeccion(l10n.proximosEventosLabel);
                 }
                 final evento = proximos[index - 1];
                 return _tarjetaEventoTimeline(
@@ -741,24 +769,25 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
     // logo, y el filtro por mascota no tiene sentido: ya está fijo a esa
     // única mascota.
     final esPantallaRaiz = widget.mascotaIdInicial == null;
+    final l10n = AppLocalizations.of(context);
 
     return Scaffold(
       appBar: AppBar(
         leading: esPantallaRaiz ? const LogoBarraSuperior() : null,
-        title: const Text('Agenda'),
+        title: Text(l10n.navAgenda),
         actions: [
           IconButton(
             icon: Icon(
               _vistaCalendario ? Icons.view_list : Icons.calendar_month,
             ),
-            tooltip: _vistaCalendario ? 'Ver como lista' : 'Ver calendario',
+            tooltip: _vistaCalendario ? l10n.verComoLista : l10n.verCalendario,
             onPressed: () =>
                 setState(() => _vistaCalendario = !_vistaCalendario),
           ),
           if (esPantallaRaiz)
             IconButton(
               icon: const Icon(Icons.filter_list),
-              tooltip: 'Filtrar por mascota',
+              tooltip: l10n.filtrarPorMascotaTitulo,
               onPressed: mascotas.isEmpty
                   ? null
                   : () => _abrirFiltro(mascotas),
@@ -776,7 +805,7 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
               runSpacing: 4,
               children: [
                 Text(
-                  'Mostrando: ${_tituloFiltro(mascotas)}',
+                  l10n.mostrandoFiltro(_tituloFiltro(l10n, mascotas)),
                   style: Theme.of(context).textTheme.bodySmall,
                 ),
                 if (mascotas.isEmpty)
@@ -791,7 +820,7 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
                       border: Border.all(color: Colors.red),
                     ),
                     child: Text(
-                      'No hay mascotas creadas',
+                      l10n.noHayMascotasCreadas,
                       style: TextStyle(
                         color: Colors.red.shade900,
                         fontSize: 12,
@@ -811,7 +840,7 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
       floatingActionButton: FloatingActionButton.extended(
         onPressed: mascotas.isEmpty ? null : _irAAgregarEvento,
         icon: const Icon(Icons.add),
-        label: const Text('Agregar evento'),
+        label: Text(l10n.agregarEvento),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
     );

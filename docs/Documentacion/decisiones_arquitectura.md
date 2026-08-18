@@ -341,6 +341,18 @@ Dos bugs reales en el navbar armado el 2026-08-12, recién visibles al probar co
 
 ---
 
+## 2026-08-18 — Idiomas: sistema oficial de Flutter, por módulos, datos guardados se traducen para mostrar
+
+**Decisión:** tercera pieza del pedido de accesibilidad (ver la entrada anterior sobre modo oscuro/tamaño de letra), la más grande. Se usa el sistema oficial de Flutter (`flutter_localizations` + `.arb` + `AppLocalizations` generado, ver `sistemaIdiomas.md`) en vez de un paquete de terceros — no rompe la regla de dependencias mínimas porque `flutter_localizations` viene con el SDK. Selector Sistema/Español/English/Português en `AjustesScreen`, guardado en `UsuarioModel.idioma` (mismo criterio que `tema`/`escalaTexto`).
+
+**Pregunta resuelta antes de escribir código:** especie, sexo, tipo de evento y tipo de documento no son solo texto de interfaz — son valores guardados en SQLite desde listas fijas. Se consultó con el usuario y se decidió traducirlos **para mostrar**, sin cambiar cómo se guardan (la base de datos sigue en español siempre) — requiere una capa de traducción aparte (`especieMostrar`/`sexoMostrar` en `etiquetasLocalizadas.md`) que no existe para texto de interfaz normal.
+
+**Por módulos, no todo de una vez:** se empezó por Mascotas (Login, navbar, Home, Formulario/Detalle/Credencial de mascota, `MenuUsuarioAvatar`, `AjustesScreen` completo), seguido de Agenda (`AgendaScreen`, `DetalleAgendaEventoScreen`, `FormularioAgendaEventoScreen`, incluidas las fechas del calendario con locale dinámico — ver `sistemaIdiomas.md`, punto 7) — ambos confirmados funcionando por el usuario en el dispositivo. Documentos (la pantalla general) queda pendiente como siguiente bloque de trabajo; hasta entonces, esa pantalla sigue en español fijo sin importar el idioma elegido.
+
+**Portugués con revisión extra:** el usuario pidió específicamente que las traducciones al portugués se revisen con cuidado (ni él ni el asistente son hablantes nativos) — se usó portugués brasileño (términos como "Cachorro", "Sair", "Excluir") de forma consistente, con nombres de especies elegidos por uso cotidiano real en Brasil (ej. "Porquinho-da-índia" para cobaya) en vez de traducciones literales.
+
+---
+
 ## De aquí en adelante
 
 Cada vez que se tome una decisión de arquitectura nueva (enfoque, tecnología, estructura — no un simple fix o ajuste de código), se agrega una entrada acá con: fecha, la decisión, el porqué, y alternativas consideradas si las hubo.

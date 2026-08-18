@@ -37,7 +37,8 @@ class DatabaseHelper {
         dispositivo_id TEXT,
         sesion_activa INTEGER DEFAULT 1,
         escala_texto REAL DEFAULT 1.0,
-        tema TEXT DEFAULT 'sistema'
+        tema TEXT DEFAULT 'sistema',
+        idioma TEXT DEFAULT 'sistema'
       )
     ''');
 

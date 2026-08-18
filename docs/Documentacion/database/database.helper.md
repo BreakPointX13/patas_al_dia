@@ -105,6 +105,6 @@ class DatabaseHelper {
 
 Mismo patrón que `tipo_evento_personalizado`: `especie` en `MascotaModel` pasó de texto libre a una lista fija (ver `mascota.model.md`), y esta columna nueva guarda el texto libre solo para la opción "Otro". Aplicado reinstalando la app, siguiendo la misma política de esquema en desarrollo (ver `decisiones_arquitectura.md`).
 
-### 7. Columnas `escala_texto` y `tema` agregadas a `usuarios` (2026-08-17/18)
+### 7. Columnas `escala_texto`, `tema` e `idioma` agregadas a `usuarios` (2026-08-17/18)
 
-Dos preferencias de accesibilidad nuevas, guardadas junto al usuario con el mismo criterio que `sesion_activa` (punto 4): `escala_texto REAL DEFAULT 1.0` (tamaño de letra) y `tema TEXT DEFAULT 'sistema'` (claro/oscuro/sistema). Ver `usuario.model.md` y `ajustesScreen.md`. Ambas se pierden si el invitado desinstala la app — comportamiento esperado, coherente con que el resto de sus datos tampoco sobrevive a una desinstalación.
+Tres preferencias de accesibilidad nuevas, guardadas junto al usuario con el mismo criterio que `sesion_activa` (punto 4): `escala_texto REAL DEFAULT 1.0` (tamaño de letra), `tema TEXT DEFAULT 'sistema'` (claro/oscuro/sistema) e `idioma TEXT DEFAULT 'sistema'` (es/en/pt/sistema, ver `sistemaIdiomas.md`). Ver `usuario.model.md` y `ajustesScreen.md`. Las tres se pierden si el invitado desinstala la app — comportamiento esperado, coherente con que el resto de sus datos tampoco sobrevive a una desinstalación.

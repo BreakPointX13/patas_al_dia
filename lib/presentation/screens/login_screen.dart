@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
 import 'package:patas_al_dia/data/models/usuario_model.dart';
+import 'package:patas_al_dia/l10n/app_localizations.dart';
 import 'package:patas_al_dia/presentation/screens/navegacion_principal_screen.dart';
 import 'package:patas_al_dia/providers/usuario_provider.dart';
 
@@ -26,16 +27,13 @@ class LoginScreen extends ConsumerWidget {
 
   void _mostrarLoginNoDisponible(BuildContext context) {
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text(
-          'Inicio de sesión no disponible todavía: estamos en fase de desarrollo.',
-        ),
-      ),
+      SnackBar(content: Text(AppLocalizations.of(context).loginNoDisponible)),
     );
   }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
     return Scaffold(
       body: SafeArea(
         child: Padding(
@@ -50,20 +48,17 @@ class LoginScreen extends ConsumerWidget {
               ),
               const SizedBox(height: 16),
               Text(
-                'Patas al Día',
+                l10n.appTitulo,
                 style: Theme.of(context).textTheme.headlineMedium,
               ),
               const SizedBox(height: 8),
-              const Text(
-                'Gestiona la salud de tu mascota, donde estés',
-                textAlign: TextAlign.center,
-              ),
+              Text(l10n.loginEslogan, textAlign: TextAlign.center),
               const SizedBox(height: 48),
               SizedBox(
                 width: double.infinity,
                 child: OutlinedButton(
                   onPressed: () => _mostrarLoginNoDisponible(context),
-                  child: const Text('Iniciar sesión'),
+                  child: Text(l10n.loginIniciarSesion),
                 ),
               ),
               const SizedBox(height: 16),
@@ -71,7 +66,7 @@ class LoginScreen extends ConsumerWidget {
                 width: double.infinity,
                 child: ElevatedButton(
                   onPressed: () => _continuarComoInvitado(context, ref),
-                  child: const Text('Continuar como invitado'),
+                  child: Text(l10n.loginContinuarInvitado),
                 ),
               ),
             ],

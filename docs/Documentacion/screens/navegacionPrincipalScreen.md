@@ -137,3 +137,7 @@ Sin esto, el botón "atrás" de Android cerraría la app entera en vez de retroc
 - `canPop`: le dice al sistema si esta pantalla, vista desde afuera, tiene algo para retroceder. Se calcula preguntándole al `Navigator` de la pestaña activa si él puede retroceder (`canPop()`); si puede, `canPop` acá es `false` a propósito, para que el sistema **no** cierre nada solo y nos deje interceptar el gesto.
 - `onPopInvokedWithResult`: si el sistema no pudo hacer el pop solo (`didPop == false`), se le pide al `Navigator` de la pestaña activa que retroceda él (`navegadorActual?.pop()`).
 - Cuando la pestaña activa ya está en su raíz (no tiene nada para retroceder), `canPop` vuelve a ser `true` y el botón atrás sí cierra la app normalmente.
+
+### 6. Etiquetas del navbar vía `AppLocalizations` (2026-08-18)
+
+`_destinos` (el record `{icono, etiqueta}` original) se dividió en dos: `_iconosDestino` (`static const`, no cambia con el idioma) y una lista de etiquetas armada dentro de `_construirItemBarra(BuildContext context, int indice)` a partir de `AppLocalizations.of(context)` — un record `static const` no puede contener el resultado de `l10n.navMascotas` (no es una constante de compilación), así que dejó de tener sentido guardar íconos y etiquetas juntos en la misma estructura. Ver `sistemaIdiomas.md`.

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:patas_al_dia/l10n/app_localizations.dart';
 import 'package:patas_al_dia/presentation/screens/login_screen.dart';
 import 'package:patas_al_dia/providers/agenda_evento_provider.dart';
 import 'package:patas_al_dia/providers/documento_provider.dart';
@@ -11,11 +12,20 @@ import 'package:url_launcher/url_launcher.dart';
 final _urlKoFi = Uri.parse('https://ko-fi.com/breakpointx');
 
 const _escalasTexto = [0.85, 1.0, 1.2];
-const _etiquetasEscalaTexto = ['Pequeño', 'Normal', 'Grande'];
-
 const _temas = ['sistema', 'claro', 'oscuro'];
-const _etiquetasTema = ['Sistema', 'Claro', 'Oscuro'];
 const _iconosTema = [Icons.brightness_auto, Icons.light_mode, Icons.dark_mode];
+
+// Los idiomas se muestran con su propio nombre nativo (no se traducen según
+// el idioma activo) — así el usuario siempre reconoce su idioma, aunque no
+// entienda el que esté puesto en ese momento.
+const _idiomas = ['sistema', 'es', 'en', 'pt'];
+const _etiquetasIdioma = ['Sistema', 'Español', 'English', 'Português'];
+const _iconosIdioma = [
+  Icons.brightness_auto,
+  Icons.language,
+  Icons.language,
+  Icons.language,
+];
 
 class AjustesScreen extends ConsumerWidget {
   const AjustesScreen({super.key});
@@ -27,29 +37,26 @@ class AjustesScreen extends ConsumerWidget {
     );
     if (!abierto && context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('No se pudo abrir el enlace')),
+        SnackBar(content: Text(AppLocalizations.of(context).errorAbrirEnlace)),
       );
     }
   }
 
   Future<void> _confirmarCerrarSesion(BuildContext context, WidgetRef ref) async {
+    final l10n = AppLocalizations.of(context);
     final confirmar = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Cerrar sesión'),
-        content: const Text(
-          'Como invitado, no hay forma de volver a esta sesión después de '
-          'cerrarla: no vas a poder ver de nuevo tus mascotas ni los datos '
-          'cargados. ¿Cerrar sesión de todos modos?',
-        ),
+        title: Text(l10n.cerrarSesionLabel),
+        content: Text(l10n.cerrarSesionContenido),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Cancelar'),
+            child: Text(l10n.accionCancelar),
           ),
           ElevatedButton(
             onPressed: () => Navigator.of(context).pop(true),
-            child: const Text('Cerrar sesión'),
+            child: Text(l10n.cerrarSesionLabel),
           ),
         ],
       ),
@@ -86,6 +93,7 @@ class AjustesScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
     final usuario = ref.watch(usuarioProvider);
     final escalaActual = usuario?.escalaTexto ?? 1.0;
     var indiceActual = _escalasTexto.indexOf(escalaActual);
@@ -97,14 +105,25 @@ class AjustesScreen extends ConsumerWidget {
     if (indiceTema == -1) {
       indiceTema = 0;
     }
+    final idiomaActual = usuario?.idioma ?? 'sistema';
+    var indiceIdioma = _idiomas.indexOf(idiomaActual);
+    if (indiceIdioma == -1) {
+      indiceIdioma = 0;
+    }
+    final etiquetasTema = [l10n.temaSistema, l10n.temaClaro, l10n.temaOscuro];
+    final etiquetasEscalaTexto = [
+      l10n.tamanoPequeno,
+      l10n.tamanoNormal,
+      l10n.tamanoGrande,
+    ];
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Ajustes')),
+      appBar: AppBar(title: Text(l10n.ajustesTitulo)),
       body: ListView(
         children: [
-          const ListTile(
-            leading: Icon(Icons.dark_mode_outlined),
-            title: Text('Tema'),
+          ListTile(
+            leading: const Icon(Icons.dark_mode_outlined),
+            title: Text(l10n.temaLabel),
           ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -113,7 +132,7 @@ class AjustesScreen extends ConsumerWidget {
                 for (var i = 0; i < _temas.length; i++)
                   ButtonSegment(
                     value: _temas[i],
-                    label: Text(_etiquetasTema[i]),
+                    label: Text(etiquetasTema[i]),
                     icon: Icon(_iconosTema[i]),
                   ),
               ],
@@ -127,8 +146,8 @@ class AjustesScreen extends ConsumerWidget {
           ),
           ListTile(
             leading: const Icon(Icons.text_fields),
-            title: const Text('Tamaño de letra'),
-            subtitle: Text(_etiquetasEscalaTexto[indiceActual]),
+            title: Text(l10n.tamanoLetraLabel),
+            subtitle: Text(etiquetasEscalaTexto[indiceActual]),
           ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -137,7 +156,7 @@ class AjustesScreen extends ConsumerWidget {
               min: 0,
               max: 2,
               divisions: 2,
-              label: _etiquetasEscalaTexto[indiceActual],
+              label: etiquetasEscalaTexto[indiceActual],
               onChanged: (valor) {
                 ref
                     .read(usuarioProvider.notifier)
@@ -146,14 +165,37 @@ class AjustesScreen extends ConsumerWidget {
             ),
           ),
           ListTile(
+            leading: const Icon(Icons.translate),
+            title: Text(l10n.idiomaLabel),
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: SegmentedButton<String>(
+              segments: [
+                for (var i = 0; i < _idiomas.length; i++)
+                  ButtonSegment(
+                    value: _idiomas[i],
+                    label: Text(_etiquetasIdioma[i]),
+                    icon: Icon(_iconosIdioma[i]),
+                  ),
+              ],
+              selected: {_idiomas[indiceIdioma]},
+              onSelectionChanged: (seleccion) {
+                ref
+                    .read(usuarioProvider.notifier)
+                    .actualizarIdioma(seleccion.first);
+              },
+            ),
+          ),
+          ListTile(
             leading: const Icon(Icons.favorite_border),
-            title: const Text('Aportes voluntarios'),
-            subtitle: const Text('Si quieres apoyar el proyecto, es en Ko-fi'),
+            title: Text(l10n.aportesVoluntariosLabel),
+            subtitle: Text(l10n.aportesVoluntariosSubtitulo),
             onTap: () => _abrirKoFi(context),
           ),
           ListTile(
             leading: const Icon(Icons.logout),
-            title: const Text('Cerrar sesión'),
+            title: Text(l10n.cerrarSesionLabel),
             onTap: () => _confirmarCerrarSesion(context, ref),
           ),
         ],

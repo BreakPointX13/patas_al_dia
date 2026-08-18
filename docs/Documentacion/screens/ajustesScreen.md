@@ -8,7 +8,7 @@ Se accede desde `MenuUsuarioAvatar` (ver `menuUsuarioAvatar.md`), presente en el
 
 ## 🎯 Propósito del Archivo
 
-Pantalla de ajustes de la app. Tiene cuatro opciones: "Tema" (2026-08-18, ver punto 5), "Tamaño de letra" (2026-08-18, ver punto 4), "Aportes voluntarios" (2026-08-17, ver punto 3) y "Cerrar sesión"; es el lugar natural donde agregar más adelante otras preferencias (notificaciones, cuenta, etc.) sin volver a tocar `HomeScreen`.
+Pantalla de ajustes de la app. Tiene cinco opciones: "Tema" (2026-08-18, ver punto 5), "Tamaño de letra" (2026-08-18, ver punto 4), "Idioma" (2026-08-18, ver punto 6), "Aportes voluntarios" (2026-08-17, ver punto 3) y "Cerrar sesión"; es el lugar natural donde agregar más adelante otras preferencias (notificaciones, cuenta, etc.) sin volver a tocar `HomeScreen`. Desde esta pasada, todos sus textos salen de `AppLocalizations` (ver `sistemaIdiomas.md`) en vez de estar escritos fijo en español.
 
 ---
 
@@ -121,3 +121,14 @@ Segunda pieza del pedido de accesibilidad del usuario (modo oscuro, tamaño de l
 - **`selected: {_temas[indiceTema]}` — un `Set`, no un valor suelto:** `SegmentedButton` soporta selección múltiple por diseño (`multiSelectionEnabled`, no usado acá), así que su API pide un `Set` incluso cuando solo se permite una selección a la vez (comportamiento por defecto, `multiSelectionEnabled: false`).
 - **`'sistema'` como valor por defecto, no `'claro'`:** decisión explícita del usuario — la preferencia se guarda en el usuario (igual que `escalaTexto`), pero por defecto la app debe seguir lo que diga el sistema operativo, no forzar claro. Ver cómo se traduce a `ThemeMode` en `main.dart` (`'claro'` → `ThemeMode.light`, `'oscuro'` → `ThemeMode.dark`, cualquier otro valor incluido `'sistema'` → `ThemeMode.system`).
 - **Colores de la app en modo oscuro:** ver `temaApp.md` para el detalle completo — en resumen, toda la paleta de acento (Naranja, Naranja marca, Durazno, Amarillo cálido) se mantiene igual en los dos modos; solo cambia el fondo del `Scaffold` (Crema → gris oscuro cálido) y el "café texto" que aparece directo sobre ese fondo (sin tarjeta detrás), que se invierte a un tono claro para seguir siendo legible.
+
+### 6. "Idioma" — Sistema / Español / English / Português (2026-08-18)
+
+```dart
+const _idiomas = ['sistema', 'es', 'en', 'pt'];
+const _etiquetasIdioma = ['Sistema', 'Español', 'English', 'Português'];
+```
+
+Tercera pieza del pedido de accesibilidad del usuario, ver `sistemaIdiomas.md` para el sistema completo (`.arb`, `AppLocalizations`, etc.) — acá solo el control en sí, mismo patrón que "Tema" (`SegmentedButton<String>`, `'sistema'` por defecto).
+
+**Diferencia clave con "Tema":** las etiquetas de "Tema" (`temaSistema`/`temaClaro`/`temaOscuro`) SÍ salen de `AppLocalizations` y cambian según el idioma activo. Las de "Idioma" (`_etiquetasIdioma`) son una constante fija en código, **no** traducida — cada opción se muestra siempre en su propio idioma nativo ("Español", "English", "Português"), para que el usuario reconozca su idioma sin importar cuál esté puesto en ese momento. Traducir el nombre de un idioma según el idioma activo sería contraproducente: alguien que puso la app en portugués sin querer necesita poder encontrar "Español" en la lista, no "Espanhol".

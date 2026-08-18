@@ -86,3 +86,7 @@ void _mostrarLoginNoDisponible(BuildContext context) {
 ### 4. `OutlinedButton` vs. `ElevatedButton`
 
 El botón con borde (`Outlined`) se usa para la acción secundaria ("Iniciar sesión"), el relleno (`Elevated`) para la principal ("Continuar como invitado") — jerarquía visual que prioriza el camino sin fricción, según el wireframe acordado antes de programar la pantalla.
+
+### 5. Textos vía `AppLocalizations` (2026-08-18)
+
+Todos los textos de esta pantalla (eslogan, botones, aviso de "no disponible") salen de `AppLocalizations.of(context)` en vez de estar escritos fijo en español — ver `sistemaIdiomas.md`. El nombre "Patas al Día" (`l10n.appTitulo`) queda igual en los tres idiomas: es el nombre propio de la app, no se traduce.

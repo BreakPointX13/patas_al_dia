@@ -122,3 +122,7 @@ Future<void> actualizarTema(String tema) async {
 ```
 
 Mismo patrón exacto que `actualizarEscalaTexto` — método de conveniencia sobre `actualizarUsuario`, para la preferencia de modo claro/oscuro/sistema. Ver `ajustesScreen.md` y `temaApp.md`.
+
+### 7. `actualizarIdioma(String idioma)` (2026-08-18)
+
+Mismo patrón otra vez, esta vez para la preferencia de idioma (`'sistema'`/`'es'`/`'en'`/`'pt'`). Ver `sistemaIdiomas.md`.

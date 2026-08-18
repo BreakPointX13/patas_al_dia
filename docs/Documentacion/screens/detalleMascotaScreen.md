@@ -135,3 +135,7 @@ Hasta esta versión, el proyecto no tenía ninguna función de "eliminar" expues
 ### 7. `Card` → `TarjetaClara` (2026-08-18)
 
 Los tres `Card(child: tile)` que envuelven cada dato (uno por grupo: Mascota, Identificación, Datos) pasaron a `TarjetaClara(child: tile)` al implementar modo oscuro — ver `tarjetaClara.md`. Mismo aspecto en modo claro; en modo oscuro evita que el texto de estos datos se vuelva claro (heredado del tema) sobre la tarjeta Durazno, que se mantiene clara siempre.
+
+### 8. Textos vía `AppLocalizations`, especie y sexo traducidos (2026-08-18)
+
+Todas las etiquetas de esta pantalla (Especie, Raza, RUT, Sexo, etc., más el diálogo de "Eliminar mascota") salen de `AppLocalizations.of(context)` — ver `sistemaIdiomas.md`. Los valores de especie y sexo (que se guardan fijos en español en la base de datos) se muestran traducidos vía `especieMostrar(context, mascota)`/`sexoMostrar(context, mascota.sexo)` — ver `etiquetasLocalizadas.md`.

@@ -130,3 +130,7 @@ Cada fila tiene ahora dos formas de navegación independientes: tocar el resto d
 ### 9. `Card` → `TarjetaClara` (2026-08-18)
 
 Al implementar modo oscuro, el `Card` que envuelve cada `ListTile` de la lista pasó a ser `TarjetaClara` (ver `tarjetaClara.md`) — mismo aspecto visual en modo claro, pero protege el texto/íconos de adentro para que no se vuelvan claros (heredados del tema oscuro) sobre la tarjeta Durazno, que se mantiene clara siempre.
+
+### 10. Textos vía `AppLocalizations`, especie vía `especieMostrar` (2026-08-18)
+
+Título, estado vacío, botón "Agregar mascota" y el tooltip "Credencial" salen de `AppLocalizations.of(context)` (ver `sistemaIdiomas.md`). El subtítulo de cada fila (`mascota.especieTexto` antes) ahora usa `especieMostrar(context, mascota)` — ver `etiquetasLocalizadas.md` — porque la especie se guarda fija en español en la base de datos y hay que traducirla solo para mostrarla.

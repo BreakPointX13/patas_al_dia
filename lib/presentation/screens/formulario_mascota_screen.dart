@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
 import 'package:patas_al_dia/data/models/mascota_model.dart';
+import 'package:patas_al_dia/l10n/app_localizations.dart';
 import 'package:patas_al_dia/providers/mascota_provider.dart';
 import 'package:patas_al_dia/providers/usuario_provider.dart';
 import 'dart:io';
@@ -184,14 +185,33 @@ class _FormularioMascotaScreenState
     Navigator.of(context).pop();
   }
 
+  static final Map<String, String Function(AppLocalizations)>
+  _etiquetasEspecies = {
+    'Perro': (l10n) => l10n.especiePerro,
+    'Gato': (l10n) => l10n.especieGato,
+    'Conejo': (l10n) => l10n.especieConejo,
+    'Hamster': (l10n) => l10n.especieHamster,
+    'Cobaya': (l10n) => l10n.especieCobaya,
+    'Jerbo': (l10n) => l10n.especieJerbo,
+    'Rata': (l10n) => l10n.especieRata,
+    'Chinchilla': (l10n) => l10n.especieChinchilla,
+    'Erizo': (l10n) => l10n.especieErizo,
+    'Pez': (l10n) => l10n.especiePez,
+    'Tortuga': (l10n) => l10n.especieTortuga,
+    'Hurón': (l10n) => l10n.especieHuron,
+    'Ave': (l10n) => l10n.especieAve,
+    'Otro': (l10n) => l10n.especieOtro,
+  };
+
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Scaffold(
       appBar: AppBar(
         title: Text(
           widget.mascotaExistente == null
-              ? 'Agregar mascota'
-              : 'Editar mascota',
+              ? l10n.homeAgregarMascota
+              : l10n.formMascotaTituloEditar,
         ),
       ),
       body: Form(
@@ -214,7 +234,7 @@ class _FormularioMascotaScreenState
                           : null,
                     ),
                     const SizedBox(height: 8),
-                    Text(_fotoPath == null ? 'Añadir foto' : 'Cambiar foto'),
+                    Text(_fotoPath == null ? l10n.fotoAnadir : l10n.fotoCambiar),
                   ],
                 ),
               ),
@@ -222,10 +242,10 @@ class _FormularioMascotaScreenState
             SeparadorSeccionFicha.mascota(),
             TextFormField(
               controller: _nombreController,
-              decoration: const InputDecoration(labelText: 'Nombre *'),
+              decoration: InputDecoration(labelText: l10n.campoNombreObligatorio),
               validator: (valor) {
                 if (valor == null || valor.trim().isEmpty) {
-                  return 'El nombre es obligatorio';
+                  return l10n.errorNombreObligatorio;
                 }
                 return null;
               },
@@ -233,9 +253,14 @@ class _FormularioMascotaScreenState
             const SizedBox(height: 16),
             DropdownButtonFormField<String>(
               initialValue: _especie,
-              decoration: const InputDecoration(labelText: 'Especie'),
+              decoration: InputDecoration(labelText: l10n.campoEspecie),
               items: _especies
-                  .map((e) => DropdownMenuItem(value: e, child: Text(e)))
+                  .map(
+                    (e) => DropdownMenuItem(
+                      value: e,
+                      child: Text(_etiquetasEspecies[e]!(l10n)),
+                    ),
+                  )
                   .toList(),
               onChanged: (valor) =>
                   setState(() => _especie = valor ?? _especies.first),
@@ -244,33 +269,36 @@ class _FormularioMascotaScreenState
               const SizedBox(height: 16),
               TextFormField(
                 controller: _especiePersonalizadaController,
-                decoration: const InputDecoration(
-                  labelText: 'Especifica la especie',
+                decoration: InputDecoration(
+                  labelText: l10n.campoEspecificaEspecie,
                 ),
               ),
             ],
             const SizedBox(height: 16),
             TextFormField(
               controller: _razaController,
-              decoration: const InputDecoration(labelText: 'Raza'),
+              decoration: InputDecoration(labelText: l10n.campoRaza),
             ),
             SeparadorSeccionFicha.identificacion(),
             TextFormField(
               controller: _rutController,
-              decoration: const InputDecoration(labelText: 'Rut de la mascota'),
+              decoration: InputDecoration(labelText: l10n.formCampoRut),
             ),
             const SizedBox(height: 16),
             TextFormField(
               controller: _numeroChipController,
-              decoration: const InputDecoration(labelText: 'Número de chip'),
+              decoration: InputDecoration(labelText: l10n.campoNumeroChip),
             ),
             SeparadorSeccionFicha.datos(),
             DropdownButtonFormField<String>(
               initialValue: _sexo,
-              decoration: const InputDecoration(labelText: 'Sexo'),
-              items: const [
-                DropdownMenuItem(value: 'Macho', child: Text('Macho')),
-                DropdownMenuItem(value: 'Hembra', child: Text('Hembra')),
+              decoration: InputDecoration(labelText: l10n.campoSexo),
+              items: [
+                DropdownMenuItem(value: 'Macho', child: Text(l10n.sexoMacho)),
+                DropdownMenuItem(
+                  value: 'Hembra',
+                  child: Text(l10n.sexoHembra),
+                ),
               ],
               onChanged: (valor) {
                 setState(() {
@@ -281,12 +309,12 @@ class _FormularioMascotaScreenState
             const SizedBox(height: 16),
             TextFormField(
               controller: _coloresController,
-              decoration: const InputDecoration(labelText: 'Colores'),
+              decoration: InputDecoration(labelText: l10n.campoColores),
             ),
             const SizedBox(height: 16),
             TextFormField(
               controller: _pesoController,
-              decoration: const InputDecoration(labelText: 'Peso (kg)'),
+              decoration: InputDecoration(labelText: l10n.campoPesoKg),
               keyboardType: const TextInputType.numberWithOptions(
                 decimal: true,
               ),
@@ -296,7 +324,7 @@ class _FormularioMascotaScreenState
                 }
                 final peso = double.tryParse(valor.trim());
                 if (peso == null || peso <= 0) {
-                  return 'Ingresa un peso válido';
+                  return l10n.errorPesoInvalido;
                 }
                 return null;
               },
@@ -304,14 +332,14 @@ class _FormularioMascotaScreenState
             const SizedBox(height: 16),
             SwitchListTile(
               contentPadding: EdgeInsets.zero,
-              title: const Text('Esterilizado'),
+              title: Text(l10n.campoEsterilizado),
               value: _esterilizado,
               onChanged: (valor) => setState(() => _esterilizado = valor),
             ),
             const SizedBox(height: 16),
             SwitchListTile(
               contentPadding: EdgeInsets.zero,
-              title: const Text('No sé la fecha exacta de nacimiento'),
+              title: Text(l10n.campoFechaEstimadaSwitch),
               value: _fechaEstimada,
               onChanged: (valor) => setState(() => _fechaEstimada = valor),
             ),
@@ -319,17 +347,17 @@ class _FormularioMascotaScreenState
             if (_fechaEstimada)
               TextFormField(
                 controller: _edadEstimadaController,
-                decoration: const InputDecoration(
-                  labelText: 'Edad estimada (años)',
+                decoration: InputDecoration(
+                  labelText: l10n.campoEdadEstimadaAnios,
                 ),
                 keyboardType: TextInputType.number,
                 validator: (valor) {
                   if (valor == null || valor.trim().isEmpty) {
-                    return 'Ingresa la edad estimada';
+                    return l10n.errorEdadEstimadaVacia;
                   }
                   final anios = int.tryParse(valor.trim());
                   if (anios == null || anios <= 0 || anios > 30) {
-                    return 'Ingresa una edad válida (1 a 30 años)';
+                    return l10n.errorEdadEstimadaInvalida;
                   }
                   return null;
                 },
@@ -339,17 +367,18 @@ class _FormularioMascotaScreenState
                 contentPadding: EdgeInsets.zero,
                 title: Text(
                   _fechaNacimiento == null
-                      ? 'Fecha de nacimiento no seleccionada'
-                      : 'Fecha de nacimiento: '
-                            '${_fechaNacimiento!.day}/${_fechaNacimiento!.month}/${_fechaNacimiento!.year}',
+                      ? l10n.fechaNacimientoNoSeleccionada
+                      : l10n.fechaNacimientoConValor(
+                          '${_fechaNacimiento!.day}/${_fechaNacimiento!.month}/${_fechaNacimiento!.year}',
+                        ),
                 ),
                 trailing: TextButton(
                   onPressed: _seleccionarFecha,
-                  child: const Text('Elegir fecha'),
+                  child: Text(l10n.elegirFecha),
                 ),
               ),
             const SizedBox(height: 32),
-            ElevatedButton(onPressed: _guardar, child: const Text('Guardar')),
+            ElevatedButton(onPressed: _guardar, child: Text(l10n.accionGuardar)),
           ],
         ),
       ),
