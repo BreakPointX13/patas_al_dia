@@ -13,6 +13,10 @@ class UsuarioModel {
   // 'sistema' (sigue el idioma del sistema operativo, si está entre los
   // soportados), 'es', 'en' o 'pt' — ver ajustesScreen.md.
   final String idioma;
+  // Si ya vio el aviso de política de uso del módulo Mapa (se muestra una
+  // sola vez, no en cada visita) — ver mapaScreen.md. Estado puramente
+  // local, igual que `sesionActiva`: no se replica en Supabase.
+  final bool avisoMapaVisto;
 
   UsuarioModel({
     required this.id,
@@ -25,6 +29,7 @@ class UsuarioModel {
     this.escalaTexto = 1.0,
     this.tema = 'sistema',
     this.idioma = 'sistema',
+    this.avisoMapaVisto = false,
   });
 
   // ADUANA DE ENTRADA: De mapas de SQLite a objetos de Flutter
@@ -46,6 +51,7 @@ class UsuarioModel {
           : 1.0,
       tema: map['tema'] as String? ?? 'sistema',
       idioma: map['idioma'] as String? ?? 'sistema',
+      avisoMapaVisto: (map['aviso_mapa_visto'] as int?) == 1,
     );
   }
 
@@ -62,6 +68,7 @@ class UsuarioModel {
       'escala_texto': escalaTexto,
       'tema': tema,
       'idioma': idioma,
+      'aviso_mapa_visto': avisoMapaVisto ? 1 : 0,
     };
   }
 
@@ -77,6 +84,7 @@ class UsuarioModel {
     double? escalaTexto,
     String? tema,
     String? idioma,
+    bool? avisoMapaVisto,
   }) {
     return UsuarioModel(
       id: id ?? this.id,
@@ -89,6 +97,7 @@ class UsuarioModel {
       escalaTexto: escalaTexto ?? this.escalaTexto,
       tema: tema ?? this.tema,
       idioma: idioma ?? this.idioma,
+      avisoMapaVisto: avisoMapaVisto ?? this.avisoMapaVisto,
     );
   }
 }

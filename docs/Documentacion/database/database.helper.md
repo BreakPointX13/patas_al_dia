@@ -108,3 +108,7 @@ Mismo patrón que `tipo_evento_personalizado`: `especie` en `MascotaModel` pasó
 ### 7. Columnas `escala_texto`, `tema` e `idioma` agregadas a `usuarios` (2026-08-17/18)
 
 Tres preferencias de accesibilidad nuevas, guardadas junto al usuario con el mismo criterio que `sesion_activa` (punto 4): `escala_texto REAL DEFAULT 1.0` (tamaño de letra), `tema TEXT DEFAULT 'sistema'` (claro/oscuro/sistema) e `idioma TEXT DEFAULT 'sistema'` (es/en/pt/sistema, ver `sistemaIdiomas.md`). Ver `usuario.model.md` y `ajustesScreen.md`. Las tres se pierden si el invitado desinstala la app — comportamiento esperado, coherente con que el resto de sus datos tampoco sobrevive a una desinstalación.
+
+### 8. Columna `aviso_mapa_visto` agregada a `usuarios` (2026-08-19)
+
+`aviso_mapa_visto INTEGER DEFAULT 0` — mismo criterio que `sesion_activa`/`escala_texto`/`tema`/`idioma`: marca si el usuario ya vio el aviso de política de uso del módulo Mapa, para no mostrarlo de nuevo en cada visita a esa pestaña. Ver `usuario.model.md` y `mapaScreen.md`. Aplicado reinstalando la app, siguiendo la misma política de esquema en desarrollo (ver `decisiones_arquitectura.md`) — no existe en la tabla `usuarios` de Supabase, es un estado puramente local.

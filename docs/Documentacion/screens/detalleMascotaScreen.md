@@ -139,3 +139,7 @@ Los tres `Card(child: tile)` que envuelven cada dato (uno por grupo: Mascota, Id
 ### 8. Textos vía `AppLocalizations`, especie y sexo traducidos (2026-08-18)
 
 Todas las etiquetas de esta pantalla (Especie, Raza, RUT, Sexo, etc., más el diálogo de "Eliminar mascota") salen de `AppLocalizations.of(context)` — ver `sistemaIdiomas.md`. Los valores de especie y sexo (que se guardan fijos en español en la base de datos) se muestran traducidos vía `especieMostrar(context, mascota)`/`sexoMostrar(context, mascota.sexo)` — ver `etiquetasLocalizadas.md`.
+
+### 9. "Reportar mascota perdida" — quinta acción, primer punto de entrada al módulo Mapa (2026-08-19)
+
+Nuevo `ListTile` entre "Documentos" y "Eliminar mascota", navega a `FormularioReporteMascotaExtraviadaScreen(mascota: mascota)` — ver `formularioReporteMascotaExtraviadaScreen.md`. A diferencia de "Agenda"/"Documentos" (que reciben solo `mascotaId`), acá se pasa la `MascotaModel` completa: el formulario necesita nombre/especie de la mascota para copiarlos dentro del reporte al publicar (denormalización, ver `mascotaExtraviada.model.md`), no solo un id para volver a buscarla.

@@ -126,3 +126,16 @@ Mismo patrón exacto que `actualizarEscalaTexto` — método de conveniencia sob
 ### 7. `actualizarIdioma(String idioma)` (2026-08-18)
 
 Mismo patrón otra vez, esta vez para la preferencia de idioma (`'sistema'`/`'es'`/`'en'`/`'pt'`). Ver `sistemaIdiomas.md`.
+
+### 8. `marcarAvisoMapaVisto()` (2026-08-19)
+
+```dart
+Future<void> marcarAvisoMapaVisto() async {
+  if (state == null) {
+    return;
+  }
+  await actualizarUsuario(state!.copyWith(avisoMapaVisto: true));
+}
+```
+
+Mismo patrón otra vez, pero sin parámetro — a diferencia de `actualizarTema`/`actualizarIdioma` (que reciben el valor nuevo desde afuera, porque el usuario elige entre varias opciones), acá solo hay una dirección posible (`false` → `true`, nunca al revés desde la UI), así que no hace falta recibir nada. Lo llama `MapaScreen` después de que el usuario cierra el diálogo de política de uso — ver `mapaScreen.md`.

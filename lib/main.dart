@@ -7,9 +7,15 @@ import 'package:patas_al_dia/presentation/screens/sesion_inicial_screen.dart';
 import 'package:patas_al_dia/presentation/theme/tema_app.dart';
 import 'package:patas_al_dia/providers/usuario_provider.dart';
 import 'package:patas_al_dia/services/notificacion_service.dart';
+import 'package:patas_al_dia/services/supabase_config.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await Supabase.initialize(
+    url: supabaseUrl,
+    publishableKey: supabasePublishableKey,
+  );
   await initializeDateFormatting('es_ES');
   await initializeDateFormatting('en_US');
   await initializeDateFormatting('pt_BR');

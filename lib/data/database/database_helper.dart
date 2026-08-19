@@ -38,7 +38,8 @@ class DatabaseHelper {
         sesion_activa INTEGER DEFAULT 1,
         escala_texto REAL DEFAULT 1.0,
         tema TEXT DEFAULT 'sistema',
-        idioma TEXT DEFAULT 'sistema'
+        idioma TEXT DEFAULT 'sistema',
+        aviso_mapa_visto INTEGER DEFAULT 0
       )
     ''');
 

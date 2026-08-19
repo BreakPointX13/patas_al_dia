@@ -640,4 +640,94 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get verPantallaCompletaLabel => 'View full screen';
+
+  @override
+  String get reportarMascotaPerdidaLabel => 'Report a lost pet';
+
+  @override
+  String get campoUbicacion => 'Location';
+
+  @override
+  String get usarUbicacionActualSwitch => 'Use my current location';
+
+  @override
+  String get obtenerUbicacionActual => 'Get location';
+
+  @override
+  String get ubicacionObtenidaLabel => 'Location obtained';
+
+  @override
+  String get sinUbicacionLabel => 'No location (optional)';
+
+  @override
+  String get errorServicioUbicacionDeshabilitado =>
+      'Turn on device location to continue';
+
+  @override
+  String get errorPermisoUbicacionDenegado =>
+      'Location permission is needed to continue';
+
+  @override
+  String get errorPermisoUbicacionPermanente =>
+      'Location permission is blocked. Enable it from your system settings.';
+
+  @override
+  String get errorObtenerUbicacion => 'Couldn\'t get your location';
+
+  @override
+  String get campoCalle => 'Street';
+
+  @override
+  String get campoNumero => 'Number';
+
+  @override
+  String get errorGeocodificacion =>
+      'We couldn\'t locate that address. The report will be published without a location.';
+
+  @override
+  String get campoRecompensaSwitch => 'Offering a reward?';
+
+  @override
+  String get campoRecompensaMonto => 'Reward amount';
+
+  @override
+  String get errorRecompensaInvalida => 'Enter a valid amount';
+
+  @override
+  String get campoContactoEmergenciaObligatorio => 'Emergency contact *';
+
+  @override
+  String get errorContactoEmergenciaObligatorio =>
+      'Emergency contact is required';
+
+  @override
+  String get avisoContactoEmergencia =>
+      'It\'s the only way someone can reach you about this report.';
+
+  @override
+  String get campoDescripcionObligatoria => 'Description *';
+
+  @override
+  String get errorDescripcionObligatoria => 'Description is required';
+
+  @override
+  String get reportePublicadoAviso => 'Report published';
+
+  @override
+  String get errorPublicarReporte =>
+      'Couldn\'t publish the report. Check your connection and try again.';
+
+  @override
+  String get errorLimiteReportesActivos =>
+      'You already have the maximum number of active reports. Mark one as found before creating a new one.';
+
+  @override
+  String get avisoMapaTitulo => 'Before you use Map';
+
+  @override
+  String get avisoMapaContenido =>
+      'This map is only for reporting lost or found pets. Don\'t use it to post ads, sell things, or share content unrelated to lost pets.\n\nIf you see a report that doesn\'t belong, please report it so we can review it.';
+
+  @override
+  String get avisoMapaEntendido => 'Got it';
 }

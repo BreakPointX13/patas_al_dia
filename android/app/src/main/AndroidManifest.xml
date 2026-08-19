@@ -2,6 +2,15 @@
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <!-- Requerido por geolocator para ubicar el reporte de mascota perdida
+         (módulo Mapa) — solo mientras la app está en uso, no en segundo plano. -->
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <!-- Requerido por Supabase y la geocodificación de direcciones (Mapa).
+         Flutter lo agrega solo para builds de debug por su cuenta (ver
+         android/app/src/debug/AndroidManifest.xml) — acá hace falta
+         declararlo aparte para que también esté en el build de release. -->
+    <uses-permission android:name="android.permission.INTERNET" />
     <application
         android:label="Patas al Día"
         android:name="${applicationName}"

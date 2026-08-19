@@ -1305,6 +1305,168 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Ver a pantalla completa'**
   String get verPantallaCompletaLabel;
+
+  /// No description provided for @reportarMascotaPerdidaLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Reportar mascota perdida'**
+  String get reportarMascotaPerdidaLabel;
+
+  /// No description provided for @campoUbicacion.
+  ///
+  /// In es, this message translates to:
+  /// **'Ubicación'**
+  String get campoUbicacion;
+
+  /// No description provided for @usarUbicacionActualSwitch.
+  ///
+  /// In es, this message translates to:
+  /// **'Usar mi ubicación actual'**
+  String get usarUbicacionActualSwitch;
+
+  /// No description provided for @obtenerUbicacionActual.
+  ///
+  /// In es, this message translates to:
+  /// **'Obtener ubicación'**
+  String get obtenerUbicacionActual;
+
+  /// No description provided for @ubicacionObtenidaLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Ubicación obtenida'**
+  String get ubicacionObtenidaLabel;
+
+  /// No description provided for @sinUbicacionLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Sin ubicación (opcional)'**
+  String get sinUbicacionLabel;
+
+  /// No description provided for @errorServicioUbicacionDeshabilitado.
+  ///
+  /// In es, this message translates to:
+  /// **'Activa la ubicación del dispositivo para continuar'**
+  String get errorServicioUbicacionDeshabilitado;
+
+  /// No description provided for @errorPermisoUbicacionDenegado.
+  ///
+  /// In es, this message translates to:
+  /// **'Se necesita permiso de ubicación para continuar'**
+  String get errorPermisoUbicacionDenegado;
+
+  /// No description provided for @errorPermisoUbicacionPermanente.
+  ///
+  /// In es, this message translates to:
+  /// **'El permiso de ubicación está bloqueado. Actívalo desde los ajustes del sistema.'**
+  String get errorPermisoUbicacionPermanente;
+
+  /// No description provided for @errorObtenerUbicacion.
+  ///
+  /// In es, this message translates to:
+  /// **'No se pudo obtener la ubicación'**
+  String get errorObtenerUbicacion;
+
+  /// No description provided for @campoCalle.
+  ///
+  /// In es, this message translates to:
+  /// **'Calle'**
+  String get campoCalle;
+
+  /// No description provided for @campoNumero.
+  ///
+  /// In es, this message translates to:
+  /// **'Número'**
+  String get campoNumero;
+
+  /// No description provided for @errorGeocodificacion.
+  ///
+  /// In es, this message translates to:
+  /// **'No pudimos ubicar esa dirección. El reporte se va a publicar sin ubicación.'**
+  String get errorGeocodificacion;
+
+  /// No description provided for @campoRecompensaSwitch.
+  ///
+  /// In es, this message translates to:
+  /// **'¿Ofreces recompensa?'**
+  String get campoRecompensaSwitch;
+
+  /// No description provided for @campoRecompensaMonto.
+  ///
+  /// In es, this message translates to:
+  /// **'Monto de la recompensa'**
+  String get campoRecompensaMonto;
+
+  /// No description provided for @errorRecompensaInvalida.
+  ///
+  /// In es, this message translates to:
+  /// **'Ingresa un monto válido'**
+  String get errorRecompensaInvalida;
+
+  /// No description provided for @campoContactoEmergenciaObligatorio.
+  ///
+  /// In es, this message translates to:
+  /// **'Contacto de emergencia *'**
+  String get campoContactoEmergenciaObligatorio;
+
+  /// No description provided for @errorContactoEmergenciaObligatorio.
+  ///
+  /// In es, this message translates to:
+  /// **'El contacto de emergencia es obligatorio'**
+  String get errorContactoEmergenciaObligatorio;
+
+  /// No description provided for @avisoContactoEmergencia.
+  ///
+  /// In es, this message translates to:
+  /// **'Es la única forma de que alguien pueda contactarte por este reporte.'**
+  String get avisoContactoEmergencia;
+
+  /// No description provided for @campoDescripcionObligatoria.
+  ///
+  /// In es, this message translates to:
+  /// **'Descripción *'**
+  String get campoDescripcionObligatoria;
+
+  /// No description provided for @errorDescripcionObligatoria.
+  ///
+  /// In es, this message translates to:
+  /// **'La descripción es obligatoria'**
+  String get errorDescripcionObligatoria;
+
+  /// No description provided for @reportePublicadoAviso.
+  ///
+  /// In es, this message translates to:
+  /// **'Reporte publicado'**
+  String get reportePublicadoAviso;
+
+  /// No description provided for @errorPublicarReporte.
+  ///
+  /// In es, this message translates to:
+  /// **'No se pudo publicar el reporte. Revisa tu conexión e intenta de nuevo.'**
+  String get errorPublicarReporte;
+
+  /// No description provided for @errorLimiteReportesActivos.
+  ///
+  /// In es, this message translates to:
+  /// **'Ya tienes el máximo de reportes activos. Marca alguno como encontrado antes de crear uno nuevo.'**
+  String get errorLimiteReportesActivos;
+
+  /// No description provided for @avisoMapaTitulo.
+  ///
+  /// In es, this message translates to:
+  /// **'Antes de usar Mapa'**
+  String get avisoMapaTitulo;
+
+  /// No description provided for @avisoMapaContenido.
+  ///
+  /// In es, this message translates to:
+  /// **'Este mapa es solo para reportar mascotas perdidas o encontradas. No lo uses para publicar anuncios, ventas ni contenido que no tenga que ver con mascotas perdidas.\n\nSi ves un reporte que no corresponde, podés denunciarlo para que lo revisemos.'**
+  String get avisoMapaContenido;
+
+  /// No description provided for @avisoMapaEntendido.
+  ///
+  /// In es, this message translates to:
+  /// **'Entendido'**
+  String get avisoMapaEntendido;
 }
 
 class _AppLocalizationsDelegate

@@ -30,6 +30,8 @@
 	<string>Patas al Día necesita acceder a tus fotos para elegir la imagen de tu mascota.</string>
 	<key>NSCameraUsageDescription</key>
 	<string>Patas al Día necesita acceder a la cámara para tomar una foto de tu mascota.</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Patas al Día necesita tu ubicación para marcar dónde se perdió o encontró una mascota en el mapa.</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>

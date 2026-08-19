@@ -6,6 +6,7 @@ import 'package:patas_al_dia/l10n/app_localizations.dart';
 import 'package:patas_al_dia/presentation/screens/agenda_screen.dart';
 import 'package:patas_al_dia/presentation/screens/documentos_screen.dart';
 import 'package:patas_al_dia/presentation/screens/formulario_mascota_screen.dart';
+import 'package:patas_al_dia/presentation/screens/formulario_reporte_mascota_extraviada_screen.dart';
 import 'package:patas_al_dia/presentation/utils/etiquetas_localizadas.dart';
 import 'package:patas_al_dia/presentation/widgets/separador_seccion_ficha.dart';
 import 'package:patas_al_dia/presentation/widgets/tarjeta_clara.dart';
@@ -194,6 +195,21 @@ class DetalleMascotaScreen extends ConsumerWidget {
               Navigator.of(context).push(
                 MaterialPageRoute(
                   builder: (context) => DocumentosScreen(mascotaId: mascotaId),
+                ),
+              );
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.report_outlined),
+            title: Text(l10n.reportarMascotaPerdidaLabel),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) =>
+                      FormularioReporteMascotaExtraviadaScreen(
+                        mascota: mascota,
+                      ),
                 ),
               );
             },

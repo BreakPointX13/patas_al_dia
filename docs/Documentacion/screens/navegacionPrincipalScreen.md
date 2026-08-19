@@ -141,3 +141,17 @@ Sin esto, el botón "atrás" de Android cerraría la app entera en vez de retroc
 ### 6. Etiquetas del navbar vía `AppLocalizations` (2026-08-18)
 
 `_destinos` (el record `{icono, etiqueta}` original) se dividió en dos: `_iconosDestino` (`static const`, no cambia con el idioma) y una lista de etiquetas armada dentro de `_construirItemBarra(BuildContext context, int indice)` a partir de `AppLocalizations.of(context)` — un record `static const` no puede contener el resultado de `l10n.navMascotas` (no es una constante de compilación), así que dejó de tener sentido guardar íconos y etiquetas juntos en la misma estructura. Ver `sistemaIdiomas.md`.
+
+### 7. `_indiceNotifier` — avisarle a una pestaña ya montada que cambió el índice (2026-08-19)
+
+```dart
+final _indiceNotifier = ValueNotifier<int>(0);
+
+List<Widget> get _pantallasRaiz => [
+  const HomeScreen(),
+  const AgendaScreen(),
+  MapaScreen(indiceActualNotifier: _indiceNotifier),
+];
+```
+
+`_pantallasRaiz` pasó de `static const` a un getter de instancia porque `MapaScreen` necesita recibir `_indiceNotifier` — un objeto mutable, no puede vivir dentro de una lista `const`. Se agregó porque `MapaScreen` necesitaba enterarse de cuándo el usuario entra *de verdad* a la pestaña Mapa (para mostrar un aviso una sola vez, ver `mapaScreen.md`, punto 0) — algo que su propio `initState()` no puede resolver solo, dado que `IndexedStack` (punto 3) construye las tres pantallas desde el arranque, no cuando se seleccionan. `_cambiarPestana()` actualiza `_indiceNotifier.value` junto con `_indiceActual` (el `int` que ya existía, usado para `IndexedStack.index` y para resaltar la pestaña activa) — dos formas de guardar lo mismo: `_indiceActual` para lo que necesita leerse de forma síncrona en `build()`, `_indiceNotifier` para lo que necesita *notificarse* a un widget que ya está montado.

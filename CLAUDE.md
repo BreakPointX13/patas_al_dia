@@ -87,7 +87,7 @@ El campo `ultimaSincronizacion` es la marca de tiempo para sync incremental con 
 ### Backend cloud (pendiente)
 
 Tecnología elegida: **Supabase** (PostgreSQL + Auth + Storage).
-- El esquema SQL de Supabase replica las 5 tablas de `TablaMaestraAppVetMovil1.txt` casi sin cambios.
+- El esquema SQL de Supabase (6 tablas, con Row Level Security) vive en `docs/Planificaciones/TablaMaestraAppVetMovil1.sql`, listo para pegar en el SQL Editor de Supabase — ver `decisiones_arquitectura.md`, entrada del 2026-08-18.
 - `foto_url` y `file_path` en los modelos apuntarán a URLs de Supabase Storage.
 - La sincronización se activa únicamente cuando `esInvitado = false`.
 
@@ -95,7 +95,7 @@ Tecnología elegida: **Supabase** (PostgreSQL + Auth + Storage).
 
 Funcionalidades y modelos que quedan **fuera del alcance de la v1** y se retoman más adelante:
 
-- **Mascotas extraviadas (reporte y mapa)**: la tabla `mascotas_extraviadas` ya existe en `_onCreate` de `DatabaseHelper` (se creó junto con las otras 4 para no romper el esquema), pero no tiene `MascotaExtraviadaModel`, repository ni pantallas. La feature completa incluye: reportar mascota perdida con geolocalización (`ubicacion_lat`/`ubicacion_lng`), estado (`perdido`/`encontrado`), recompensa, contacto de emergencia y descripción, más la UI de mapa para mostrar reportes. Se implementa después de tener el core (mascotas, agenda, documentos) funcionando end-to-end.
+- **Mascotas extraviadas (reporte y mapa)**: la tabla `mascotas_extraviadas` ya existe en `_onCreate` de `DatabaseHelper` (se creó junto con las otras 4 para no romper el esquema), pero no tiene `MascotaExtraviadaModel`, repository ni pantallas. La feature completa incluye: reportar mascota perdida con geolocalización (`ubicacion_lat`/`ubicacion_lng`), estado (`perdido`/`encontrado`), recompensa, contacto de emergencia y descripción, más la UI de mapa para mostrar reportes. Se implementa después de tener el core (mascotas, agenda, documentos) funcionando end-to-end. A diferencia de los otros tres módulos, Mapa depende de Supabase para existir en absoluto (necesita que otros usuarios vean tu reporte, no solo respaldo/sync) — ver `decisiones_arquitectura.md`, entrada del 2026-08-18. Un usuario invitado sí puede publicar un reporte sin registrarse, pero `contacto_emergencia` pasa a ser obligatorio en ese caso: es la única forma de que alguien lo contacte sin una cuenta de por medio.
 
 ## Development Rules
 

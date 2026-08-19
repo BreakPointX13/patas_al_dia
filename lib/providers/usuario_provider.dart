@@ -66,6 +66,13 @@ class UsuarioNotifier extends Notifier<UsuarioModel?> {
     await actualizarUsuario(state!.copyWith(idioma: idioma));
   }
 
+  Future<void> marcarAvisoMapaVisto() async {
+    if (state == null) {
+      return;
+    }
+    await actualizarUsuario(state!.copyWith(avisoMapaVisto: true));
+  }
+
   Future<void> eliminarUsuario() async {
     if (state == null) {
       return;

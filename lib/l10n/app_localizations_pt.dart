@@ -642,4 +642,94 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get verPantallaCompletaLabel => 'Ver em tela cheia';
+
+  @override
+  String get reportarMascotaPerdidaLabel => 'Registrar pet perdido';
+
+  @override
+  String get campoUbicacion => 'Localização';
+
+  @override
+  String get usarUbicacionActualSwitch => 'Usar minha localização atual';
+
+  @override
+  String get obtenerUbicacionActual => 'Obter localização';
+
+  @override
+  String get ubicacionObtenidaLabel => 'Localização obtida';
+
+  @override
+  String get sinUbicacionLabel => 'Sem localização (opcional)';
+
+  @override
+  String get errorServicioUbicacionDeshabilitado =>
+      'Ative a localização do dispositivo para continuar';
+
+  @override
+  String get errorPermisoUbicacionDenegado =>
+      'É necessária permissão de localização para continuar';
+
+  @override
+  String get errorPermisoUbicacionPermanente =>
+      'A permissão de localização está bloqueada. Ative-a nas configurações do sistema.';
+
+  @override
+  String get errorObtenerUbicacion => 'Não foi possível obter a localização';
+
+  @override
+  String get campoCalle => 'Rua';
+
+  @override
+  String get campoNumero => 'Número';
+
+  @override
+  String get errorGeocodificacion =>
+      'Não conseguimos localizar esse endereço. O registro será publicado sem localização.';
+
+  @override
+  String get campoRecompensaSwitch => 'Vai oferecer recompensa?';
+
+  @override
+  String get campoRecompensaMonto => 'Valor da recompensa';
+
+  @override
+  String get errorRecompensaInvalida => 'Digite um valor válido';
+
+  @override
+  String get campoContactoEmergenciaObligatorio => 'Contato de emergência *';
+
+  @override
+  String get errorContactoEmergenciaObligatorio =>
+      'O contato de emergência é obrigatório';
+
+  @override
+  String get avisoContactoEmergencia =>
+      'É a única forma de alguém entrar em contato com você sobre este registro.';
+
+  @override
+  String get campoDescripcionObligatoria => 'Descrição *';
+
+  @override
+  String get errorDescripcionObligatoria => 'A descrição é obrigatória';
+
+  @override
+  String get reportePublicadoAviso => 'Registro publicado';
+
+  @override
+  String get errorPublicarReporte =>
+      'Não foi possível publicar o registro. Verifique sua conexão e tente novamente.';
+
+  @override
+  String get errorLimiteReportesActivos =>
+      'Você já tem o número máximo de registros ativos. Marque um como encontrado antes de criar um novo.';
+
+  @override
+  String get avisoMapaTitulo => 'Antes de usar o Mapa';
+
+  @override
+  String get avisoMapaContenido =>
+      'Este mapa é só para registrar pets perdidos ou encontrados. Não use para publicar anúncios, vendas ou conteúdo que não tenha relação com pets perdidos.\n\nSe você vir um registro que não corresponde, denuncie para que possamos revisar.';
+
+  @override
+  String get avisoMapaEntendido => 'Entendi';
 }

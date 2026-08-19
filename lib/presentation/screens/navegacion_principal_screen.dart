@@ -24,9 +24,26 @@ class _NavegacionPrincipalScreenState
   final List<GlobalKey<NavigatorState>> _navegadoresPorPestana =
       List.generate(3, (_) => GlobalKey<NavigatorState>());
 
-  static const _pantallasRaiz = [HomeScreen(), AgendaScreen(), MapaScreen()];
+  // IndexedStack mantiene las tres pestañas construidas desde el arranque
+  // (aunque solo una se vea) — así que MapaScreen no puede enterarse de
+  // "recién ahora me tocaron" por su propio initState, que se dispara una
+  // sola vez al construirse, no en cada cambio de pestaña. Este notifier es
+  // la señal que sí le llega en tiempo real, sin importar cuándo se montó.
+  final _indiceNotifier = ValueNotifier<int>(0);
+
+  List<Widget> get _pantallasRaiz => [
+    const HomeScreen(),
+    const AgendaScreen(),
+    MapaScreen(indiceActualNotifier: _indiceNotifier),
+  ];
 
   static const _iconosDestino = [Icons.pets, Icons.event_note, Icons.map];
+
+  @override
+  void dispose() {
+    _indiceNotifier.dispose();
+    super.dispose();
+  }
 
   void _cambiarPestana(int indice) {
     if (indice == _indiceActual) {
@@ -36,6 +53,7 @@ class _NavegacionPrincipalScreenState
       return;
     }
     setState(() => _indiceActual = indice);
+    _indiceNotifier.value = indice;
   }
 
   Widget _construirPestana(int indice) {
