@@ -16,6 +16,7 @@ class UsuarioRepository {
     return Supabase.instance.client.auth.signUp(
       email: email,
       password: password,
+      emailRedirectTo: supabaseRedirectConfirmarCorreo,
     );
   }
 

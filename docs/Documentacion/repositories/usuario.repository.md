@@ -55,11 +55,15 @@ Desde Login real (2026-08-19, ver `decisiones_arquitectura.md`), `UsuarioReposit
 - **Definición Estándar:** Operación **Delete** — `DELETE FROM usuarios WHERE id = ?`.
 - **En Nuestro Proyecto:** Igual que en `MascotaRepository.eliminarMascota`, se apoya en el `ON DELETE CASCADE` definido en `DatabaseHelper`. **Hallazgo del 2026-08-19 (Login real), corregido el mismo día al implementar "Eliminar cuenta":** `database_helper.dart` no activaba `PRAGMA foreign_keys = ON` — sin eso, SQLite no aplicaba ningún `ON DELETE CASCADE` declarado en el schema, así que este método (y `eliminarMascota`) en realidad dejaban huérfanas las filas hijas en vez de borrarlas en cascada. Ya corregido (ver `database.helper.md`, punto 8b) — ahora sí borra en cascada de verdad.
 
-### 6. `registrarConEmail`, `iniciarSesionConEmail`, `cerrarSesionSupabase` (2026-08-19)
+### 6. `registrarConEmail`, `iniciarSesionConEmail`, `cerrarSesionSupabase` (2026-08-19, `emailRedirectTo` agregado 2026-08-20)
 
 ```dart
 Future<AuthResponse> registrarConEmail({required String email, required String password}) {
-  return Supabase.instance.client.auth.signUp(email: email, password: password);
+  return Supabase.instance.client.auth.signUp(
+    email: email,
+    password: password,
+    emailRedirectTo: supabaseRedirectConfirmarCorreo,
+  );
 }
 Future<AuthResponse> iniciarSesionConEmail({required String email, required String password}) {
   return Supabase.instance.client.auth.signInWithPassword(email: email, password: password);
@@ -70,6 +74,8 @@ Future<void> cerrarSesionSupabase() {
 ```
 
 Los tres son envoltorios finos de `Supabase.instance.client.auth` — ninguno atrapa excepciones (`AuthException` se propaga tal cual), mismo criterio que el resto del proyecto con Supabase: quien llama decide qué mensaje mostrar (ver `errores_autenticacion.dart` / `errorAutenticacion.md`). Login real (2026-08-19) es la primera vez que este repository habla con Supabase — hasta ahora solo tocaba SQLite local.
+
+**`emailRedirectTo` (2026-08-20):** apunta a `supabaseRedirectConfirmarCorreo` (ver `supabaseConfig.md`, punto 5) — sin esto, el enlace de "confirma tu correo" redirige al "Site URL" del proyecto (`http://localhost:3000`, nunca configurado), mostrando un error de conexión al usuario aunque la confirmación en sí ya haya funcionado del lado del servidor.
 
 ### 6c. `eliminarCuentaSupabase` — llama a una Edge Function, no a la API de Auth directo (2026-08-19)
 

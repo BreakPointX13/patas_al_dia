@@ -40,3 +40,17 @@ En `lib/providers/supabase_provider.dart`. Mismo patrón de DI simple que ya usa
 ### 4. `Anonymous Sign-ins` habilitado en el proyecto
 
 Requisito de configuración en el dashboard de Supabase (Authentication → Sign In / Providers), no en código: sin esto, un usuario invitado (`esInvitado = true`, sin registro) no tendría ningún `auth.uid()` al cual atarse, y las políticas de RLS de `TablaMaestraAppVetMovil1.sql` (que comparan contra `auth.uid()`) rechazarían cualquier escritura suya. Habilitado por el usuario como parte de la Fase 2 del plan de Supabase.
+
+### 5. `supabaseRedirectRecuperarContrasena` y `supabaseRedirectConfirmarCorreo` (2026-08-19/20)
+
+```dart
+const supabaseRedirectRecuperarContrasena = 'patasaldia://reset-password';
+const supabaseRedirectConfirmarCorreo = 'https://breakpointx13.github.io/PatasAlDiaWeb/';
+```
+
+Dos destinos distintos para dos enlaces de correo distintos de Supabase Auth, cada uno resuelto de forma diferente:
+
+- **Recuperar contraseña** → deep link (`patasaldia://reset-password`) — reabre la app directo, ver `nuevaContrasenaScreen.md`. Tiene sentido reabrir la app acá porque el evento que dispara (`AuthChangeEvent.passwordRecovery`) es inequívoco.
+- **Confirmar correo** → página web externa (GitHub Pages, repo aparte y público — `PatasAlDiaWeb`, fuera de este repo). Se descartó el deep link para este caso: el evento que dispara la confirmación de registro (`AuthChangeEvent.signedIn`) es el mismo que dispara un login normal, así que reabrir la app ahí sería ambiguo sin lógica extra frágil. Se evaluó también subir la página a Supabase Storage (mismo bucket público que usa el resto del proyecto) — **no funciona**: Supabase Storage fuerza `Content-Type: text/plain` en cualquier archivo `.html` subido, sin importar qué se le pida al subirlo (medida de seguridad para no servir HTML/scripts arbitrarios bajo su propio dominio) — probado con tres métodos de subida distintos, los tres terminan igual.
+
+**Ambas URLs tienen que estar en la lista de "Redirect URLs" del panel de Supabase** (Authentication → URL Configuration) — sin eso, Supabase ignora el `redirectTo`/`emailRedirectTo` pasado desde la app y cae al "Site URL" del proyecto (`http://localhost:3000`, nunca configurado), mostrando un error de conexión. Ver `decisiones_arquitectura.md`, entradas del 2026-08-19 y 2026-08-20.

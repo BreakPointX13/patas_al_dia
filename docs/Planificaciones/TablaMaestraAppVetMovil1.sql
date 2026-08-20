@@ -323,3 +323,24 @@ create policy fotos_reportes_subir_autenticado
 create policy fotos_reportes_borrar_dueno
   on storage.objects for delete
   using (bucket_id = 'fotos_reportes' and (storage.foldername(name))[1] = auth.uid()::text);
+
+-- =========================================================
+-- 8. Storage: bucket paginas_publicas (sin uso actual, ver nota)
+-- =========================================================
+-- Creado para la página de "confirma tu correo" (ver decisiones_arquitectura.md,
+-- entrada del 2026-08-20) — descartado para ese fin: Supabase Storage fuerza
+-- `Content-Type: text/plain` en cualquier archivo .html subido (medida de
+-- seguridad, probado con tres métodos de subida distintos), así que no sirve
+-- para hostear páginas que tengan que renderizarse como HTML en un navegador.
+-- Esa página terminó publicada aparte, en GitHub Pages (repo `PatasAlDiaWeb`,
+-- ver supabaseConfig.md, punto 5, y memoria de sesión
+-- `reference_patasaldiaweb_repo`). El bucket queda creado y vacío — sirve
+-- igual para archivos que no necesiten servirse como HTML (imágenes, PDFs,
+-- etc.), si en algún momento hace falta un bucket público de propósito
+-- general.
+insert into storage.buckets (id, name, public)
+values ('paginas_publicas', 'paginas_publicas', true);
+
+create policy paginas_publicas_lectura_publica
+  on storage.objects for select
+  using (bucket_id = 'paginas_publicas');
