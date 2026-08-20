@@ -34,6 +34,18 @@ IconData _iconoTipoDocumento(String tipo) {
   }
 }
 
+// Fecha del documento en sí (cuándo se emitió, ej. la fecha de una receta)
+// si se cargó — si no, la fecha en que se subió a la app, que siempre
+// existe. Mismo criterio de fallback usado en el resto del proyecto para
+// datos opcionales.
+String _fechaMostrar(DocumentoModel documento) {
+  final fecha = documento.fechaEmision ?? documento.fechaSubida;
+  if (fecha == null) {
+    return '';
+  }
+  return '${fecha.day}/${fecha.month}/${fecha.year}';
+}
+
 class DocumentosScreen extends ConsumerStatefulWidget {
   final String mascotaId;
   const DocumentosScreen({super.key, required this.mascotaId});
@@ -43,6 +55,11 @@ class DocumentosScreen extends ConsumerStatefulWidget {
 }
 
 class _DocumentosScreenState extends ConsumerState<DocumentosScreen> {
+  // false = agrupado por tipo (comportamiento original), true = una sola
+  // lista ordenada por fecha, más reciente primero — mismo patrón de
+  // toggle que _vistaCalendario en AgendaScreen.
+  bool _vistaCronologica = false;
+
   @override
   void initState() {
     super.initState();
@@ -65,8 +82,7 @@ class _DocumentosScreenState extends ConsumerState<DocumentosScreen> {
   void _abrirDetalle(String documentoId) {
     Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (context) =>
-            DetalleDocumentoScreen(documentoId: documentoId),
+        builder: (context) => DetalleDocumentoScreen(documentoId: documentoId),
       ),
     );
   }
@@ -77,9 +93,24 @@ class _DocumentosScreenState extends ConsumerState<DocumentosScreen> {
     final l10n = AppLocalizations.of(context);
 
     return Scaffold(
-      appBar: AppBar(title: Text(l10n.accionDocumentos)),
+      appBar: AppBar(
+        title: Text(l10n.accionDocumentos),
+        actions: [
+          if (documentos.isNotEmpty)
+            IconButton(
+              icon: Icon(_vistaCronologica ? Icons.category : Icons.timeline),
+              tooltip: _vistaCronologica
+                  ? l10n.verPorTipo
+                  : l10n.verCronologico,
+              onPressed: () =>
+                  setState(() => _vistaCronologica = !_vistaCronologica),
+            ),
+        ],
+      ),
       body: documentos.isEmpty
           ? Center(child: Text(l10n.sinDocumentosAdjuntos))
+          : _vistaCronologica
+          ? _vistaCronologicaWidget(l10n, documentos)
           : ListView(
               children: [
                 for (final tipo in tiposDocumentoDisponibles)
@@ -97,6 +128,42 @@ class _DocumentosScreenState extends ConsumerState<DocumentosScreen> {
         label: Text(l10n.agregarDocumentoLabel),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+    );
+  }
+
+  Widget _vistaCronologicaWidget(
+    AppLocalizations l10n,
+    List<DocumentoModel> documentos,
+  ) {
+    final ordenados = [...documentos]
+      ..sort((a, b) {
+        final fechaA = a.fechaEmision ?? a.fechaSubida ?? DateTime(0);
+        final fechaB = b.fechaEmision ?? b.fechaSubida ?? DateTime(0);
+        return fechaB.compareTo(fechaA);
+      });
+    return ListView(
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 12),
+          child: SeparadorSeccionFicha(
+            icono: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.timeline, color: const Color(0xFFD06D1F), size: 24),
+                const SizedBox(width: 8),
+                Text(
+                  l10n.vistaCronologicaTitulo,
+                  style: TextStyle(
+                    color: _colorTextoSeparador(context),
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+        for (final documento in ordenados) _tileDocumento(l10n, documento),
+      ],
     );
   }
 
@@ -133,7 +200,8 @@ class _DocumentosScreenState extends ConsumerState<DocumentosScreen> {
           ),
         ),
       ),
-      for (final documento in documentosDelTipo) _tileDocumento(l10n, documento),
+      for (final documento in documentosDelTipo)
+        _tileDocumento(l10n, documento),
     ];
   }
 
@@ -143,16 +211,15 @@ class _DocumentosScreenState extends ConsumerState<DocumentosScreen> {
             documento.tipoDocumentoPersonalizado != null
         ? documento.tipoDocumentoPersonalizado!
         : tipoDocumentoMostrar(l10n, documento.tipoDocumento);
+    final fecha = _fechaMostrar(documento);
 
     return TarjetaClara(
       child: ListTile(
         leading: Icon(
-          documento.fileExtension == 'pdf'
-              ? Icons.picture_as_pdf
-              : Icons.image,
+          documento.fileExtension == 'pdf' ? Icons.picture_as_pdf : Icons.image,
         ),
         title: Text(documento.titulo),
-        subtitle: Text(tipo),
+        subtitle: Text(fecha.isEmpty ? tipo : '$tipo · $fecha'),
         trailing: documento.eventoId == null
             ? null
             : const Icon(Icons.link, size: 18),

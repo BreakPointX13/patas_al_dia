@@ -2,13 +2,16 @@ class MascotaExtraviadaModel {
   final String id;
   final String usuarioId;
   final String? mascotaId;
-  final String mascotaNombre;
+  final String? mascotaNombre;
   final String? mascotaEspecie;
   final String? mascotaFotoUrl;
   final double? ubicacionLat;
   final double? ubicacionLng;
   final double recompensa;
-  final String estado;
+  // 'perdido' o 'encontrado' — qué clase de reporte es. No cambia nunca
+  // después de creado (a diferencia de `resuelto`).
+  final String tipo;
+  final bool resuelto;
   final String contactoEmergencia;
   final String? descripcion;
   final DateTime? fechaPublicacion;
@@ -17,13 +20,14 @@ class MascotaExtraviadaModel {
     required this.id,
     required this.usuarioId,
     this.mascotaId,
-    required this.mascotaNombre,
+    this.mascotaNombre,
     this.mascotaEspecie,
     this.mascotaFotoUrl,
     this.ubicacionLat,
     this.ubicacionLng,
     this.recompensa = 0,
-    this.estado = 'perdido',
+    required this.tipo,
+    this.resuelto = false,
     required this.contactoEmergencia,
     this.descripcion,
     this.fechaPublicacion,
@@ -35,7 +39,7 @@ class MascotaExtraviadaModel {
       id: map['id'] as String,
       usuarioId: map['usuario_id'] as String,
       mascotaId: map['mascota_id'] as String?,
-      mascotaNombre: map['mascota_nombre'] as String,
+      mascotaNombre: map['mascota_nombre'] as String?,
       mascotaEspecie: map['mascota_especie'] as String?,
       mascotaFotoUrl: map['mascota_foto_url'] as String?,
       ubicacionLat: map['ubicacion_lat'] != null
@@ -47,7 +51,8 @@ class MascotaExtraviadaModel {
       recompensa: map['recompensa'] != null
           ? (map['recompensa'] as num).toDouble()
           : 0,
-      estado: map['estado'] as String? ?? 'perdido',
+      tipo: map['tipo'] as String,
+      resuelto: map['resuelto'] == 1 || map['resuelto'] == true,
       contactoEmergencia: map['contacto_emergencia'] as String,
       descripcion: map['descripcion'] as String?,
       fechaPublicacion: map['fecha_publicacion'] != null
@@ -68,7 +73,8 @@ class MascotaExtraviadaModel {
       'ubicacion_lat': ubicacionLat,
       'ubicacion_lng': ubicacionLng,
       'recompensa': recompensa,
-      'estado': estado,
+      'tipo': tipo,
+      'resuelto': resuelto,
       'contacto_emergencia': contactoEmergencia,
       'descripcion': descripcion,
       'fecha_publicacion': fechaPublicacion?.toIso8601String(),
@@ -86,7 +92,8 @@ class MascotaExtraviadaModel {
     double? ubicacionLat,
     double? ubicacionLng,
     double? recompensa,
-    String? estado,
+    String? tipo,
+    bool? resuelto,
     String? contactoEmergencia,
     String? descripcion,
     DateTime? fechaPublicacion,
@@ -101,7 +108,8 @@ class MascotaExtraviadaModel {
       ubicacionLat: ubicacionLat ?? this.ubicacionLat,
       ubicacionLng: ubicacionLng ?? this.ubicacionLng,
       recompensa: recompensa ?? this.recompensa,
-      estado: estado ?? this.estado,
+      tipo: tipo ?? this.tipo,
+      resuelto: resuelto ?? this.resuelto,
       contactoEmergencia: contactoEmergencia ?? this.contactoEmergencia,
       descripcion: descripcion ?? this.descripcion,
       fechaPublicacion: fechaPublicacion ?? this.fechaPublicacion,

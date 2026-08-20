@@ -209,6 +209,7 @@ class DetalleMascotaScreen extends ConsumerWidget {
                   builder: (context) =>
                       FormularioReporteMascotaExtraviadaScreen(
                         mascota: mascota,
+                        tipo: 'perdido',
                       ),
                 ),
               );

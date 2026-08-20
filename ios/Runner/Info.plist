@@ -32,6 +32,18 @@
 	<string>Patas al Día necesita acceder a la cámara para tomar una foto de tu mascota.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>Patas al Día necesita tu ubicación para marcar dónde se perdió o encontró una mascota en el mapa.</string>
+	<!-- Esquema propio para volver a abrir la app desde el enlace de "olvidé
+	     mi contraseña" que manda Supabase Auth por correo
+	     (patasaldia://reset-password) — ver main.dart y AndroidManifest.xml. -->
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>patasaldia</string>
+			</array>
+		</dict>
+	</array>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>

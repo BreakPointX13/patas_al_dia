@@ -77,9 +77,9 @@ void _cambiarPestana(int indice) {
 
 Si el usuario toca la pestaña en la que ya está, en vez de no hacer nada, se manda esa pestaña de vuelta a su pantalla raíz (`popUntil((route) => route.isFirst)`) — el mismo comportamiento que se ve en apps como Instagram al tocar dos veces el mismo ícono.
 
-### 4b. Barra inferior más baja y con bordes curvos (2026-08-16)
+### 4b. Barra inferior más baja (2026-08-16), esquinas rectas (2026-08-19)
 
-Altura reducida (76, antes 80 por defecto de `NavigationBar`) y esquinas superiores curvas — igual que antes, con `ClipRRect(borderRadius: BorderRadius.vertical(top: Radius.circular(20)))` recortando solo las esquinas de arriba (las de abajo tocan el borde de la pantalla).
+Altura reducida (76, antes 80 por defecto de `NavigationBar`). Tuvo esquinas superiores curvas desde el 2026-08-16 (`ClipRRect(borderRadius: BorderRadius.vertical(top: Radius.circular(20)))`) hasta que el usuario pidió volver a un rectángulo normal, sin curvas — se sacó el `ClipRRect` que envolvía el `Container` de la barra.
 
 ### 4c. Barra inferior propia, en vez de `NavigationBar` de Material (2026-08-16)
 

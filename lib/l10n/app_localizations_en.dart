@@ -59,8 +59,88 @@ class AppLocalizationsEn extends AppLocalizations {
   String get loginContinuarInvitado => 'Continue as guest';
 
   @override
-  String get loginNoDisponible =>
-      'Sign-in isn\'t available yet: we\'re still in development.';
+  String get tituloRegistrarse => 'Create account';
+
+  @override
+  String get botonRegistrarse => 'Sign up';
+
+  @override
+  String get campoEmail => 'Email';
+
+  @override
+  String get campoContrasena => 'Password';
+
+  @override
+  String get campoConfirmarContrasena => 'Confirm password';
+
+  @override
+  String get errorEmailObligatorio => 'Enter your email';
+
+  @override
+  String get errorEmailInvalido => 'That email doesn\'t look valid';
+
+  @override
+  String get errorContrasenaObligatoria => 'Enter a password';
+
+  @override
+  String get errorContrasenaCorta =>
+      'Password must be at least 8 characters, with one uppercase letter and one number';
+
+  @override
+  String get errorContrasenasNoCoinciden => 'Passwords don\'t match';
+
+  @override
+  String get linkNoTenesCuenta => 'Don\'t have an account? Sign up';
+
+  @override
+  String get linkYaTenesCuenta => 'Already have an account? Sign in';
+
+  @override
+  String get avisoRevisaCorreo =>
+      'We sent you an email to confirm your account. Check it before signing in on another device.';
+
+  @override
+  String get errorCredencialesInvalidas => 'Incorrect email or password';
+
+  @override
+  String get errorEmailNoConfirmado =>
+      'You haven\'t confirmed your email yet. Check your inbox.';
+
+  @override
+  String get errorEmailYaRegistrado => 'That email is already registered';
+
+  @override
+  String get errorAutenticacionGenerico =>
+      'Couldn\'t complete the operation. Try again.';
+
+  @override
+  String get cuentaInvitadoLabel => 'Guest account';
+
+  @override
+  String get registrarmeSubtitulo => 'Sign up so you don\'t lose your data';
+
+  @override
+  String get linkOlvideContrasena => 'Forgot your password?';
+
+  @override
+  String get tituloRecuperarContrasena => 'Recover password';
+
+  @override
+  String get avisoEnlaceEnviado =>
+      'If that email is registered, we sent you a link to reset your password.';
+
+  @override
+  String get errorEnlaceInvalido =>
+      'The link is invalid or expired. Request a new one.';
+
+  @override
+  String get botonEnviarEnlace => 'Send link';
+
+  @override
+  String get botonRestablecerContrasena => 'Reset password';
+
+  @override
+  String get campoNuevaContrasena => 'New password';
 
   @override
   String get cuentaTooltip => 'Account';
@@ -261,6 +341,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get idiomaLabel => 'Language';
 
   @override
+  String get idiomaSistemaLabel => 'Auto';
+
+  @override
   String get aportesVoluntariosLabel => 'Support the project';
 
   @override
@@ -276,6 +359,21 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get cerrarSesionContenido =>
       'As a guest, there\'s no way to get back to this session after signing out: you won\'t be able to see your pets or your saved data again. Sign out anyway?';
+
+  @override
+  String get cerrarSesionContenidoRegistrado =>
+      'You\'re about to sign out. You can sign back in with your email and password whenever you want.';
+
+  @override
+  String get eliminarCuentaLabel => 'Delete account';
+
+  @override
+  String get eliminarCuentaContenido =>
+      'All your data (pets, schedule, documents) on this device will be permanently deleted. This can\'t be undone. Delete account anyway?';
+
+  @override
+  String get eliminarCuentaContenidoRegistrado =>
+      'Your account will be deleted (you won\'t be able to sign in with this email again) along with all your data on this device, permanently. This can\'t be undone. Delete account anyway?';
 
   @override
   String get valorOtro => 'Other';
@@ -675,14 +773,34 @@ class AppLocalizationsEn extends AppLocalizations {
   String get errorObtenerUbicacion => 'Couldn\'t get your location';
 
   @override
-  String get campoCalle => 'Street';
+  String get campoCalle => 'Street *';
+
+  @override
+  String get errorCalleObligatoria => 'Street is required';
 
   @override
   String get campoNumero => 'Number';
 
   @override
+  String get campoReferenciaDireccion =>
+      'Reference (apt, cross street, etc. — optional)';
+
+  @override
   String get errorGeocodificacion =>
-      'We couldn\'t locate that address. The report will be published without a location.';
+      'We couldn\'t locate that address. Check the details and try again.';
+
+  @override
+  String get errorUbicacionObligatoria =>
+      'Location is missing. Use your current location or enter a valid address.';
+
+  @override
+  String get campoFotoObligatoria => 'Photo *';
+
+  @override
+  String get errorFotoObligatoria => 'Photo is required';
+
+  @override
+  String get errorSubirFoto => 'Couldn\'t upload the photo. Try again.';
 
   @override
   String get campoRecompensaSwitch => 'Offering a reward?';
@@ -718,6 +836,10 @@ class AppLocalizationsEn extends AppLocalizations {
       'Couldn\'t publish the report. Check your connection and try again.';
 
   @override
+  String get errorAutenticacionReporte =>
+      'Couldn\'t verify your identity to publish the report. Try again in a few seconds.';
+
+  @override
   String get errorLimiteReportesActivos =>
       'You already have the maximum number of active reports. Mark one as found before creating a new one.';
 
@@ -730,4 +852,86 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get avisoMapaEntendido => 'Got it';
+
+  @override
+  String get reportarMascotaEncontradaLabel => 'Report a found pet';
+
+  @override
+  String get campoNombreMascotaOpcional => 'Pet\'s name (if you know it)';
+
+  @override
+  String get opcionReportarPerdida => 'I lost a pet';
+
+  @override
+  String get opcionReportarEncontrada => 'I found a pet';
+
+  @override
+  String get eligeMascotaReporteTitulo => 'Which pet?';
+
+  @override
+  String get opcionMascotaNoRegistrada => 'Another pet (not registered)';
+
+  @override
+  String get denunciarReporteLabel => 'Report this listing';
+
+  @override
+  String get confirmarDenunciaTitulo => 'Report listing';
+
+  @override
+  String get confirmarDenunciaContenido =>
+      'Report this listing for not belonging on the map?';
+
+  @override
+  String get denunciaEnviadaAviso => 'Thanks, we\'ll review it';
+
+  @override
+  String get marcarComoResueltoLabel => 'Mark as resolved';
+
+  @override
+  String get confirmarResueltoTitulo => 'Mark as resolved';
+
+  @override
+  String get confirmarResueltoContenido =>
+      'Mark this report as resolved? It will stop showing on the map.';
+
+  @override
+  String get eliminarReporteTitulo => 'Delete report';
+
+  @override
+  String get eliminarReporteContenido =>
+      'Delete this report? This action can\'t be undone.';
+
+  @override
+  String get contactoLabel => 'Contact';
+
+  @override
+  String get recompensaLabel => 'Reward';
+
+  @override
+  String get fechaPublicacionLabel => 'Published';
+
+  @override
+  String get tipoPerdidoChip => 'Lost';
+
+  @override
+  String get tipoEncontradoChip => 'Found';
+
+  @override
+  String get sinReportesActivos => 'No active reports right now';
+
+  @override
+  String get errorCargarReportes =>
+      'Couldn\'t load the reports. Check your connection.';
+
+  @override
+  String get accionReportarFab => 'Report';
+
+  @override
+  String get verPorTipo => 'View by type';
+
+  @override
+  String get verCronologico => 'View chronologically';
+
+  @override
+  String get vistaCronologicaTitulo => 'Chronological order';
 }

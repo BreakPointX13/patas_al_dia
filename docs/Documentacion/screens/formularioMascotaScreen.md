@@ -87,16 +87,18 @@ Función que corre cuando se llama `validate()` sobre el `Form`. Si devuelve un 
 
 El campo "Sexo" no usa `TextEditingController`: al ser una lista fija de opciones (`Macho`/`Hembra`), el valor elegido se guarda directo en una variable de estado (`_sexo`) dentro de `onChanged`. "Esterilizado" usa el mismo principio con un `SwitchListTile` y una variable `bool`.
 
-### 6b. `_especies` — lista fija (2026-08-17)
+### 6b. `especiesDisponibles` — lista fija (2026-08-17, pública desde 2026-08-19)
 
 ```dart
-const _especies = [
+const especiesDisponibles = [
   'Perro', 'Gato', 'Conejo', 'Hamster', 'Cobaya', 'Jerbo', 'Rata',
   'Chinchilla', 'Erizo', 'Pez', 'Tortuga', 'Hurón', 'Ave', 'Otro',
 ];
 ```
 
 Igual que `tipoEvento` en `FormularioAgendaEventoScreen`, "Especie" dejó de ser texto libre y pasó a un `DropdownButtonFormField<String>` con esta lista fija (las especies más comunes como mascota en Chile, incluida Chinchilla por ser nativa). Si se elige "Otro", aparece un `TextFormField` adicional (`_especiePersonalizadaController`) para especificarla — mismo patrón exacto que `tipoEvento`/`tipoEventoPersonalizado`, incluida la nueva columna `especie_personalizada` en `mascotas` (ver `mascota.model.md` y `database.helper.md`). En `initState()`, si se edita una mascota con una especie que ya no está en la lista fija (dato viejo de texto libre), se mapea automáticamente a "Otro" con ese texto precargado en el campo personalizado.
+
+**De `_especies` (privada) a `especiesDisponibles` (2026-08-19):** se sacó el guion bajo, mismo criterio ya usado con `tiposDocumentoDisponibles` en Documentos — `FormularioReporteMascotaExtraviadaScreen` (módulo Mapa) necesita el mismo dropdown de especie cuando el usuario reporta una mascota sin registrarla, y reusar esta lista evitó duplicarla o crear un archivo de constantes nuevo solo para esto (ver `formularioReporteMascotaExtraviadaScreen.md`, punto 0).
 
 ### 6c. `SeparadorSeccionFicha` — tres grupos de campos (2026-08-17)
 
@@ -187,4 +189,4 @@ No todos los dueños conocen la fecha de nacimiento exacta de su mascota (rescat
 
 ### 13. Textos vía `AppLocalizations`, `_etiquetasEspecies` para el dropdown (2026-08-18)
 
-Todos los `labelText`, mensajes de validación y botones de este formulario salen de `AppLocalizations.of(context)` (ver `sistemaIdiomas.md`). El `DropdownButtonFormField` de especie es el caso particular: `_especies` (la lista de `value`, ej. `'Perro'`) sigue igual — es lo que se guarda en la base de datos — pero cada `DropdownMenuItem` ahora muestra `_etiquetasEspecies[e]!(l10n)` como texto, un mapa de `especie en español → función que devuelve la traducción` (`Map<String, String Function(AppLocalizations)>`, no `const` porque una función no es una constante de compilación en Dart). El dropdown de "Sexo" sigue el mismo criterio: `value: 'Macho'`/`'Hembra'` fijos, `child: Text(l10n.sexoMacho)`/`Text(l10n.sexoHembra)` para la etiqueta visible.
+Todos los `labelText`, mensajes de validación y botones de este formulario salen de `AppLocalizations.of(context)` (ver `sistemaIdiomas.md`). El `DropdownButtonFormField` de especie es el caso particular: `especiesDisponibles` (la lista de `value`, ej. `'Perro'`) sigue igual — es lo que se guarda en la base de datos — pero cada `DropdownMenuItem` ahora muestra `_etiquetasEspecies[e]!(l10n)` como texto, un mapa de `especie en español → función que devuelve la traducción` (`Map<String, String Function(AppLocalizations)>`, no `const` porque una función no es una constante de compilación en Dart). El dropdown de "Sexo" sigue el mismo criterio: `value: 'Macho'`/`'Hembra'` fijos, `child: Text(l10n.sexoMacho)`/`Text(l10n.sexoHembra)` para la etiqueta visible.

@@ -25,19 +25,24 @@ class MascotaExtraviadaNotifier extends Notifier<List<MascotaExtraviadaModel>> {
     state = [reporte, ...state];
   }
 
-  Future<void> marcarComoEncontrado(MascotaExtraviadaModel reporte) async {
+  Future<void> marcarComoResuelto(MascotaExtraviadaModel reporte) async {
     final repo = ref.read(mascotaExtraviadaRepositoryProvider);
-    final actualizado = reporte.copyWith(estado: 'encontrado');
+    final actualizado = reporte.copyWith(resuelto: true);
     await repo.actualizarReporte(actualizado);
     // Ya no es un reporte activo — sale de la lista, mismo criterio que
-    // "obtenerReportesActivos" (que solo trae estado = 'perdido').
+    // "obtenerReportesActivos" (que solo trae resuelto = false).
     state = state.where((r) => r.id != reporte.id).toList();
   }
 
-  Future<void> eliminarReporte(String id) async {
+  Future<void> eliminarReporte(MascotaExtraviadaModel reporte) async {
     final repo = ref.read(mascotaExtraviadaRepositoryProvider);
-    await repo.eliminarReporte(id);
-    state = state.where((r) => r.id != id).toList();
+    await repo.eliminarReporte(reporte);
+    state = state.where((r) => r.id != reporte.id).toList();
+  }
+
+  Future<void> denunciarReporte(String reporteId) async {
+    final repo = ref.read(mascotaExtraviadaRepositoryProvider);
+    await repo.denunciarReporte(reporteId);
   }
 }
 

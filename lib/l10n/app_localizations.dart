@@ -196,11 +196,161 @@ abstract class AppLocalizations {
   /// **'Continuar como invitado'**
   String get loginContinuarInvitado;
 
-  /// No description provided for @loginNoDisponible.
+  /// No description provided for @tituloRegistrarse.
   ///
   /// In es, this message translates to:
-  /// **'Inicio de sesión no disponible todavía: estamos en fase de desarrollo.'**
-  String get loginNoDisponible;
+  /// **'Crear cuenta'**
+  String get tituloRegistrarse;
+
+  /// No description provided for @botonRegistrarse.
+  ///
+  /// In es, this message translates to:
+  /// **'Registrarme'**
+  String get botonRegistrarse;
+
+  /// No description provided for @campoEmail.
+  ///
+  /// In es, this message translates to:
+  /// **'Correo electrónico'**
+  String get campoEmail;
+
+  /// No description provided for @campoContrasena.
+  ///
+  /// In es, this message translates to:
+  /// **'Contraseña'**
+  String get campoContrasena;
+
+  /// No description provided for @campoConfirmarContrasena.
+  ///
+  /// In es, this message translates to:
+  /// **'Confirmar contraseña'**
+  String get campoConfirmarContrasena;
+
+  /// No description provided for @errorEmailObligatorio.
+  ///
+  /// In es, this message translates to:
+  /// **'Ingresa tu correo'**
+  String get errorEmailObligatorio;
+
+  /// No description provided for @errorEmailInvalido.
+  ///
+  /// In es, this message translates to:
+  /// **'Ese correo no parece válido'**
+  String get errorEmailInvalido;
+
+  /// No description provided for @errorContrasenaObligatoria.
+  ///
+  /// In es, this message translates to:
+  /// **'Ingresa una contraseña'**
+  String get errorContrasenaObligatoria;
+
+  /// No description provided for @errorContrasenaCorta.
+  ///
+  /// In es, this message translates to:
+  /// **'La contraseña debe tener al menos 8 caracteres, una mayúscula y un número'**
+  String get errorContrasenaCorta;
+
+  /// No description provided for @errorContrasenasNoCoinciden.
+  ///
+  /// In es, this message translates to:
+  /// **'Las contraseñas no coinciden'**
+  String get errorContrasenasNoCoinciden;
+
+  /// No description provided for @linkNoTenesCuenta.
+  ///
+  /// In es, this message translates to:
+  /// **'¿No tenés cuenta? Registrate'**
+  String get linkNoTenesCuenta;
+
+  /// No description provided for @linkYaTenesCuenta.
+  ///
+  /// In es, this message translates to:
+  /// **'¿Ya tenés cuenta? Iniciá sesión'**
+  String get linkYaTenesCuenta;
+
+  /// No description provided for @avisoRevisaCorreo.
+  ///
+  /// In es, this message translates to:
+  /// **'Te enviamos un correo para confirmar tu cuenta. Revísalo antes de iniciar sesión en otro dispositivo.'**
+  String get avisoRevisaCorreo;
+
+  /// No description provided for @errorCredencialesInvalidas.
+  ///
+  /// In es, this message translates to:
+  /// **'Correo o contraseña incorrectos'**
+  String get errorCredencialesInvalidas;
+
+  /// No description provided for @errorEmailNoConfirmado.
+  ///
+  /// In es, this message translates to:
+  /// **'Todavía no confirmaste tu correo. Revisa tu bandeja de entrada.'**
+  String get errorEmailNoConfirmado;
+
+  /// No description provided for @errorEmailYaRegistrado.
+  ///
+  /// In es, this message translates to:
+  /// **'Ese correo ya está registrado'**
+  String get errorEmailYaRegistrado;
+
+  /// No description provided for @errorAutenticacionGenerico.
+  ///
+  /// In es, this message translates to:
+  /// **'No se pudo completar la operación. Intenta de nuevo.'**
+  String get errorAutenticacionGenerico;
+
+  /// No description provided for @cuentaInvitadoLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Cuenta de invitado'**
+  String get cuentaInvitadoLabel;
+
+  /// No description provided for @registrarmeSubtitulo.
+  ///
+  /// In es, this message translates to:
+  /// **'Registrate para no perder tus datos'**
+  String get registrarmeSubtitulo;
+
+  /// No description provided for @linkOlvideContrasena.
+  ///
+  /// In es, this message translates to:
+  /// **'¿Olvidaste tu contraseña?'**
+  String get linkOlvideContrasena;
+
+  /// No description provided for @tituloRecuperarContrasena.
+  ///
+  /// In es, this message translates to:
+  /// **'Recuperar contraseña'**
+  String get tituloRecuperarContrasena;
+
+  /// No description provided for @avisoEnlaceEnviado.
+  ///
+  /// In es, this message translates to:
+  /// **'Si ese correo está registrado, te enviamos un enlace para restablecer tu contraseña.'**
+  String get avisoEnlaceEnviado;
+
+  /// No description provided for @errorEnlaceInvalido.
+  ///
+  /// In es, this message translates to:
+  /// **'El enlace es inválido o venció. Pedí uno nuevo.'**
+  String get errorEnlaceInvalido;
+
+  /// No description provided for @botonEnviarEnlace.
+  ///
+  /// In es, this message translates to:
+  /// **'Enviar enlace'**
+  String get botonEnviarEnlace;
+
+  /// No description provided for @botonRestablecerContrasena.
+  ///
+  /// In es, this message translates to:
+  /// **'Restablecer contraseña'**
+  String get botonRestablecerContrasena;
+
+  /// No description provided for @campoNuevaContrasena.
+  ///
+  /// In es, this message translates to:
+  /// **'Nueva contraseña'**
+  String get campoNuevaContrasena;
 
   /// No description provided for @cuentaTooltip.
   ///
@@ -586,6 +736,12 @@ abstract class AppLocalizations {
   /// **'Idioma'**
   String get idiomaLabel;
 
+  /// No description provided for @idiomaSistemaLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Auto'**
+  String get idiomaSistemaLabel;
+
   /// No description provided for @aportesVoluntariosLabel.
   ///
   /// In es, this message translates to:
@@ -615,6 +771,30 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Como invitado, no hay forma de volver a esta sesión después de cerrarla: no vas a poder ver de nuevo tus mascotas ni los datos cargados. ¿Cerrar sesión de todos modos?'**
   String get cerrarSesionContenido;
+
+  /// No description provided for @cerrarSesionContenidoRegistrado.
+  ///
+  /// In es, this message translates to:
+  /// **'Vas a cerrar tu sesión. Podés volver a iniciarla con tu correo y contraseña cuando quieras.'**
+  String get cerrarSesionContenidoRegistrado;
+
+  /// No description provided for @eliminarCuentaLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Eliminar cuenta'**
+  String get eliminarCuentaLabel;
+
+  /// No description provided for @eliminarCuentaContenido.
+  ///
+  /// In es, this message translates to:
+  /// **'Se van a borrar todos tus datos (mascotas, agenda, documentos) de este dispositivo, de forma permanente. Esta acción no se puede deshacer. ¿Eliminar cuenta de todos modos?'**
+  String get eliminarCuentaContenido;
+
+  /// No description provided for @eliminarCuentaContenidoRegistrado.
+  ///
+  /// In es, this message translates to:
+  /// **'Se va a borrar tu cuenta (no vas a poder volver a iniciar sesión con este correo) y todos tus datos de este dispositivo, de forma permanente. Esta acción no se puede deshacer. ¿Eliminar cuenta de todos modos?'**
+  String get eliminarCuentaContenidoRegistrado;
 
   /// No description provided for @valorOtro.
   ///
@@ -1369,8 +1549,14 @@ abstract class AppLocalizations {
   /// No description provided for @campoCalle.
   ///
   /// In es, this message translates to:
-  /// **'Calle'**
+  /// **'Calle *'**
   String get campoCalle;
+
+  /// No description provided for @errorCalleObligatoria.
+  ///
+  /// In es, this message translates to:
+  /// **'La calle es obligatoria'**
+  String get errorCalleObligatoria;
 
   /// No description provided for @campoNumero.
   ///
@@ -1378,11 +1564,41 @@ abstract class AppLocalizations {
   /// **'Número'**
   String get campoNumero;
 
+  /// No description provided for @campoReferenciaDireccion.
+  ///
+  /// In es, this message translates to:
+  /// **'Referencia (depto, esquina, etc. — opcional)'**
+  String get campoReferenciaDireccion;
+
   /// No description provided for @errorGeocodificacion.
   ///
   /// In es, this message translates to:
-  /// **'No pudimos ubicar esa dirección. El reporte se va a publicar sin ubicación.'**
+  /// **'No pudimos ubicar esa dirección. Revisa los datos e intenta de nuevo.'**
   String get errorGeocodificacion;
+
+  /// No description provided for @errorUbicacionObligatoria.
+  ///
+  /// In es, this message translates to:
+  /// **'Falta la ubicación. Usa tu ubicación actual o ingresa una dirección válida.'**
+  String get errorUbicacionObligatoria;
+
+  /// No description provided for @campoFotoObligatoria.
+  ///
+  /// In es, this message translates to:
+  /// **'Foto *'**
+  String get campoFotoObligatoria;
+
+  /// No description provided for @errorFotoObligatoria.
+  ///
+  /// In es, this message translates to:
+  /// **'La foto es obligatoria'**
+  String get errorFotoObligatoria;
+
+  /// No description provided for @errorSubirFoto.
+  ///
+  /// In es, this message translates to:
+  /// **'No se pudo subir la foto. Intenta de nuevo.'**
+  String get errorSubirFoto;
 
   /// No description provided for @campoRecompensaSwitch.
   ///
@@ -1444,6 +1660,12 @@ abstract class AppLocalizations {
   /// **'No se pudo publicar el reporte. Revisa tu conexión e intenta de nuevo.'**
   String get errorPublicarReporte;
 
+  /// No description provided for @errorAutenticacionReporte.
+  ///
+  /// In es, this message translates to:
+  /// **'No se pudo verificar tu identidad para publicar el reporte. Intenta de nuevo en unos segundos.'**
+  String get errorAutenticacionReporte;
+
   /// No description provided for @errorLimiteReportesActivos.
   ///
   /// In es, this message translates to:
@@ -1459,7 +1681,7 @@ abstract class AppLocalizations {
   /// No description provided for @avisoMapaContenido.
   ///
   /// In es, this message translates to:
-  /// **'Este mapa es solo para reportar mascotas perdidas o encontradas. No lo uses para publicar anuncios, ventas ni contenido que no tenga que ver con mascotas perdidas.\n\nSi ves un reporte que no corresponde, podés denunciarlo para que lo revisemos.'**
+  /// **'Este mapa es solo para reportar mascotas perdidas o encontradas. No lo uses para publicar anuncios, ventas ni contenido que no tenga que ver con mascotas perdidas.\n\nSi ves un reporte que no corresponde, puedes denunciarlo para que lo revisemos.'**
   String get avisoMapaContenido;
 
   /// No description provided for @avisoMapaEntendido.
@@ -1467,6 +1689,162 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Entendido'**
   String get avisoMapaEntendido;
+
+  /// No description provided for @reportarMascotaEncontradaLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Reportar mascota encontrada'**
+  String get reportarMascotaEncontradaLabel;
+
+  /// No description provided for @campoNombreMascotaOpcional.
+  ///
+  /// In es, this message translates to:
+  /// **'Nombre de la mascota (si lo sabes)'**
+  String get campoNombreMascotaOpcional;
+
+  /// No description provided for @opcionReportarPerdida.
+  ///
+  /// In es, this message translates to:
+  /// **'Perdí una mascota'**
+  String get opcionReportarPerdida;
+
+  /// No description provided for @opcionReportarEncontrada.
+  ///
+  /// In es, this message translates to:
+  /// **'Encontré una mascota'**
+  String get opcionReportarEncontrada;
+
+  /// No description provided for @eligeMascotaReporteTitulo.
+  ///
+  /// In es, this message translates to:
+  /// **'¿Cuál mascota?'**
+  String get eligeMascotaReporteTitulo;
+
+  /// No description provided for @opcionMascotaNoRegistrada.
+  ///
+  /// In es, this message translates to:
+  /// **'Otra mascota (no registrada)'**
+  String get opcionMascotaNoRegistrada;
+
+  /// No description provided for @denunciarReporteLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Denunciar este aviso'**
+  String get denunciarReporteLabel;
+
+  /// No description provided for @confirmarDenunciaTitulo.
+  ///
+  /// In es, this message translates to:
+  /// **'Denunciar aviso'**
+  String get confirmarDenunciaTitulo;
+
+  /// No description provided for @confirmarDenunciaContenido.
+  ///
+  /// In es, this message translates to:
+  /// **'¿Denunciar este aviso por no corresponder al uso del mapa?'**
+  String get confirmarDenunciaContenido;
+
+  /// No description provided for @denunciaEnviadaAviso.
+  ///
+  /// In es, this message translates to:
+  /// **'Gracias, vamos a revisarlo'**
+  String get denunciaEnviadaAviso;
+
+  /// No description provided for @marcarComoResueltoLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Marcar como resuelto'**
+  String get marcarComoResueltoLabel;
+
+  /// No description provided for @confirmarResueltoTitulo.
+  ///
+  /// In es, this message translates to:
+  /// **'Marcar como resuelto'**
+  String get confirmarResueltoTitulo;
+
+  /// No description provided for @confirmarResueltoContenido.
+  ///
+  /// In es, this message translates to:
+  /// **'¿Marcar este reporte como resuelto? Va a dejar de verse en el mapa.'**
+  String get confirmarResueltoContenido;
+
+  /// No description provided for @eliminarReporteTitulo.
+  ///
+  /// In es, this message translates to:
+  /// **'Eliminar reporte'**
+  String get eliminarReporteTitulo;
+
+  /// No description provided for @eliminarReporteContenido.
+  ///
+  /// In es, this message translates to:
+  /// **'¿Eliminar este reporte? Esta acción no se puede deshacer.'**
+  String get eliminarReporteContenido;
+
+  /// No description provided for @contactoLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Contacto'**
+  String get contactoLabel;
+
+  /// No description provided for @recompensaLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Recompensa'**
+  String get recompensaLabel;
+
+  /// No description provided for @fechaPublicacionLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Publicado'**
+  String get fechaPublicacionLabel;
+
+  /// No description provided for @tipoPerdidoChip.
+  ///
+  /// In es, this message translates to:
+  /// **'Perdida'**
+  String get tipoPerdidoChip;
+
+  /// No description provided for @tipoEncontradoChip.
+  ///
+  /// In es, this message translates to:
+  /// **'Encontrada'**
+  String get tipoEncontradoChip;
+
+  /// No description provided for @sinReportesActivos.
+  ///
+  /// In es, this message translates to:
+  /// **'No hay reportes activos por ahora'**
+  String get sinReportesActivos;
+
+  /// No description provided for @errorCargarReportes.
+  ///
+  /// In es, this message translates to:
+  /// **'No se pudieron cargar los reportes. Revisa tu conexión.'**
+  String get errorCargarReportes;
+
+  /// No description provided for @accionReportarFab.
+  ///
+  /// In es, this message translates to:
+  /// **'Reportar'**
+  String get accionReportarFab;
+
+  /// No description provided for @verPorTipo.
+  ///
+  /// In es, this message translates to:
+  /// **'Ver por tipo'**
+  String get verPorTipo;
+
+  /// No description provided for @verCronologico.
+  ///
+  /// In es, this message translates to:
+  /// **'Ver cronológico'**
+  String get verCronologico;
+
+  /// No description provided for @vistaCronologicaTitulo.
+  ///
+  /// In es, this message translates to:
+  /// **'Orden cronológico'**
+  String get vistaCronologicaTitulo;
 }
 
 class _AppLocalizationsDelegate

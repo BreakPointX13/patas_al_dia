@@ -8,7 +8,7 @@ Se accede desde `MenuUsuarioAvatar` (ver `menuUsuarioAvatar.md`), presente en el
 
 ## 🎯 Propósito del Archivo
 
-Pantalla de ajustes de la app. Tiene cinco opciones: "Tema" (2026-08-18, ver punto 5), "Tamaño de letra" (2026-08-18, ver punto 4), "Idioma" (2026-08-18, ver punto 6), "Aportes voluntarios" (2026-08-17, ver punto 3) y "Cerrar sesión"; es el lugar natural donde agregar más adelante otras preferencias (notificaciones, cuenta, etc.) sin volver a tocar `HomeScreen`. Desde esta pasada, todos sus textos salen de `AppLocalizations` (ver `sistemaIdiomas.md`) en vez de estar escritos fijo en español.
+Pantalla de ajustes de la app. Tiene siete opciones: "Tema" (2026-08-18, ver punto 5), "Tamaño de letra" (2026-08-18, ver punto 4), "Idioma" (2026-08-18, ver punto 6), "Aportes voluntarios" (2026-08-17, ver punto 3), "Cuenta" (2026-08-19, ver punto 7 — solo para invitados, es el punto de entrada para registrarse), "Cerrar sesión" y "Eliminar cuenta" (2026-08-19, ver punto 8). Desde esta pasada, todos sus textos salen de `AppLocalizations` (ver `sistemaIdiomas.md`) en vez de estar escritos fijo en español.
 
 ---
 
@@ -22,9 +22,11 @@ Pantalla de ajustes de la app. Tiene cinco opciones: "Tema" (2026-08-18, ver pun
 
 ## ⚙️ Glosario de Funciones y Componentes Complejos
 
-### 1. `_confirmarCerrarSesion` (2026-08-15)
+### 1. `_confirmarCerrarSesion` (2026-08-15, mensaje condicional desde 2026-08-19)
 
 Antes de llamar a `_cerrarSesion`, pide confirmación con un `AlertDialog`. Se agregó porque, como invitado, no existe forma de "volver a entrar" a la misma sesión después de cerrarla (no hay credencial que recordar) — cerrar sesión es, en la práctica, irreversible desde la UI, aunque los datos no se borren literalmente de SQLite (ver el punto 3). El texto del diálogo se lo dice explícitamente al usuario antes de que lo haga sin querer.
+
+**Con Login real (2026-08-19), ese texto dejó de ser cierto para un usuario registrado** — al tener email y contraseña, sí puede volver a entrar a la misma sesión (ver `iniciarSesionScreen.md`), con todos sus datos intactos si es el mismo dispositivo. `_confirmarCerrarSesion` ahora recibe un tercer parámetro `esInvitado` (`usuario?.esInvitado ?? true`) y elige entre `cerrarSesionContenido` (advertencia de "esto es irreversible", solo para invitados) y `cerrarSesionContenidoRegistrado` (mensaje neutro, sin advertencia) según corresponda.
 
 ### 2. `_cerrarSesion(BuildContext context, WidgetRef ref)`
 
@@ -48,7 +50,7 @@ Future<void> _cerrarSesion(BuildContext context, WidgetRef ref) async {
 }
 ```
 
-- **`cerrarSesion()`** (en `UsuarioNotifier`) marca `sesionActiva = false` en SQLite sin borrar al usuario — ver `usuarioNotifier.md`.
+- **`cerrarSesion()`** (en `UsuarioNotifier`) marca `sesionActiva = false` en SQLite sin borrar al usuario, y desde 2026-08-19 también cierra la sesión de Supabase Auth si el usuario es registrado — ver `usuarioNotifier.md`.
 - **`ref.invalidate(...)`** (agregado el 2026-08-15, ver el bug correspondiente en `decisiones_arquitectura.md`): fuerza a que cada provider vuelva a su estado inicial (`build()` devuelve `[]`) la próxima vez que algo lo lea. Sin esto, un invitado nuevo (creado después de cerrar sesión) podía ver por un momento — o de forma persistente en `AgendaScreen`, por una condición de carrera con `mascotasProvider` — datos del invitado anterior, porque estos providers son globales y no se "resetean" solos solo por navegar a otra pantalla.
 - **`pushAndRemoveUntil(..., (route) => false)`**: a diferencia del `pushReplacement` que usan `LoginScreen` y `SesionInicialScreen` (que reemplazan solo la pantalla actual), acá hace falta vaciar **todo** el stack de navegación — si solo se reemplazara `AjustesScreen`, `NavegacionPrincipalScreen` seguiría debajo y el botón "atrás" desde `LoginScreen` volvería a una sesión que ya se cerró. El callback `(route) => false` le dice "no conserves ninguna ruta anterior".
 - **`rootNavigator: true`**: desde el 2026-08-12, `AjustesScreen` se abre empujada dentro del `Navigator` propio de la pestaña activa (ver `navegacionPrincipalScreen.md`), no en el `Navigator` de toda la app. Sin este parámetro, `Navigator.of(context)` resolvería al `Navigator` de esa pestaña, y `pushAndRemoveUntil` solo vaciaría la pila de esa pestaña — `LoginScreen` quedaría empujado ahí adentro, con la barra inferior del shell todavía visible alrededor. `rootNavigator: true` fuerza a que apunte siempre al `Navigator` más externo (el de `MaterialApp`), sin importar desde qué pestaña se haya abierto esta pantalla.
@@ -122,15 +124,65 @@ Segunda pieza del pedido de accesibilidad del usuario (modo oscuro, tamaño de l
 - **`'sistema'` como valor por defecto, no `'claro'`:** decisión explícita del usuario — la preferencia se guarda en el usuario (igual que `escalaTexto`), pero por defecto la app debe seguir lo que diga el sistema operativo, no forzar claro. Ver cómo se traduce a `ThemeMode` en `main.dart` (`'claro'` → `ThemeMode.light`, `'oscuro'` → `ThemeMode.dark`, cualquier otro valor incluido `'sistema'` → `ThemeMode.system`).
 - **Colores de la app en modo oscuro:** ver `temaApp.md` para el detalle completo — en resumen, toda la paleta de acento (Naranja, Naranja marca, Durazno, Amarillo cálido) se mantiene igual en los dos modos; solo cambia el fondo del `Scaffold` (Crema → gris oscuro cálido) y el "café texto" que aparece directo sobre ese fondo (sin tarjeta detrás), que se invierte a un tono claro para seguir siendo legible.
 
-### 6. "Idioma" — Sistema / ES / EN / PT (2026-08-18)
+### 6. "Idioma" — Auto / ES / EN / PT (2026-08-18, corregido 2026-08-19)
 
 ```dart
 const _idiomas = ['sistema', 'es', 'en', 'pt'];
-const _etiquetasIdioma = ['Sistema', 'ES', 'EN', 'PT'];
+// en build(): final etiquetasIdioma = [l10n.idiomaSistemaLabel, 'ES', 'EN', 'PT'];
 ```
 
 Tercera pieza del pedido de accesibilidad del usuario, ver `sistemaIdiomas.md` para el sistema completo (`.arb`, `AppLocalizations`, etc.) — acá solo el control en sí, mismo patrón que "Tema" (`SegmentedButton<String>`, `'sistema'` por defecto).
 
-**Diferencia clave con "Tema":** las etiquetas de "Tema" (`temaSistema`/`temaClaro`/`temaOscuro`) SÍ salen de `AppLocalizations` y cambian según el idioma activo. Las de "Idioma" (`_etiquetasIdioma`) son una constante fija en código, **no** traducida — cada opción se muestra siempre en su propio idioma nativo, para que el usuario reconozca su idioma sin importar cuál esté puesto en ese momento. Traducir el nombre de un idioma según el idioma activo sería contraproducente: alguien que puso la app en portugués sin querer necesita poder encontrar la opción de español en la lista, no una versión traducida al portugués.
+**Diferencia clave con "Tema", y un matiz importante en "Idioma": no todo el array es lo mismo.** Los tres nombres de idioma (`'ES'`/`'EN'`/`'PT'`) siguen siendo una constante fija, **no** traducida — cada opción se muestra siempre en su propio idioma nativo, para que el usuario reconozca su idioma sin importar cuál esté puesto en ese momento (traducir el nombre de un idioma según el idioma activo sería contraproducente: alguien que puso la app en portugués sin querer necesita poder encontrar la opción de español en la lista, no una versión traducida al portugués). Pero **"Sistema" no es el nombre de un idioma** — es un concepto de interfaz ("seguir el idioma del sistema operativo"), así que sí debería traducirse como cualquier otro texto de la app. La primera versión lo trataba igual que los otros tres (`_etiquetasIdioma` con `'Sistema'` fijo, string de código) — bug encontrado por el usuario al probar: quedaba siempre en español sin importar el idioma activo. Se corrigió sacándolo del array constante y armándolo en `build()` como `l10n.idiomaSistemaLabel`.
 
-**De nombre completo a sigla (2026-08-18):** con el tamaño de letra en "Normal" o "Grande", los cuatro segmentos (`Sistema`/`Español`/`English`/`Português`) no entraban en una sola línea dentro del `SegmentedButton` y el texto se cortaba a una segunda línea, deformando el control. Se acortaron los tres idiomas a su sigla de dos letras (`ES`/`EN`/`PT`) — "Sistema" queda igual, no era la palabra que desbordaba. Se descartó usar banderas de países (alternativa que el usuario propuso): una bandera representa un país, no un idioma, y el portugués en particular no tiene una bandera única sin ambigüedad (Brasil vs. Portugal) — las siglas evitan esa confusión y son un estándar ya reconocido (mismo criterio que usan selectores de idioma de sistemas operativos y navegadores).
+**De nombre completo a sigla (2026-08-18), con "Sistema" corregido después (2026-08-19):** con el tamaño de letra en "Normal" o "Grande", los cuatro segmentos no entraban en una sola línea dentro del `SegmentedButton`. Se acortaron los tres idiomas a su sigla de dos letras (`ES`/`EN`/`PT`) en la primera pasada — pero "Sistema" (7 letras) se dejó igual por error, y seguía desbordando a una segunda línea con el mismo problema que ya se había resuelto para los otros tres. Se corrigió junto con el bug de traducción: `idiomaSistemaLabel` = "Auto" en los tres idiomas (mismo préstamo reconocible en español/inglés/portugués, ya corto por sí solo, sin necesitar acortarlo más). Se descartó usar banderas de países (alternativa que el usuario propuso en su momento): una bandera representa un país, no un idioma, y el portugués en particular no tiene una bandera única sin ambigüedad (Brasil vs. Portugal) — las siglas evitan esa confusión y son un estándar ya reconocido (mismo criterio que usan selectores de idioma de sistemas operativos y navegadores).
+
+### 7. "Cuenta" — punto de entrada para que un invitado se registre (2026-08-19)
+
+```dart
+if (usuario != null && usuario.esInvitado)
+  ListTile(
+    leading: const Icon(Icons.person_outline),
+    title: Text(l10n.cuentaInvitadoLabel),
+    subtitle: Text(l10n.registrarmeSubtitulo),
+    trailing: const Icon(Icons.chevron_right),
+    onTap: () => Navigator.of(context).push(
+      MaterialPageRoute(builder: (context) => const RegistroScreen(entrarComoApp: false)),
+    ),
+  )
+else if (usuario != null)
+  ListTile(
+    leading: const Icon(Icons.verified_user_outlined),
+    title: Text(usuario.email ?? ''),
+  ),
+```
+
+Parte de Login real (ver `decisiones_arquitectura.md`, entrada del 2026-08-19, y `registroScreen.md`). Es el único lugar de la app donde un invitado que **ya está usando la app**, con datos cargados, puede llegar a `RegistroScreen` — `LoginScreen` (el otro camino hacia esa pantalla, vía `IniciarSesionScreen`) solo se ve antes de crear ningún usuario, así que no sirve para este caso.
+
+**`entrarComoApp: false`** es la señal que le dice a `RegistroScreen` que ya hay un shell de la app montado alrededor (`NavegacionPrincipalScreen`, con `AjustesScreen` empujada adentro) — al registrarse con éxito, alcanza con un `Navigator.of(context).pop()` para volver a Ajustes, en vez de navegar "hacia adentro" de la app como si fuera la primera vez (que es lo que sí hace el mismo formulario cuando se llega desde `LoginScreen`, con `entrarComoApp: true` por defecto). Ver `registroScreen.md`, punto sobre `entrarComoApp`.
+
+**Un usuario ya registrado ve su email en texto plano, sin flecha ni acción** — no tiene sentido "registrarse" dos veces, así que ese `ListTile` no navega a ningún lado, es puramente informativo (para que sea visible con qué cuenta está conectado).
+
+### 8. "Eliminar cuenta" (2026-08-19)
+
+```dart
+Future<void> _confirmarEliminarCuenta(BuildContext context, WidgetRef ref, bool esInvitado) async {
+  ...
+  content: Text(esInvitado ? l10n.eliminarCuentaContenido : l10n.eliminarCuentaContenidoRegistrado),
+  actions: [
+    TextButton(onPressed: () => Navigator.of(context).pop(false), child: Text(l10n.accionCancelar)),
+    ElevatedButton(
+      style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+      onPressed: () => Navigator.of(context).pop(true),
+      child: Text(l10n.accionEliminar),
+    ),
+  ],
+  ...
+}
+```
+
+Mismo patrón de confirmación que `_confirmarCerrarSesion` (punto 1) — `AlertDialog` con contenido condicionado a `esInvitado`, más el `ListTile` rojo (`Icons.delete_forever`, texto rojo) que ya usan otras acciones destructivas del proyecto (ej. "Eliminar reporte" en `DetalleReporteMascotaExtraviadaScreen`).
+
+**A diferencia de `_cerrarSesion`, acá sí hace falta manejar errores.** Cerrar sesión no puede fallar de una forma que valga la pena mostrarle al usuario — pero eliminar cuenta sí: para un usuario registrado, `UsuarioNotifier.eliminarUsuario()` (ver `usuarioNotifier.md`, punto 4) llama primero a una Edge Function remota (`eliminarCuentaSupabase`), que puede fallar por falta de conexión o un error del servidor. `_eliminarCuenta` envuelve esa llamada en un `try/catch` (mismo patrón `debugPrint` marcado `// TEMPORAL` que el resto del proyecto con Supabase) y muestra `errorAutenticacionGenerico` si falla, **sin** navegar a `LoginScreen` ni invalidar los providers — el usuario sigue viendo Ajustes tal cual, con su cuenta intacta, para poder reintentar.
+
+**El método que llama, `UsuarioNotifier.eliminarUsuario()`, ya existía desde el CRUD base** (ver `usuarioNotifier.md`) pero nunca había estado conectado a ningún botón — esta es su primera vez en uso real.

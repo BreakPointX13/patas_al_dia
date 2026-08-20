@@ -37,6 +37,17 @@
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
+            <!-- Esquema propio para volver a abrir la app desde el enlace de
+                 "olvidé mi contraseña" que manda Supabase Auth por correo
+                 (patasaldia://reset-password) — supabase_flutter lo captura
+                 solo (usa app_links por debajo) y dispara
+                 AuthChangeEvent.passwordRecovery, ver main.dart. -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="patasaldia" android:host="reset-password" />
+            </intent-filter>
         </activity>
         <!-- Don't delete the meta-data below.
              This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->

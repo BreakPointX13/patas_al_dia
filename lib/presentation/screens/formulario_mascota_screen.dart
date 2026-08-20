@@ -9,7 +9,7 @@ import 'dart:io';
 import 'package:image_picker/image_picker.dart';
 import 'package:patas_al_dia/presentation/widgets/separador_seccion_ficha.dart';
 
-const _especies = [
+const especiesDisponibles = [
   'Perro',
   'Gato',
   'Conejo',
@@ -48,7 +48,7 @@ class _FormularioMascotaScreenState
   final _numeroChipController = TextEditingController();
   final _edadEstimadaController = TextEditingController();
 
-  String _especie = _especies.first;
+  String _especie = especiesDisponibles.first;
   String? _sexo;
   DateTime? _fechaNacimiento;
   bool _esterilizado = false;
@@ -72,7 +72,7 @@ class _FormularioMascotaScreenState
     final mascota = widget.mascotaExistente;
     if (mascota != null) {
       _nombreController.text = mascota.nombre;
-      if (mascota.especie != null && _especies.contains(mascota.especie)) {
+      if (mascota.especie != null && especiesDisponibles.contains(mascota.especie)) {
         _especie = mascota.especie!;
       } else if (mascota.especie != null) {
         _especie = 'Otro';
@@ -254,7 +254,7 @@ class _FormularioMascotaScreenState
             DropdownButtonFormField<String>(
               initialValue: _especie,
               decoration: InputDecoration(labelText: l10n.campoEspecie),
-              items: _especies
+              items: especiesDisponibles
                   .map(
                     (e) => DropdownMenuItem(
                       value: e,
@@ -263,7 +263,7 @@ class _FormularioMascotaScreenState
                   )
                   .toList(),
               onChanged: (valor) =>
-                  setState(() => _especie = valor ?? _especies.first),
+                  setState(() => _especie = valor ?? especiesDisponibles.first),
             ),
             if (_especie == 'Otro') ...[
               const SizedBox(height: 16),

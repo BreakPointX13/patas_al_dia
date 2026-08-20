@@ -137,20 +137,15 @@ class _NavegacionPrincipalScreenState
           index: _indiceActual,
           children: List.generate(3, _construirPestana),
         ),
-        bottomNavigationBar: ClipRRect(
-          borderRadius: const BorderRadius.vertical(
-            top: Radius.circular(20),
-          ),
-          child: Container(
-            height: 76,
-            color: const Color(0xFFE0812F),
-            child: SafeArea(
-              top: false,
-              child: Row(
-                children: List.generate(
-                  _iconosDestino.length,
-                  (indice) => _construirItemBarra(context, indice),
-                ),
+        bottomNavigationBar: Container(
+          height: 76,
+          color: const Color(0xFFE0812F),
+          child: SafeArea(
+            top: false,
+            child: Row(
+              children: List.generate(
+                _iconosDestino.length,
+                (indice) => _construirItemBarra(context, indice),
               ),
             ),
           ),

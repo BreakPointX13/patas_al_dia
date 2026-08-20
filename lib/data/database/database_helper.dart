@@ -21,7 +21,24 @@ class DatabaseHelper {
     final dbPath = await getDatabasesPath();
     final path = join(dbPath, 'patas_al_dia.db');
 
-    return await openDatabase(path, version: 1, onCreate: _onCreate);
+    return await openDatabase(
+      path,
+      version: 1,
+      onConfigure: _onConfigure,
+      onCreate: _onCreate,
+    );
+  }
+
+  // SQLite no aplica ningún `ON DELETE CASCADE` declarado en el schema (los
+  // de este archivo, ver `_onCreate`) salvo que se active esta pragma —
+  // hallazgo pendiente desde Login real (2026-08-19, ver
+  // decisiones_arquitectura.md), corregido acá: sin esto, borrar una
+  // mascota (o un usuario) dejaba huérfanas sus filas hijas en vez de
+  // borrarlas en cascada como parecía. `onConfigure` corre siempre que se
+  // abre la conexión (no solo la primera vez, a diferencia de `onCreate`),
+  // así que la pragma queda activa en cada arranque de la app.
+  Future<void> _onConfigure(Database db) async {
+    await db.execute('PRAGMA foreign_keys = ON');
   }
 
   // Se ejecuta únicamente la primera vez que la app corre en el dispositivo

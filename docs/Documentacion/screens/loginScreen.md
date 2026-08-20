@@ -11,7 +11,7 @@ Ya no es el `home` directo de `MaterialApp` — `main.dart` arranca con `SesionI
 Pantalla de bienvenida con dos caminos, coherente con el login híbrido que `UsuarioModel` ya soporta (regla 2 de `CLAUDE.md`: ninguna funcionalidad core debe requerir registro obligatorio):
 
 - **"Continuar como invitado"** (botón principal, relleno): crea un `UsuarioModel` con `esInvitado = true` vía `UsuarioNotifier.crearUsuario`, y navega a `NavegacionPrincipalScreen` reemplazando esta pantalla (no se puede volver atrás).
-- **"Iniciar sesión"** (botón secundario, con borde): por ahora solo muestra un aviso ("no disponible todavía") porque el backend de Supabase aún no existe — ver sección "Backend cloud (pendiente)" de `CLAUDE.md`. Se conectará a autenticación real cuando ese backend esté listo.
+- **"Iniciar sesión"** (botón secundario, con borde): desde Login real (2026-08-19, ver `decisiones_arquitectura.md`) abre `IniciarSesionScreen`, un formulario real de email/contraseña contra Supabase Auth — ver `iniciarSesionScreen.md`. Antes de esa fecha solo mostraba un aviso ("no disponible todavía").
 
 El logo ya no es el `Icon(Icons.pets)` de placeholder original: usa `Image.asset('assets/images/logo_patas_al_dia.png')`, el logo real de la identidad visual (ver la entrada "Identidad visual" en `decisiones_arquitectura.md`). El título "Patas al Día" hereda `textTheme.headlineMedium` del `ThemeData` global (`main.dart`), que ahora usa la tipografía Nunito de la marca en vez de la fuente por defecto de Material.
 
@@ -69,19 +69,17 @@ Future<void> _continuarComoInvitado(BuildContext context, WidgetRef ref) async {
 - **`if (!context.mounted) return;`**: guarda de seguridad obligatoria después de un `await` que usa `context` — la pantalla pudo haberse cerrado mientras se esperaba la operación asíncrona; usar `context` en ese caso puede crashear la app.
 - **`pushReplacement` en vez de `push`**: reemplaza la pantalla actual en vez de apilarla, para que no se pueda volver a la bienvenida con el botón "atrás" una vez que ya se entró.
 
-### 3. `_mostrarLoginNoDisponible`
+### 3. `_irAIniciarSesion` (2026-08-19, reemplaza a `_mostrarLoginNoDisponible`)
 
 ```dart
-void _mostrarLoginNoDisponible(BuildContext context) {
-  ScaffoldMessenger.of(context).showSnackBar(
-    const SnackBar(
-      content: Text('Inicio de sesión no disponible todavía: estamos en fase de desarrollo.'),
-    ),
+void _irAIniciarSesion(BuildContext context) {
+  Navigator.of(context).push(
+    MaterialPageRoute(builder: (context) => const IniciarSesionScreen()),
   );
 }
 ```
 
-`SnackBar` es el mensaje flotante que aparece abajo de la pantalla y desaparece solo — se usa acá en vez de bloquear con un diálogo porque es solo informativo, no requiere una decisión del usuario.
+`push` normal (no `pushReplacement`) — a diferencia de "Continuar como invitado", acá sí tiene sentido poder volver atrás con el botón nativo si el usuario tocó "Iniciar sesión" por error. La clave `loginNoDisponible` (usada acá hasta esta fecha) se borró de los tres `.arb` junto con este método — código muerto una vez que el login real existe.
 
 ### 4. `OutlinedButton` vs. `ElevatedButton`
 

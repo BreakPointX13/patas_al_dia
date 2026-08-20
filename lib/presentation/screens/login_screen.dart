@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
 import 'package:patas_al_dia/data/models/usuario_model.dart';
 import 'package:patas_al_dia/l10n/app_localizations.dart';
+import 'package:patas_al_dia/presentation/screens/iniciar_sesion_screen.dart';
 import 'package:patas_al_dia/presentation/screens/navegacion_principal_screen.dart';
 import 'package:patas_al_dia/providers/usuario_provider.dart';
 
@@ -25,9 +26,9 @@ class LoginScreen extends ConsumerWidget {
     );
   }
 
-  void _mostrarLoginNoDisponible(BuildContext context) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(AppLocalizations.of(context).loginNoDisponible)),
+  void _irAIniciarSesion(BuildContext context) {
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (context) => const IniciarSesionScreen()),
     );
   }
 
@@ -57,7 +58,7 @@ class LoginScreen extends ConsumerWidget {
               SizedBox(
                 width: double.infinity,
                 child: OutlinedButton(
-                  onPressed: () => _mostrarLoginNoDisponible(context),
+                  onPressed: () => _irAIniciarSesion(context),
                   child: Text(l10n.loginIniciarSesion),
                 ),
               ),

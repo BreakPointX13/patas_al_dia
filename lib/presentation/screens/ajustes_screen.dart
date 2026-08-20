@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:patas_al_dia/l10n/app_localizations.dart';
 import 'package:patas_al_dia/presentation/screens/login_screen.dart';
+import 'package:patas_al_dia/presentation/screens/registro_screen.dart';
 import 'package:patas_al_dia/providers/agenda_evento_provider.dart';
 import 'package:patas_al_dia/providers/documento_provider.dart';
 import 'package:patas_al_dia/providers/mascota_provider.dart';
@@ -17,9 +18,10 @@ const _iconosTema = [Icons.brightness_auto, Icons.light_mode, Icons.dark_mode];
 
 // Los idiomas se muestran con su propio nombre nativo (no se traducen según
 // el idioma activo) — así el usuario siempre reconoce su idioma, aunque no
-// entienda el que esté puesto en ese momento.
+// entienda el que esté puesto en ese momento. "Sistema" es la excepción: no
+// es el nombre de un idioma, es un concepto de la interfaz ("seguir el
+// idioma del sistema operativo"), así que sí se traduce vía l10n.
 const _idiomas = ['sistema', 'es', 'en', 'pt'];
-const _etiquetasIdioma = ['Sistema', 'ES', 'EN', 'PT'];
 const _iconosIdioma = [
   Icons.brightness_auto,
   Icons.language,
@@ -42,13 +44,21 @@ class AjustesScreen extends ConsumerWidget {
     }
   }
 
-  Future<void> _confirmarCerrarSesion(BuildContext context, WidgetRef ref) async {
+  Future<void> _confirmarCerrarSesion(
+    BuildContext context,
+    WidgetRef ref,
+    bool esInvitado,
+  ) async {
     final l10n = AppLocalizations.of(context);
     final confirmar = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
         title: Text(l10n.cerrarSesionLabel),
-        content: Text(l10n.cerrarSesionContenido),
+        content: Text(
+          esInvitado
+              ? l10n.cerrarSesionContenido
+              : l10n.cerrarSesionContenidoRegistrado,
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
@@ -91,6 +101,75 @@ class AjustesScreen extends ConsumerWidget {
     );
   }
 
+  Future<void> _confirmarEliminarCuenta(
+    BuildContext context,
+    WidgetRef ref,
+    bool esInvitado,
+  ) async {
+    final l10n = AppLocalizations.of(context);
+    final confirmar = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(l10n.eliminarCuentaLabel),
+        content: Text(
+          esInvitado
+              ? l10n.eliminarCuentaContenido
+              : l10n.eliminarCuentaContenidoRegistrado,
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: Text(l10n.accionCancelar),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            onPressed: () => Navigator.of(context).pop(true),
+            child: Text(l10n.accionEliminar),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmar != true || !context.mounted) {
+      return;
+    }
+    await _eliminarCuenta(context, ref);
+  }
+
+  Future<void> _eliminarCuenta(BuildContext context, WidgetRef ref) async {
+    final l10n = AppLocalizations.of(context);
+    try {
+      await ref.read(usuarioProvider.notifier).eliminarUsuario();
+    } catch (e) {
+      // TEMPORAL — mismo patrón de diagnóstico que el resto del proyecto con
+      // Supabase (ver formularioReporteMascotaExtraviadaScreen.md, punto 5b).
+      debugPrint('DEBUG eliminarCuenta error: $e');
+      if (!context.mounted) {
+        return;
+      }
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(l10n.errorAutenticacionGenerico)));
+      return;
+    }
+
+    // Mismo motivo que en _cerrarSesion: sin esto, un invitado nuevo podía
+    // ver por un momento los datos del que se acaba de borrar.
+    ref.invalidate(mascotasProvider);
+    ref.invalidate(agendaEventosProvider);
+    ref.invalidate(medicamentoEventoProvider);
+    ref.invalidate(documentosProvider);
+
+    if (!context.mounted) {
+      return;
+    }
+
+    Navigator.of(context, rootNavigator: true).pushAndRemoveUntil(
+      MaterialPageRoute(builder: (context) => const LoginScreen()),
+      (route) => false,
+    );
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
@@ -111,6 +190,7 @@ class AjustesScreen extends ConsumerWidget {
       indiceIdioma = 0;
     }
     final etiquetasTema = [l10n.temaSistema, l10n.temaClaro, l10n.temaOscuro];
+    final etiquetasIdioma = [l10n.idiomaSistemaLabel, 'ES', 'EN', 'PT'];
     final etiquetasEscalaTexto = [
       l10n.tamanoPequeno,
       l10n.tamanoNormal,
@@ -175,7 +255,7 @@ class AjustesScreen extends ConsumerWidget {
                 for (var i = 0; i < _idiomas.length; i++)
                   ButtonSegment(
                     value: _idiomas[i],
-                    label: Text(_etiquetasIdioma[i]),
+                    label: Text(etiquetasIdioma[i]),
                     icon: Icon(_iconosIdioma[i]),
                   ),
               ],
@@ -193,10 +273,44 @@ class AjustesScreen extends ConsumerWidget {
             subtitle: Text(l10n.aportesVoluntariosSubtitulo),
             onTap: () => _abrirKoFi(context),
           ),
+          if (usuario != null && usuario.esInvitado)
+            ListTile(
+              leading: const Icon(Icons.person_outline),
+              title: Text(l10n.cuentaInvitadoLabel),
+              subtitle: Text(l10n.registrarmeSubtitulo),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () => Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) =>
+                      const RegistroScreen(entrarComoApp: false),
+                ),
+              ),
+            )
+          else if (usuario != null)
+            ListTile(
+              leading: const Icon(Icons.verified_user_outlined),
+              title: Text(usuario.email ?? ''),
+            ),
           ListTile(
             leading: const Icon(Icons.logout),
             title: Text(l10n.cerrarSesionLabel),
-            onTap: () => _confirmarCerrarSesion(context, ref),
+            onTap: () => _confirmarCerrarSesion(
+              context,
+              ref,
+              usuario?.esInvitado ?? true,
+            ),
+          ),
+          ListTile(
+            leading: const Icon(Icons.delete_forever, color: Colors.red),
+            title: Text(
+              l10n.eliminarCuentaLabel,
+              style: const TextStyle(color: Colors.red),
+            ),
+            onTap: () => _confirmarEliminarCuenta(
+              context,
+              ref,
+              usuario?.esInvitado ?? true,
+            ),
           ),
         ],
       ),

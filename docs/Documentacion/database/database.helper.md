@@ -109,6 +109,20 @@ Mismo patrón que `tipo_evento_personalizado`: `especie` en `MascotaModel` pasó
 
 Tres preferencias de accesibilidad nuevas, guardadas junto al usuario con el mismo criterio que `sesion_activa` (punto 4): `escala_texto REAL DEFAULT 1.0` (tamaño de letra), `tema TEXT DEFAULT 'sistema'` (claro/oscuro/sistema) e `idioma TEXT DEFAULT 'sistema'` (es/en/pt/sistema, ver `sistemaIdiomas.md`). Ver `usuario.model.md` y `ajustesScreen.md`. Las tres se pierden si el invitado desinstala la app — comportamiento esperado, coherente con que el resto de sus datos tampoco sobrevive a una desinstalación.
 
+### 8b. `onConfigure: _onConfigure` — `PRAGMA foreign_keys = ON` (2026-08-19, corrige el punto 3)
+
+```dart
+return await openDatabase(path, version: 1, onConfigure: _onConfigure, onCreate: _onCreate);
+
+Future<void> _onConfigure(Database db) async {
+  await db.execute('PRAGMA foreign_keys = ON');
+}
+```
+
+**El punto 3 de esta nota decía algo que no era del todo cierto:** declarar `ON DELETE CASCADE` en el `FOREIGN KEY` de una tabla no alcanza por sí solo en SQLite — el motor **no aplica ningún cascade** (ni ninguna otra restricción de clave foránea) salvo que la conexión tenga `PRAGMA foreign_keys = ON` activado explícitamente. Este proyecto nunca lo activaba, así que borrar una mascota (o un usuario) dejaba huérfanas sus filas hijas en la base local en vez de borrarlas en cascada, aunque el schema "dijera" lo contrario. Hallazgo pendiente desde Login real (2026-08-19), corregido acá al implementar "Eliminar cuenta" (ver `decisiones_arquitectura.md` y `usuario.repository.md`) — necesitaba el cascade real para que borrar la cuenta de un invitado limpie de verdad sus mascotas/agenda/documentos, no solo la fila de `usuarios`.
+
+**`onConfigure`, no `onCreate`, para esto:** `onCreate` corre una sola vez, la primera vez que el archivo `.db` se crea (ver punto 3) — pero `PRAGMA foreign_keys` es una configuración **de la conexión**, no del archivo: hay que reactivarla cada vez que la app abre la base, no solo la primera. `onConfigure` corre siempre, antes que `onCreate`/`onUpgrade`, exactamente para este tipo de configuración.
+
 ### 8. Columna `aviso_mapa_visto` agregada a `usuarios` (2026-08-19)
 
 `aviso_mapa_visto INTEGER DEFAULT 0` — mismo criterio que `sesion_activa`/`escala_texto`/`tema`/`idioma`: marca si el usuario ya vio el aviso de política de uso del módulo Mapa, para no mostrarlo de nuevo en cada visita a esa pestaña. Ver `usuario.model.md` y `mapaScreen.md`. Aplicado reinstalando la app, siguiendo la misma política de esquema en desarrollo (ver `decisiones_arquitectura.md`) — no existe en la tabla `usuarios` de Supabase, es un estado puramente local.

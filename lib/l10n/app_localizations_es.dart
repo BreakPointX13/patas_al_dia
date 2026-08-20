@@ -59,8 +59,88 @@ class AppLocalizationsEs extends AppLocalizations {
   String get loginContinuarInvitado => 'Continuar como invitado';
 
   @override
-  String get loginNoDisponible =>
-      'Inicio de sesión no disponible todavía: estamos en fase de desarrollo.';
+  String get tituloRegistrarse => 'Crear cuenta';
+
+  @override
+  String get botonRegistrarse => 'Registrarme';
+
+  @override
+  String get campoEmail => 'Correo electrónico';
+
+  @override
+  String get campoContrasena => 'Contraseña';
+
+  @override
+  String get campoConfirmarContrasena => 'Confirmar contraseña';
+
+  @override
+  String get errorEmailObligatorio => 'Ingresa tu correo';
+
+  @override
+  String get errorEmailInvalido => 'Ese correo no parece válido';
+
+  @override
+  String get errorContrasenaObligatoria => 'Ingresa una contraseña';
+
+  @override
+  String get errorContrasenaCorta =>
+      'La contraseña debe tener al menos 8 caracteres, una mayúscula y un número';
+
+  @override
+  String get errorContrasenasNoCoinciden => 'Las contraseñas no coinciden';
+
+  @override
+  String get linkNoTenesCuenta => '¿No tenés cuenta? Registrate';
+
+  @override
+  String get linkYaTenesCuenta => '¿Ya tenés cuenta? Iniciá sesión';
+
+  @override
+  String get avisoRevisaCorreo =>
+      'Te enviamos un correo para confirmar tu cuenta. Revísalo antes de iniciar sesión en otro dispositivo.';
+
+  @override
+  String get errorCredencialesInvalidas => 'Correo o contraseña incorrectos';
+
+  @override
+  String get errorEmailNoConfirmado =>
+      'Todavía no confirmaste tu correo. Revisa tu bandeja de entrada.';
+
+  @override
+  String get errorEmailYaRegistrado => 'Ese correo ya está registrado';
+
+  @override
+  String get errorAutenticacionGenerico =>
+      'No se pudo completar la operación. Intenta de nuevo.';
+
+  @override
+  String get cuentaInvitadoLabel => 'Cuenta de invitado';
+
+  @override
+  String get registrarmeSubtitulo => 'Registrate para no perder tus datos';
+
+  @override
+  String get linkOlvideContrasena => '¿Olvidaste tu contraseña?';
+
+  @override
+  String get tituloRecuperarContrasena => 'Recuperar contraseña';
+
+  @override
+  String get avisoEnlaceEnviado =>
+      'Si ese correo está registrado, te enviamos un enlace para restablecer tu contraseña.';
+
+  @override
+  String get errorEnlaceInvalido =>
+      'El enlace es inválido o venció. Pedí uno nuevo.';
+
+  @override
+  String get botonEnviarEnlace => 'Enviar enlace';
+
+  @override
+  String get botonRestablecerContrasena => 'Restablecer contraseña';
+
+  @override
+  String get campoNuevaContrasena => 'Nueva contraseña';
 
   @override
   String get cuentaTooltip => 'Cuenta';
@@ -263,6 +343,9 @@ class AppLocalizationsEs extends AppLocalizations {
   String get idiomaLabel => 'Idioma';
 
   @override
+  String get idiomaSistemaLabel => 'Auto';
+
+  @override
   String get aportesVoluntariosLabel => 'Aportes voluntarios';
 
   @override
@@ -278,6 +361,21 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get cerrarSesionContenido =>
       'Como invitado, no hay forma de volver a esta sesión después de cerrarla: no vas a poder ver de nuevo tus mascotas ni los datos cargados. ¿Cerrar sesión de todos modos?';
+
+  @override
+  String get cerrarSesionContenidoRegistrado =>
+      'Vas a cerrar tu sesión. Podés volver a iniciarla con tu correo y contraseña cuando quieras.';
+
+  @override
+  String get eliminarCuentaLabel => 'Eliminar cuenta';
+
+  @override
+  String get eliminarCuentaContenido =>
+      'Se van a borrar todos tus datos (mascotas, agenda, documentos) de este dispositivo, de forma permanente. Esta acción no se puede deshacer. ¿Eliminar cuenta de todos modos?';
+
+  @override
+  String get eliminarCuentaContenidoRegistrado =>
+      'Se va a borrar tu cuenta (no vas a poder volver a iniciar sesión con este correo) y todos tus datos de este dispositivo, de forma permanente. Esta acción no se puede deshacer. ¿Eliminar cuenta de todos modos?';
 
   @override
   String get valorOtro => 'Otro';
@@ -677,14 +775,34 @@ class AppLocalizationsEs extends AppLocalizations {
   String get errorObtenerUbicacion => 'No se pudo obtener la ubicación';
 
   @override
-  String get campoCalle => 'Calle';
+  String get campoCalle => 'Calle *';
+
+  @override
+  String get errorCalleObligatoria => 'La calle es obligatoria';
 
   @override
   String get campoNumero => 'Número';
 
   @override
+  String get campoReferenciaDireccion =>
+      'Referencia (depto, esquina, etc. — opcional)';
+
+  @override
   String get errorGeocodificacion =>
-      'No pudimos ubicar esa dirección. El reporte se va a publicar sin ubicación.';
+      'No pudimos ubicar esa dirección. Revisa los datos e intenta de nuevo.';
+
+  @override
+  String get errorUbicacionObligatoria =>
+      'Falta la ubicación. Usa tu ubicación actual o ingresa una dirección válida.';
+
+  @override
+  String get campoFotoObligatoria => 'Foto *';
+
+  @override
+  String get errorFotoObligatoria => 'La foto es obligatoria';
+
+  @override
+  String get errorSubirFoto => 'No se pudo subir la foto. Intenta de nuevo.';
 
   @override
   String get campoRecompensaSwitch => '¿Ofreces recompensa?';
@@ -720,6 +838,10 @@ class AppLocalizationsEs extends AppLocalizations {
       'No se pudo publicar el reporte. Revisa tu conexión e intenta de nuevo.';
 
   @override
+  String get errorAutenticacionReporte =>
+      'No se pudo verificar tu identidad para publicar el reporte. Intenta de nuevo en unos segundos.';
+
+  @override
   String get errorLimiteReportesActivos =>
       'Ya tienes el máximo de reportes activos. Marca alguno como encontrado antes de crear uno nuevo.';
 
@@ -728,8 +850,90 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get avisoMapaContenido =>
-      'Este mapa es solo para reportar mascotas perdidas o encontradas. No lo uses para publicar anuncios, ventas ni contenido que no tenga que ver con mascotas perdidas.\n\nSi ves un reporte que no corresponde, podés denunciarlo para que lo revisemos.';
+      'Este mapa es solo para reportar mascotas perdidas o encontradas. No lo uses para publicar anuncios, ventas ni contenido que no tenga que ver con mascotas perdidas.\n\nSi ves un reporte que no corresponde, puedes denunciarlo para que lo revisemos.';
 
   @override
   String get avisoMapaEntendido => 'Entendido';
+
+  @override
+  String get reportarMascotaEncontradaLabel => 'Reportar mascota encontrada';
+
+  @override
+  String get campoNombreMascotaOpcional => 'Nombre de la mascota (si lo sabes)';
+
+  @override
+  String get opcionReportarPerdida => 'Perdí una mascota';
+
+  @override
+  String get opcionReportarEncontrada => 'Encontré una mascota';
+
+  @override
+  String get eligeMascotaReporteTitulo => '¿Cuál mascota?';
+
+  @override
+  String get opcionMascotaNoRegistrada => 'Otra mascota (no registrada)';
+
+  @override
+  String get denunciarReporteLabel => 'Denunciar este aviso';
+
+  @override
+  String get confirmarDenunciaTitulo => 'Denunciar aviso';
+
+  @override
+  String get confirmarDenunciaContenido =>
+      '¿Denunciar este aviso por no corresponder al uso del mapa?';
+
+  @override
+  String get denunciaEnviadaAviso => 'Gracias, vamos a revisarlo';
+
+  @override
+  String get marcarComoResueltoLabel => 'Marcar como resuelto';
+
+  @override
+  String get confirmarResueltoTitulo => 'Marcar como resuelto';
+
+  @override
+  String get confirmarResueltoContenido =>
+      '¿Marcar este reporte como resuelto? Va a dejar de verse en el mapa.';
+
+  @override
+  String get eliminarReporteTitulo => 'Eliminar reporte';
+
+  @override
+  String get eliminarReporteContenido =>
+      '¿Eliminar este reporte? Esta acción no se puede deshacer.';
+
+  @override
+  String get contactoLabel => 'Contacto';
+
+  @override
+  String get recompensaLabel => 'Recompensa';
+
+  @override
+  String get fechaPublicacionLabel => 'Publicado';
+
+  @override
+  String get tipoPerdidoChip => 'Perdida';
+
+  @override
+  String get tipoEncontradoChip => 'Encontrada';
+
+  @override
+  String get sinReportesActivos => 'No hay reportes activos por ahora';
+
+  @override
+  String get errorCargarReportes =>
+      'No se pudieron cargar los reportes. Revisa tu conexión.';
+
+  @override
+  String get accionReportarFab => 'Reportar';
+
+  @override
+  String get verPorTipo => 'Ver por tipo';
+
+  @override
+  String get verCronologico => 'Ver cronológico';
+
+  @override
+  String get vistaCronologicaTitulo => 'Orden cronológico';
 }

@@ -52,3 +52,32 @@ for (final tipo in tiposDocumentoDisponibles)
 La lista ya no es plana — se agrupa por `tipoDocumento`, en el mismo orden fijo de `tiposDocumentoDisponibles` (la constante que antes era privada de `FormularioDocumentoScreen`, ver `formularioDocumentoScreen.md`, punto 5). `_seccionTipo` arma, por cada tipo con al menos un documento, un separador (`SeparadorSeccionFicha`, ver `separadorSeccionFicha.md`, punto 4) seguido de sus tarjetas; los tipos sin documentos no generan sección (`if (documentosDelTipo.isEmpty) return const []`). Mismo mecanismo visual que ya usan `FormularioMascotaScreen`/`DetalleMascotaScreen`, pedido explícitamente por el usuario para "ordenar por tipo de documento y facilitar la vista".
 
 **Ícono + texto, no solo ícono:** a diferencia de las tres secciones fijas de Mascota (que no llevan texto, el usuario ya sabe de memoria qué sección es cada una), acá las secciones son dinámicas — cambian según qué documentos existan — así que se agregó el nombre del tipo al lado del ícono, decisión consultada explícitamente con el usuario. El ícono (`_iconoTipoDocumento`, un `Icons.xxx` de Material por tipo — no hay SVG a medida para esto) queda fijo entre modo claro/oscuro igual que el resto de `SeparadorSeccionFicha`; el texto sí necesita variante oscura (`_colorTextoSeparador`, mismo patrón que `_colorTextoSobreFondo` de `agenda_screen.dart`) porque va directo sobre el fondo de la pantalla, sin tarjeta clara detrás.
+
+### 5. Fecha del documento en la tarjeta, y toggle "por tipo"/"cronológico" (2026-08-19)
+
+```dart
+String _fechaMostrar(DocumentoModel documento) {
+  final fecha = documento.fechaEmision ?? documento.fechaSubida;
+  if (fecha == null) return '';
+  return '${fecha.day}/${fecha.month}/${fecha.year}';
+}
+// subtitle: Text(fecha.isEmpty ? tipo : '$tipo · $fecha'),
+```
+
+Pedido del usuario, sin necesitar mucho debate ("creo que debería ir sí o sí"): cada tarjeta ahora muestra la fecha del documento junto al tipo (`Tipo · DD/MM/AAAA`), no solo el tipo. Usa `fechaEmision` (la fecha del documento en sí, ej. cuándo se hizo un examen) si se cargó, y si no cae a `fechaSubida` (la fecha en que se subió a la app, que siempre existe) — mismo criterio de fallback para datos opcionales que el resto del proyecto. Si ninguna de las dos existe (no debería pasar en la práctica), no se agrega el separador `·` y solo se muestra el tipo, sin dejar un guion o fecha vacía colgando.
+
+**`_vistaCronologica` — toggle en el AppBar, mismo patrón que `AgendaScreen`:**
+
+```dart
+bool _vistaCronologica = false; // false = agrupado por tipo, true = una lista por fecha
+
+IconButton(
+  icon: Icon(_vistaCronologica ? Icons.category : Icons.timeline),
+  tooltip: _vistaCronologica ? l10n.verPorTipo : l10n.verCronologico,
+  onPressed: () => setState(() => _vistaCronologica = !_vistaCronologica),
+)
+```
+
+El agrupado por tipo (punto 4) y una línea de tiempo cronológica son dos formas de mirar los mismos documentos que no conviven bien en una sola lista a la vez — se resolvió con el mismo mecanismo de alternar vista que ya usa `AgendaScreen` para calendario/lista (`_vistaCalendario`), en vez de forzar una sola vista o mezclar ambos criterios de orden en una sola pantalla. `_vistaCronologicaWidget` ordena una copia de la lista completa (`[...documentos]..sort(...)`, sin `Sección`/separadores) por `fechaEmision ?? fechaSubida`, más reciente primero — mismo orden descendente que ya usa `obtenerReportesActivos()` en el módulo Mapa. El botón de alternar solo aparece si hay al menos un documento (`if (documentos.isNotEmpty)`) — no tiene sentido con la lista vacía.
+
+**Encabezado propio para la vista cronológica (2026-08-19, mismo día):** el usuario notó que la vista cronológica se veía "pelada" al lado de la vista por tipo, que sí tiene un título+ícono por sección (`SeparadorSeccionFicha`). Se agregó el mismo componente una sola vez al principio de `_vistaCronologicaWidget` (ícono `Icons.timeline`, mismo que el del botón de alternar en el AppBar, + texto `l10n.vistaCronologicaTitulo`) para igualar la visual entre las dos vistas. **Elección de texto:** se usó "Orden cronológico" en vez de "Vista temporal" (la frase textual que pidió el usuario) — en español, "temporal" es ambiguo entre "por tiempo/cronológico" y "provisorio, no permanente"; se prefirió una palabra sin ese doble sentido para evitar confundir a un usuario nuevo, aunque cambia el texto exacto pedido.

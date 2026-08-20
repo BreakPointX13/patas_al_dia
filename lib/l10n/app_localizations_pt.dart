@@ -59,8 +59,88 @@ class AppLocalizationsPt extends AppLocalizations {
   String get loginContinuarInvitado => 'Continuar como convidado';
 
   @override
-  String get loginNoDisponible =>
-      'Login ainda não disponível: estamos em fase de desenvolvimento.';
+  String get tituloRegistrarse => 'Criar conta';
+
+  @override
+  String get botonRegistrarse => 'Registrar-me';
+
+  @override
+  String get campoEmail => 'E-mail';
+
+  @override
+  String get campoContrasena => 'Senha';
+
+  @override
+  String get campoConfirmarContrasena => 'Confirmar senha';
+
+  @override
+  String get errorEmailObligatorio => 'Digite seu e-mail';
+
+  @override
+  String get errorEmailInvalido => 'Esse e-mail não parece válido';
+
+  @override
+  String get errorContrasenaObligatoria => 'Digite uma senha';
+
+  @override
+  String get errorContrasenaCorta =>
+      'A senha deve ter pelo menos 8 caracteres, uma maiúscula e um número';
+
+  @override
+  String get errorContrasenasNoCoinciden => 'As senhas não coincidem';
+
+  @override
+  String get linkNoTenesCuenta => 'Não tem conta? Registre-se';
+
+  @override
+  String get linkYaTenesCuenta => 'Já tem conta? Entrar';
+
+  @override
+  String get avisoRevisaCorreo =>
+      'Enviamos um e-mail para confirmar sua conta. Confira antes de entrar em outro dispositivo.';
+
+  @override
+  String get errorCredencialesInvalidas => 'E-mail ou senha incorretos';
+
+  @override
+  String get errorEmailNoConfirmado =>
+      'Você ainda não confirmou seu e-mail. Verifique sua caixa de entrada.';
+
+  @override
+  String get errorEmailYaRegistrado => 'Esse e-mail já está registrado';
+
+  @override
+  String get errorAutenticacionGenerico =>
+      'Não foi possível concluir a operação. Tente novamente.';
+
+  @override
+  String get cuentaInvitadoLabel => 'Conta de convidado';
+
+  @override
+  String get registrarmeSubtitulo => 'Registre-se para não perder seus dados';
+
+  @override
+  String get linkOlvideContrasena => 'Esqueceu sua senha?';
+
+  @override
+  String get tituloRecuperarContrasena => 'Recuperar senha';
+
+  @override
+  String get avisoEnlaceEnviado =>
+      'Se esse e-mail estiver registrado, enviamos um link para redefinir sua senha.';
+
+  @override
+  String get errorEnlaceInvalido =>
+      'O link é inválido ou expirou. Peça um novo.';
+
+  @override
+  String get botonEnviarEnlace => 'Enviar link';
+
+  @override
+  String get botonRestablecerContrasena => 'Redefinir senha';
+
+  @override
+  String get campoNuevaContrasena => 'Nova senha';
 
   @override
   String get cuentaTooltip => 'Conta';
@@ -263,6 +343,9 @@ class AppLocalizationsPt extends AppLocalizations {
   String get idiomaLabel => 'Idioma';
 
   @override
+  String get idiomaSistemaLabel => 'Auto';
+
+  @override
   String get aportesVoluntariosLabel => 'Apoie o projeto';
 
   @override
@@ -278,6 +361,21 @@ class AppLocalizationsPt extends AppLocalizations {
   @override
   String get cerrarSesionContenido =>
       'Como convidado, não há como voltar a esta sessão depois de sair: você não vai poder ver seus pets nem os dados salvos novamente. Sair mesmo assim?';
+
+  @override
+  String get cerrarSesionContenidoRegistrado =>
+      'Você vai sair da sua conta. Pode entrar de novo com seu e-mail e senha quando quiser.';
+
+  @override
+  String get eliminarCuentaLabel => 'Excluir conta';
+
+  @override
+  String get eliminarCuentaContenido =>
+      'Todos os seus dados (pets, agenda, documentos) neste dispositivo serão excluídos permanentemente. Essa ação não pode ser desfeita. Excluir a conta mesmo assim?';
+
+  @override
+  String get eliminarCuentaContenidoRegistrado =>
+      'Sua conta será excluída (você não vai poder entrar de novo com esse e-mail) junto com todos os seus dados neste dispositivo, permanentemente. Essa ação não pode ser desfeita. Excluir a conta mesmo assim?';
 
   @override
   String get valorOtro => 'Outro';
@@ -677,14 +775,35 @@ class AppLocalizationsPt extends AppLocalizations {
   String get errorObtenerUbicacion => 'Não foi possível obter a localização';
 
   @override
-  String get campoCalle => 'Rua';
+  String get campoCalle => 'Rua *';
+
+  @override
+  String get errorCalleObligatoria => 'A rua é obrigatória';
 
   @override
   String get campoNumero => 'Número';
 
   @override
+  String get campoReferenciaDireccion =>
+      'Referência (apto, esquina, etc. — opcional)';
+
+  @override
   String get errorGeocodificacion =>
-      'Não conseguimos localizar esse endereço. O registro será publicado sem localização.';
+      'Não conseguimos localizar esse endereço. Verifique os dados e tente novamente.';
+
+  @override
+  String get errorUbicacionObligatoria =>
+      'Falta a localização. Use sua localização atual ou digite um endereço válido.';
+
+  @override
+  String get campoFotoObligatoria => 'Foto *';
+
+  @override
+  String get errorFotoObligatoria => 'A foto é obrigatória';
+
+  @override
+  String get errorSubirFoto =>
+      'Não foi possível enviar a foto. Tente novamente.';
 
   @override
   String get campoRecompensaSwitch => 'Vai oferecer recompensa?';
@@ -720,6 +839,10 @@ class AppLocalizationsPt extends AppLocalizations {
       'Não foi possível publicar o registro. Verifique sua conexão e tente novamente.';
 
   @override
+  String get errorAutenticacionReporte =>
+      'Não foi possível verificar sua identidade para publicar o registro. Tente novamente em alguns segundos.';
+
+  @override
   String get errorLimiteReportesActivos =>
       'Você já tem o número máximo de registros ativos. Marque um como encontrado antes de criar um novo.';
 
@@ -732,4 +855,86 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get avisoMapaEntendido => 'Entendi';
+
+  @override
+  String get reportarMascotaEncontradaLabel => 'Registrar pet encontrado';
+
+  @override
+  String get campoNombreMascotaOpcional => 'Nome do pet (se souber)';
+
+  @override
+  String get opcionReportarPerdida => 'Perdi um pet';
+
+  @override
+  String get opcionReportarEncontrada => 'Encontrei um pet';
+
+  @override
+  String get eligeMascotaReporteTitulo => 'Qual pet?';
+
+  @override
+  String get opcionMascotaNoRegistrada => 'Outro pet (não cadastrado)';
+
+  @override
+  String get denunciarReporteLabel => 'Denunciar este anúncio';
+
+  @override
+  String get confirmarDenunciaTitulo => 'Denunciar anúncio';
+
+  @override
+  String get confirmarDenunciaContenido =>
+      'Denunciar este anúncio por não corresponder ao uso do mapa?';
+
+  @override
+  String get denunciaEnviadaAviso => 'Obrigado, vamos revisar';
+
+  @override
+  String get marcarComoResueltoLabel => 'Marcar como resolvido';
+
+  @override
+  String get confirmarResueltoTitulo => 'Marcar como resolvido';
+
+  @override
+  String get confirmarResueltoContenido =>
+      'Marcar este registro como resolvido? Ele vai deixar de aparecer no mapa.';
+
+  @override
+  String get eliminarReporteTitulo => 'Excluir registro';
+
+  @override
+  String get eliminarReporteContenido =>
+      'Excluir este registro? Esta ação não pode ser desfeita.';
+
+  @override
+  String get contactoLabel => 'Contato';
+
+  @override
+  String get recompensaLabel => 'Recompensa';
+
+  @override
+  String get fechaPublicacionLabel => 'Publicado';
+
+  @override
+  String get tipoPerdidoChip => 'Perdido';
+
+  @override
+  String get tipoEncontradoChip => 'Encontrado';
+
+  @override
+  String get sinReportesActivos => 'Nenhum registro ativo no momento';
+
+  @override
+  String get errorCargarReportes =>
+      'Não foi possível carregar os registros. Verifique sua conexão.';
+
+  @override
+  String get accionReportarFab => 'Registrar';
+
+  @override
+  String get verPorTipo => 'Ver por tipo';
+
+  @override
+  String get verCronologico => 'Ver cronológico';
+
+  @override
+  String get vistaCronologicaTitulo => 'Ordem cronológica';
 }

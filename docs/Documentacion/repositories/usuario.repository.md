@@ -18,7 +18,7 @@ En apps con login híbrido (invitado + cuenta registrada), el repository de usua
 
 ### 🐾 En Nuestro Proyecto "Patas al día"
 
-Por ahora `UsuarioRepository` implementa solo el CRUD base (create, read, update, delete) sin lógica de migración — la lógica de "convertir invitado en registrado" y la sincronización con Supabase quedan para cuando se implemente el backend cloud (ver sección "Backend cloud" en `CLAUDE.md`). Esta clase es la base sobre la que se construirá esa lógica más adelante.
+Desde Login real (2026-08-19, ver `decisiones_arquitectura.md`), `UsuarioRepository` ya no es solo CRUD base: también envuelve las llamadas a Supabase Auth (registrar, iniciar sesión, cerrar sesión — ver puntos 6-8) y la lógica de "convertir invitado en registrado" (punto 9). La sincronización del resto de los datos (mascotas/agenda/documentos) con Supabase sigue pendiente, fase aparte.
 
 ### 🔄 Comparativa y Ventajas Técnicas
 
@@ -53,4 +53,72 @@ Por ahora `UsuarioRepository` implementa solo el CRUD base (create, read, update
 ### 5. `eliminarUsuario(String id)`
 
 - **Definición Estándar:** Operación **Delete** — `DELETE FROM usuarios WHERE id = ?`.
-- **En Nuestro Proyecto:** Igual que en `MascotaRepository.eliminarMascota`, se apoya en el `ON DELETE CASCADE` definido en `DatabaseHelper`: borrar un usuario elimina automáticamente, a nivel de motor SQLite, todas sus mascotas (y en cadena, los eventos/documentos/reportes de esas mascotas). Es la operación más destructiva del esquema — en la UI final debería requerir confirmación explícita del usuario.
+- **En Nuestro Proyecto:** Igual que en `MascotaRepository.eliminarMascota`, se apoya en el `ON DELETE CASCADE` definido en `DatabaseHelper`. **Hallazgo del 2026-08-19 (Login real), corregido el mismo día al implementar "Eliminar cuenta":** `database_helper.dart` no activaba `PRAGMA foreign_keys = ON` — sin eso, SQLite no aplicaba ningún `ON DELETE CASCADE` declarado en el schema, así que este método (y `eliminarMascota`) en realidad dejaban huérfanas las filas hijas en vez de borrarlas en cascada. Ya corregido (ver `database.helper.md`, punto 8b) — ahora sí borra en cascada de verdad.
+
+### 6. `registrarConEmail`, `iniciarSesionConEmail`, `cerrarSesionSupabase` (2026-08-19)
+
+```dart
+Future<AuthResponse> registrarConEmail({required String email, required String password}) {
+  return Supabase.instance.client.auth.signUp(email: email, password: password);
+}
+Future<AuthResponse> iniciarSesionConEmail({required String email, required String password}) {
+  return Supabase.instance.client.auth.signInWithPassword(email: email, password: password);
+}
+Future<void> cerrarSesionSupabase() {
+  return Supabase.instance.client.auth.signOut();
+}
+```
+
+Los tres son envoltorios finos de `Supabase.instance.client.auth` — ninguno atrapa excepciones (`AuthException` se propaga tal cual), mismo criterio que el resto del proyecto con Supabase: quien llama decide qué mensaje mostrar (ver `errores_autenticacion.dart` / `errorAutenticacion.md`). Login real (2026-08-19) es la primera vez que este repository habla con Supabase — hasta ahora solo tocaba SQLite local.
+
+### 6c. `eliminarCuentaSupabase` — llama a una Edge Function, no a la API de Auth directo (2026-08-19)
+
+```dart
+Future<void> eliminarCuentaSupabase() async {
+  await Supabase.instance.client.functions.invoke('eliminar-cuenta');
+}
+```
+
+A diferencia de los otros métodos de esta sección, este **no** llama a `Supabase.instance.client.auth` directo — no existe ninguna operación de cliente para "borrar mi propia cuenta". Borrar una cuenta de Supabase Auth (`auth.admin.deleteUser`) exige la "service_role key", una clave secreta con permisos totales sobre el proyecto que **nunca** puede viajar en el código de una app (a diferencia de la "publishable key" que sí vive en `supabase_config.dart`, ver `supabaseConfig.md`, punto 1). Por eso esto invoca una **Edge Function** (`supabase/functions/eliminar-cuenta/index.ts`, ver `eliminarCuentaFunction.md`) — código que corre en el servidor de Supabase, donde esa clave sí está disponible de forma segura.
+
+`functions.invoke(...)` adjunta solo el JWT de la sesión activa como header `Authorization` — la función del lado del servidor usa ese JWT para saber a quién borrar (nunca recibe un id como parámetro), así que ni siquiera un usuario malicioso con la app modificada podría pedir borrar la cuenta de otra persona.
+
+### 6b. `enviarCorreoRecuperacion`, `actualizarContrasena` (2026-08-19, con enlace — no código)
+
+```dart
+Future<void> enviarCorreoRecuperacion(String email) {
+  return Supabase.instance.client.auth.resetPasswordForEmail(email, redirectTo: supabaseRedirectRecuperarContrasena);
+}
+Future<void> actualizarContrasena(String nuevaContrasena) {
+  return Supabase.instance.client.auth.updateUser(UserAttributes(password: nuevaContrasena));
+}
+```
+
+"Olvidé mi contraseña" — la primera versión de este método usaba un código de 6 dígitos (`verifyOTP`), pero se descartó al descubrir que editar la plantilla de correo (necesario para mostrar el código) exige tener SMTP propio configurado en Supabase — sin eso, el texto del correo queda fijo con el enlace por defecto. Se optó por el enlace, con `redirectTo` apuntando al esquema propio (`patasaldia://reset-password`, ver `supabase_config.dart`) — eso sí exige deep linking nativo (`AndroidManifest.xml`/`Info.plist`), lo mismo que se había evitado para el login normal, pero acá no había alternativa sin sumar infraestructura de correo. Ver `decisiones_arquitectura.md` y `recuperarContrasenaScreen.md`.
+
+`actualizarContrasena` exige tener una sesión activa (lanza `AuthSessionMissingException` si no la hay) — la deja el propio enlace al abrirse (ver `nuevaContrasenaScreen.md`, punto 1), no un método aparte de este repository.
+
+### 7. `convertirAInvitadoRegistrado` — no se puede actualizar el id, así que se recrea la fila (2026-08-19)
+
+```dart
+Future<UsuarioModel> convertirAInvitadoRegistrado({
+  required UsuarioModel invitadoActual,
+  required String nuevoId,
+  required String email,
+}) async {
+  final nuevoUsuario = invitadoActual.copyWith(id: nuevoId, email: email, esInvitado: false, fechaRegistro: DateTime.now());
+  await db.transaction((txn) async {
+    await txn.insert('usuarios', nuevoUsuario.toMap());
+    await txn.update('mascotas', {'usuario_id': nuevoId}, where: 'usuario_id = ?', whereArgs: [invitadoActual.id]);
+    await txn.delete('usuarios', where: 'id = ?', whereArgs: [invitadoActual.id]);
+  });
+  return nuevoUsuario;
+}
+```
+
+Implementa la decisión de "unificar ids" de Login real (ver `decisiones_arquitectura.md`): al registrarse, el `id` local pasa a ser el mismo `auth.uid()` de Supabase, para que Sync (la fase siguiente) no tenga que traducir entre dos sistemas de ids.
+
+- **Por qué no es un `UPDATE usuarios SET id = ?`:** `id` es la clave primaria de `usuarios`, referenciada por `mascotas.usuario_id` — sin `ON UPDATE CASCADE` en el schema (y sin `PRAGMA foreign_keys` activado siquiera, ver punto 5), actualizar la PK en el lugar dejaría a `mascotas` apuntando a un id que ya no existe. Se opta por insertar la fila nueva, reasignar las mascotas, y recién borrar la vieja.
+- **`db.transaction(...)`:** las tres operaciones tienen que ser atómicas — si el proceso se interrumpe entre el `insert` y el `delete`, quedaría una fila de usuario duplicada (o mascotas apuntando a un id ya borrado). `sqflite` revierte todo el bloque si cualquier operación adentro lanza una excepción.
+- **Toca `mascotas`, una tabla que no es "suya":** es la única excepción a que este repository solo hable de `usuarios` — `mascotas` es la única tabla del schema con una referencia directa a `usuarios.id` (agenda/documentos/reportes cuelgan de `mascotas`, no de `usuarios`), así que reasignarla tiene que vivir en la misma transacción que el resto, no en un método aparte de `MascotaRepository` (rompería la atomicidad).
+- **Se copian los campos del invitado** (`copyWith` sobre `invitadoActual`, no un `UsuarioModel` nuevo desde cero) — tema, idioma, escala de texto y `avisoMapaVisto` sobreviven a la conversión, solo cambian `id`/`email`/`esInvitado`/`fechaRegistro`.

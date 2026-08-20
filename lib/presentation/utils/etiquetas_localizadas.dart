@@ -6,10 +6,19 @@ import 'package:patas_al_dia/l10n/app_localizations.dart';
 /// (ej. "Perro"), sin importar el idioma de la app — es un valor interno,
 /// no algo que el usuario escribe. Esta función lo traduce solo para
 /// mostrarlo en pantalla, según el idioma activo.
-String especieMostrar(BuildContext context, MascotaModel mascota) {
-  final l10n = AppLocalizations.of(context);
-  if (mascota.especie == 'Otro' && mascota.especiePersonalizada != null) {
-    return mascota.especiePersonalizada!;
+///
+/// Separada de `especieMostrar` (que exige una `MascotaModel` completa) para
+/// que también pueda usarse en pantallas que no tienen una mascota real de
+/// por medio — ej. el formulario de reporte de mascota extraviada, cuando
+/// el usuario tipea la especie a mano en vez de elegir una mascota
+/// registrada. Ver `formularioReporteMascotaExtraviadaScreen.md`.
+String especieValorMostrar(
+  AppLocalizations l10n,
+  String? especie, [
+  String? especiePersonalizada,
+]) {
+  if (especie == 'Otro' && especiePersonalizada != null) {
+    return especiePersonalizada;
   }
   final etiquetas = {
     'Perro': l10n.especiePerro,
@@ -27,7 +36,21 @@ String especieMostrar(BuildContext context, MascotaModel mascota) {
     'Ave': l10n.especieAve,
     'Otro': l10n.especieOtro,
   };
-  return etiquetas[mascota.especie] ?? l10n.noEspecificada;
+  if (especie == null) {
+    return l10n.noEspecificada;
+  }
+  // Un valor no nulo que no está en el mapa es texto libre (ej. una especie
+  // "Otro" guardada directo, sin el par especie/especiePersonalizada — ver
+  // MascotaExtraviadaModel) — se muestra tal cual, no como "no especificada".
+  return etiquetas[especie] ?? especie;
+}
+
+String especieMostrar(BuildContext context, MascotaModel mascota) {
+  return especieValorMostrar(
+    AppLocalizations.of(context),
+    mascota.especie,
+    mascota.especiePersonalizada,
+  );
 }
 
 /// Mismo criterio que `especieMostrar`: "Macho"/"Hembra" se guardan fijos

@@ -29,7 +29,7 @@ Postgres tiene tipos nativos que SQLite no tiene — no hace falta la conversió
 ### 1. Datos de la mascota denormalizados, no una relación
 
 ```dart
-final String mascotaNombre;
+final String? mascotaNombre;
 final String? mascotaEspecie;
 final String? mascotaFotoUrl;
 final String? mascotaId; // sin FK — solo referencia local, no se valida contra Supabase
@@ -51,6 +51,13 @@ Como ya no hay relación con `mascotas` para saber el dueño (ver punto 1), el r
 
 Igual que el resto de los modelos del proyecto: `id` es un UUID generado con el paquete `uuid` antes de insertar (la tabla no tiene `default gen_random_uuid()`), no algo que Postgres asigne solo. Mantiene el mismo criterio de PKs en todo el proyecto — importante si en el futuro se implementa sync real y hace falta que el mismo id exista en local y en la nube.
 
-### 4. `estado` — `'perdido'`/`'encontrado'`, validado en la base, no en el modelo
+### 4. `tipo`/`resuelto` — separados a propósito (2026-08-19, reemplaza al viejo `estado`)
 
-El modelo no valida que `estado` sea uno de esos dos valores — esa validación vive en la base (`check (estado in ('perdido', 'encontrado'))` en el `.sql`), mismo criterio que el resto de las listas fijas del proyecto (especie, tipo de evento, etc., ver `sistemaIdiomas.md`), donde el modelo confía en que quien construye el objeto ya eligió un valor válido (típicamente desde un `DropdownButtonFormField`).
+```dart
+final String tipo; // 'perdido' o 'encontrado' — no cambia nunca después de creado
+final bool resuelto; // false = activo, true = cerrado — lo único que cambia con el tiempo
+```
+
+Originalmente había un solo campo `estado` (`'perdido'`/`'encontrado'`) que hacía dos trabajos a la vez: "qué clase de reporte es" y "sigue activo o ya se cerró". Funcionaba mientras solo existía un flujo (reportar una mascota propia perdida — `'perdido'` = activo, `'encontrado'` = resuelto). Se rompió al sumar el flujo "encontré una mascota que no es mía": ese reporte nace con naturaleza *encontrado* pero necesita seguir **activo** (visible en el mapa, para que alguien la reconozca) hasta que se resuelva — algo que el viejo `estado = 'encontrado'` no podía representar, porque ese mismo valor ya significaba "cerrado".
+
+La separación resuelve la ambigüedad: `tipo` clasifica el reporte (se fija al crearlo, nunca se actualiza), `resuelto` es el único campo que cambia al cerrar un reporte — sea cual sea su `tipo`. El mapa/lista de "activos" siempre filtra por `resuelto = false` (ver `MascotaExtraviadaRepository.obtenerReportesActivos`), sin mirar `tipo` para nada. Ninguno de los dos se valida en el modelo — `tipo` tiene su propio `check` en la base (`TablaMaestraAppVetMovil1.sql`), mismo criterio que el resto de las listas fijas del proyecto (especie, tipo de evento, etc., ver `sistemaIdiomas.md`).
