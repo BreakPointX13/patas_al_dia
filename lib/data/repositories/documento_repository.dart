@@ -1,7 +1,6 @@
 import 'dart:io';
 import 'dart:typed_data';
 
-import 'package:sqflite/sqflite.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:patas_al_dia/data/database/database_helper.dart';
 import 'package:patas_al_dia/data/models/documento_model.dart';
@@ -69,13 +68,24 @@ class DocumentoRepository {
     );
   }
 
-  // Ver mascota_repository.dart, guardarDesdeSync, mismo criterio.
+  // Ver mascota_repository.dart, guardarDesdeSync, mismo criterio. Acá no
+  // hay tabla hija que dependa de `documentos` (sin riesgo de cascada),
+  // pero se corrige igual por consistencia y por el mismo problema de
+  // `pendiente_push` quedando mal seteado.
   Future<void> guardarDesdeSync(DocumentoModel documento) async {
     final db = await DatabaseHelper.instance.database;
-    await db.insert(
-      'documentos',
-      documento.toMap(),
-      conflictAlgorithm: ConflictAlgorithm.replace,
+    final mapa = documento.toMap();
+    mapa['pendiente_push'] = 0;
+    final columnas = mapa.keys.toList();
+    final actualizaciones = columnas
+        .where((c) => c != 'id')
+        .map((c) => '$c = excluded.$c')
+        .join(', ');
+    await db.rawInsert(
+      'INSERT INTO documentos (${columnas.join(', ')}) '
+      'VALUES (${List.filled(columnas.length, '?').join(', ')}) '
+      'ON CONFLICT(id) DO UPDATE SET $actualizaciones',
+      columnas.map((c) => mapa[c]).toList(),
     );
   }
 

@@ -569,6 +569,16 @@ Probando el primer login limpio con datos ya existentes en Supabase, la sincroni
 
 Los tres confirmados con pruebas reales en el checkpoint de esta fase (edición manual en Supabase con la app cerrada, con la app abierta esperando el timer, y pasando a segundo plano justo después de una edición) — ver `ajustesScreen.md`, punto 9, para el respaldo manual que queda en la UI.
 
+### Bug real 3 (2026-08-21, encontrado en la prueba final combinada) — `INSERT OR REPLACE` borraba hijos de verdad al recibir un pull
+
+El más serio de los tres bugs de esta fase — no era un problema de "vuelve a subir de más", era pérdida real de datos. Probando varias entidades a la vez (mascota + agenda + medicamento + documento, mezclando ediciones locales con ediciones remotas simuladas), el evento de agenda y el documento de una mascota **desaparecieron por completo** de la base local apenas la app trajo por pull una edición remota de esa mascota — no quedaron con `eliminado = 1` (soft-delete), quedaron genuinamente borrados de la tabla.
+
+**Causa:** los 4 `guardarDesdeSync` (uno por repository) usaban `db.insert(..., conflictAlgorithm: ConflictAlgorithm.replace)`. `INSERT OR REPLACE` en SQLite, ante un conflicto de `PRIMARY KEY`, no actualiza la fila existente — la **borra** primero y recién ahí inserta la nueva. Con `PRAGMA foreign_keys = ON` activo (corregido en la entrada de "Eliminar cuenta", arriba), ese borrado oculto disparaba el `ON DELETE CASCADE` real del schema hacia `agenda_eventos`/`documentos`/`medicamentos_evento`, exactamente como si se hubiera ejecutado un `DELETE` a mano. No se detectó en las Fases 1-2 porque casi todas las filas traídas ahí eran nuevas para el dispositivo (`REPLACE` solo borra si hay un conflicto real de PK) — recién al traer la actualización de una mascota que ya tenía hijos locales se dio la condición exacta para disparar el bug.
+
+**El riesgo real:** si un dispositivo hubiera tenido una edición local de un hijo (un evento, un documento) todavía sin subir en el momento exacto de un pull sobre su mascota padre, esa edición se habría perdido para siempre — nunca llegó a Supabase, y la cascada la borró localmente antes de que pudiera subirse. Con datos de prueba se pudo recuperar (todavía existían en Supabase, se volvieron a traer con una reinstalación limpia); con datos reales de un usuario, no habría existido esa red de seguridad.
+
+**La solución:** se reemplazaron los 4 `guardarDesdeSync` por un upsert manual armado con SQL crudo (`INSERT INTO tabla (...) VALUES (...) ON CONFLICT(id) DO UPDATE SET columna = excluded.columna, ...`) — ante una fila existente, esto es un `UPDATE` real, que no dispara ninguna acción de foreign key. Ver `syncService.md`, punto 10, y `mascota.repository.md`, punto 8, para el detalle completo.
+
 ---
 
 ## De aquí en adelante

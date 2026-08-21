@@ -1,4 +1,3 @@
-import 'package:sqflite/sqflite.dart';
 import 'package:patas_al_dia/data/database/database_helper.dart';
 import 'package:patas_al_dia/data/models/medicamento_evento_model.dart';
 
@@ -33,13 +32,24 @@ class MedicamentoEventoRepository {
     );
   }
 
-  // Ver mascota_repository.dart, guardarDesdeSync, mismo criterio.
+  // Ver mascota_repository.dart, guardarDesdeSync, mismo criterio. Acá no
+  // hay tabla hija que dependa de `medicamentos_evento` (sin riesgo de
+  // cascada), pero se corrige igual por consistencia y por el mismo
+  // problema de `pendiente_push` quedando mal seteado.
   Future<void> guardarDesdeSync(MedicamentoEventoModel medicamento) async {
     final db = await DatabaseHelper.instance.database;
-    await db.insert(
-      'medicamentos_evento',
-      medicamento.toMap(),
-      conflictAlgorithm: ConflictAlgorithm.replace,
+    final mapa = medicamento.toMap();
+    mapa['pendiente_push'] = 0;
+    final columnas = mapa.keys.toList();
+    final actualizaciones = columnas
+        .where((c) => c != 'id')
+        .map((c) => '$c = excluded.$c')
+        .join(', ');
+    await db.rawInsert(
+      'INSERT INTO medicamentos_evento (${columnas.join(', ')}) '
+      'VALUES (${List.filled(columnas.length, '?').join(', ')}) '
+      'ON CONFLICT(id) DO UPDATE SET $actualizaciones',
+      columnas.map((c) => mapa[c]).toList(),
     );
   }
 

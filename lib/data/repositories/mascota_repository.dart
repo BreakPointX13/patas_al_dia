@@ -1,7 +1,6 @@
 import 'dart:io';
 import 'dart:typed_data';
 
-import 'package:sqflite/sqflite.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:patas_al_dia/data/database/database_helper.dart';
 import 'package:patas_al_dia/data/models/mascota_model.dart';
@@ -86,13 +85,35 @@ class MascotaRepository {
   // que preservar el valor que ya trae la fila (local, al empujar; remota,
   // al traer), porque ese valor es la base de la próxima comparación de
   // conflictos. `insert` con `ConflictAlgorithm.replace` cubre insertar y
-  // actualizar en una sola llamada (equivalente local del `upsert` remoto).
+  // actualizar en una sola llamada.
+  //
+  // NO usa `ConflictAlgorithm.replace` (2026-08-21, corrige un bug real de
+  // pérdida de datos) — `INSERT OR REPLACE` en SQLite, ante un conflicto de
+  // PRIMARY KEY, primero BORRA la fila existente y recién ahí inserta la
+  // nueva. Con `PRAGMA foreign_keys = ON` (ver database.helper.md, punto
+  // 8b), ese borrado oculto dispara el `ON DELETE CASCADE` real hacia
+  // agenda_eventos/documentos — traer por pull la edición de una mascota
+  // que ya tenía agenda/documentos locales borraba esos hijos de verdad
+  // (no soft-delete), aunque el pull nunca los haya tocado. Se reemplaza
+  // por un upsert manual (`INSERT ... ON CONFLICT(id) DO UPDATE`), que es
+  // un UPDATE real para una fila existente — no dispara ninguna acción de
+  // foreign key. Ver decisiones_arquitectura.md.
   Future<void> guardarDesdeSync(MascotaModel mascota) async {
     final db = await DatabaseHelper.instance.database;
-    await db.insert(
-      'mascotas',
-      mascota.toMap(),
-      conflictAlgorithm: ConflictAlgorithm.replace,
+    final mapa = mascota.toMap();
+    // pendiente_push = 0 explícito: esta fila queda al día con el
+    // servidor (viene de un pull), no hay nada local pendiente de subir.
+    mapa['pendiente_push'] = 0;
+    final columnas = mapa.keys.toList();
+    final actualizaciones = columnas
+        .where((c) => c != 'id')
+        .map((c) => '$c = excluded.$c')
+        .join(', ');
+    await db.rawInsert(
+      'INSERT INTO mascotas (${columnas.join(', ')}) '
+      'VALUES (${List.filled(columnas.length, '?').join(', ')}) '
+      'ON CONFLICT(id) DO UPDATE SET $actualizaciones',
+      columnas.map((c) => mapa[c]).toList(),
     );
   }
 

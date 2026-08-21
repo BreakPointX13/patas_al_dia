@@ -1,4 +1,3 @@
-import 'package:sqflite/sqflite.dart';
 import 'package:patas_al_dia/data/database/database_helper.dart';
 import 'package:patas_al_dia/data/models/agenda_evento_model.dart';
 
@@ -31,13 +30,25 @@ class AgendaEventoRepository {
     );
   }
 
-  // Ver mascota_repository.dart, guardarDesdeSync, mismo criterio.
+  // Ver mascota_repository.dart, guardarDesdeSync, mismo criterio — acá
+  // corrige el mismo bug real: un `agenda_evento` con `medicamentos_evento`
+  // locales sin sincronizar se los borraba de verdad al traer un pull sobre
+  // el evento (`ON DELETE CASCADE` disparado por el borrado oculto de
+  // `INSERT OR REPLACE`).
   Future<void> guardarDesdeSync(AgendaEventoModel agendaEvento) async {
     final db = await DatabaseHelper.instance.database;
-    await db.insert(
-      'agenda_eventos',
-      agendaEvento.toMap(),
-      conflictAlgorithm: ConflictAlgorithm.replace,
+    final mapa = agendaEvento.toMap();
+    mapa['pendiente_push'] = 0;
+    final columnas = mapa.keys.toList();
+    final actualizaciones = columnas
+        .where((c) => c != 'id')
+        .map((c) => '$c = excluded.$c')
+        .join(', ');
+    await db.rawInsert(
+      'INSERT INTO agenda_eventos (${columnas.join(', ')}) '
+      'VALUES (${List.filled(columnas.length, '?').join(', ')}) '
+      'ON CONFLICT(id) DO UPDATE SET $actualizaciones',
+      columnas.map((c) => mapa[c]).toList(),
     );
   }
 
