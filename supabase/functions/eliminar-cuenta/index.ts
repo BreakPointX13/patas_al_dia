@@ -17,12 +17,31 @@
 
 import { createClient } from 'jsr:@supabase/supabase-js@2';
 
+// CORS (2026-08-21, agregado para el borrado de cuenta desde la web — ver
+// docs/Documentacion/decisiones_arquitectura.md). Hasta acá esta función
+// solo la llamaba la app Flutter (Dart nativo, sin navegador de por medio
+// — CORS no aplica) vía `functions.invoke`. La página web
+// (PatasAlDiaWeb/eliminar-cuenta-*.html) la llama desde un navegador con
+// `fetch`, que sí exige que el servidor conteste el preflight `OPTIONS` y
+// mande `Access-Control-Allow-Origin` en cada respuesta, o el navegador
+// bloquea la respuesta antes de que el código JS la vea. `*` es seguro
+// acá — CORS solo protege al *navegador*, la seguridad real la sigue
+// dando el JWT (ver abajo), no el origen de la petición.
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+};
+
 Deno.serve(async (req) => {
+  if (req.method === 'OPTIONS') {
+    return new Response(null, { status: 204, headers: corsHeaders });
+  }
+
   const authHeader = req.headers.get('Authorization');
   if (!authHeader) {
     return new Response(JSON.stringify({ error: 'Falta el header de autorización' }), {
       status: 401,
-      headers: { 'Content-Type': 'application/json' },
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   }
 
@@ -42,7 +61,7 @@ Deno.serve(async (req) => {
   if (userError || !user) {
     return new Response(JSON.stringify({ error: 'No se pudo verificar la identidad' }), {
       status: 401,
-      headers: { 'Content-Type': 'application/json' },
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   }
 
@@ -58,12 +77,12 @@ Deno.serve(async (req) => {
   if (deleteError) {
     return new Response(JSON.stringify({ error: deleteError.message }), {
       status: 500,
-      headers: { 'Content-Type': 'application/json' },
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   }
 
   return new Response(JSON.stringify({ success: true }), {
     status: 200,
-    headers: { 'Content-Type': 'application/json' },
+    headers: { ...corsHeaders, 'Content-Type': 'application/json' },
   });
 });

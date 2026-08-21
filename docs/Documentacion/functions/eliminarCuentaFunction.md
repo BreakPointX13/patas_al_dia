@@ -54,3 +54,23 @@ supabase functions deploy eliminar-cuenta --use-api
 El flujo normal de `supabase functions deploy` empaqueta la función corriendo un contenedor local (Docker) — en esta máquina (Fedora, con Podman en vez de Docker) el bind-mount del código local hacia el contenedor fallaba (`entrypoint path does not exist`, aunque el archivo sí existía en el host — un problema de compatibilidad Podman/Docker del bundler, no del código). La flag `--use-api` evita el contenedor por completo: sube el código y lo empaqueta del lado del servidor de Supabase. Vale la pena recordar esta flag para el próximo redeploy si la máquina sigue usando Podman.
 
 **CLI instalado sin `sudo`:** por el mismo motivo que el despliegue evitó Docker, la instalación del CLI evitó el paquete `.rpm` (pedía una contraseña que esta sesión no podía proveer de forma interactiva) — se usó el binario suelto (`.tar.gz`) descomprimido directo en `~/.local/bin` (ya en el `PATH` del usuario), sin tocar el sistema.
+
+### 5. CORS (2026-08-21) — necesario para el borrado de cuenta desde la web
+
+```ts
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+};
+
+Deno.serve(async (req) => {
+  if (req.method === 'OPTIONS') {
+    return new Response(null, { status: 204, headers: corsHeaders });
+  }
+  // ... resto de la función, con corsHeaders sumado a cada Response
+```
+
+Hasta esta fecha, esta función solo la llamaba la app Flutter (código Dart nativo — sin navegador de por medio, CORS no aplica ahí). Al sumar el borrado de cuenta accesible desde la web (retoque post-Sync, requisito de Play Store desde 2023 — ver `decisiones_arquitectura.md` y el repo `PatasAlDiaWeb`), la misma función pasó a recibir llamadas desde un navegador (`fetch`/el SDK de `@supabase/supabase-js` cargado en las páginas `eliminar-cuenta-*.html`) — y los navegadores exigen que el servidor responda el preflight `OPTIONS` y mande `Access-Control-Allow-Origin` en cada respuesta, o bloquean la respuesta antes de que el JS de la página la vea. Confirmado con una prueba real (`curl -X OPTIONS`, antes devolvía `401` sin encabezados CORS; después, `204` con `access-control-allow-origin: *`).
+
+- **`Access-Control-Allow-Origin: *` (no restringido al dominio de GitHub Pages):** seguro acá porque CORS solo protege al *navegador* de otro sitio, la seguridad real de la función la sigue dando la verificación del JWT (puntos 1-3) — sin un JWT válido, da igual desde qué origen llegue la petición.
+- **`OPTIONS` responde `204` sin tocar la lógica de borrado:** el navegador manda ese preflight automáticamente antes del `POST` real, para preguntarle al servidor si el `POST` va a estar permitido — nunca debe ejecutar la lógica de negocio de la función.
