@@ -88,3 +88,21 @@ El botón con borde (`Outlined`) se usa para la acción secundaria ("Iniciar ses
 ### 5. Textos vía `AppLocalizations` (2026-08-18)
 
 Todos los textos de esta pantalla (eslogan, botones, aviso de "no disponible") salen de `AppLocalizations.of(context)` en vez de estar escritos fijo en español — ver `sistemaIdiomas.md`. El nombre "Patas al Día" (`l10n.appTitulo`) queda igual en los tres idiomas: es el nombre propio de la app, no se traduce.
+
+### 6. `_abrirPoliticaPrivacidad` — link a la política de privacidad (2026-08-21)
+
+```dart
+Future<void> _abrirPoliticaPrivacidad(BuildContext context) async {
+  final idioma = Localizations.localeOf(context).languageCode;
+  final sufijo = ['es', 'en', 'pt'].contains(idioma) ? idioma : 'es';
+  final uri = Uri.parse(
+    'https://breakpointx13.github.io/PatasAlDiaWeb/privacidad-$sufijo.html',
+  );
+  await launchUrl(uri, mode: LaunchMode.externalApplication);
+}
+```
+
+- **Retoque post-Sync** (ver `decisiones_arquitectura.md`) — tres páginas HTML estáticas, una por idioma, en el mismo repo de GitHub Pages que ya aloja la página de confirmación de correo (`PatasAlDiaWeb`, público, separado del repo principal privado) — mismo motivo que esa página: Supabase Storage no puede servir HTML real, siempre lo entrega como `text/plain`.
+- **`Localizations.localeOf(context)`, no `usuario?.idioma`:** en `LoginScreen` puede no existir ningún `UsuarioModel` todavía (la primerísima vez que se abre la app, antes de "Continuar como invitado" o de iniciar sesión) — `usuarioProvider` sería `null` en ese caso, sin ningún idioma guardado del cual leer. `Localizations.localeOf(context)` en cambio siempre devuelve el idioma **efectivamente activo** en pantalla, resuelto por Flutter (según la preferencia guardada si ya existe un usuario, o según el idioma del sistema operativo si no) — es el mismo idioma que el usuario ya está viendo en el resto de esta pantalla, así que la política de privacidad que se abre siempre coincide.
+- **Visible en `LoginScreen`, no solo en `AjustesScreen`:** decisión explícita del usuario — al estar en la primera pantalla de la app, queda al alcance de cualquiera, incluso de alguien que todavía no creó ni una cuenta de invitado (relevante también para el requisito de Play Store de que la política de privacidad sea encontrable sin tener que registrarse primero).
+- **`url_launcher`, mismo patrón que "Aportes voluntarios"** (ver `ajustesScreen.md`, punto 3) — `LaunchMode.externalApplication`, abre en el navegador del sistema, no en un WebView embebido.

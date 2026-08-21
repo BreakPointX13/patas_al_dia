@@ -8,7 +8,7 @@ Se accede desde `MenuUsuarioAvatar` (ver `menuUsuarioAvatar.md`), presente en el
 
 ## 🎯 Propósito del Archivo
 
-Pantalla de ajustes de la app. Tiene ocho opciones: "Tema" (2026-08-18, ver punto 5), "Tamaño de letra" (2026-08-18, ver punto 4), "Idioma" (2026-08-18, ver punto 6), "Aportes voluntarios" (2026-08-17, ver punto 3), "Cuenta" (2026-08-19, ver punto 7 — solo para invitados, es el punto de entrada para registrarse), "Sincronizar ahora" (2026-08-21, ver punto 9 — solo para usuarios registrados), "Cerrar sesión" y "Eliminar cuenta" (2026-08-19, ver punto 8). Desde esta pasada, todos sus textos salen de `AppLocalizations` (ver `sistemaIdiomas.md`) en vez de estar escritos fijo en español.
+Pantalla de ajustes de la app. Tiene nueve opciones: "Tema" (2026-08-18, ver punto 5), "Tamaño de letra" (2026-08-18, ver punto 4), "Idioma" (2026-08-18, ver punto 6), "Aportes voluntarios" (2026-08-17, ver punto 3), "Cuenta" (2026-08-19, ver punto 7 — solo para invitados, es el punto de entrada para registrarse), "Cambiar contraseña" (2026-08-21, ver punto 10 — solo para usuarios registrados), "Sincronizar ahora" (2026-08-21, ver punto 9 — solo para usuarios registrados), "Cerrar sesión" y "Eliminar cuenta" (2026-08-19, ver punto 8). Desde esta pasada, todos sus textos salen de `AppLocalizations` (ver `sistemaIdiomas.md`) en vez de estar escritos fijo en español.
 
 ---
 
@@ -206,3 +206,19 @@ if (usuario != null && !usuario.esInvitado)
 - **`_tiempoRelativo(l10n, DateTime? momento)`** — función privada del archivo, no un paquete nuevo (`intl` no trae un helper de tiempo relativo listo). Cuatro escalones nada más (recién ahora / hace X min / hace X h / hace X día(s)), sin necesitar semanas ni meses para este uso — calcula `DateTime.now().difference(momento)` y elige el primer escalón que corresponda. No se actualiza sola mientras la pantalla queda abierta (sin `Timer` propio) — se recalcula la próxima vez que `AjustesScreen` se reconstruya, que en la práctica coincide con cada sync exitoso (`usuarioProvider` cambia, y esta pantalla lo escucha vía `ref.watch`).
 - **`sincronizando` (de `sincronizandoProvider`, ver `syncProvider.md`) deshabilita el `onTap` y cambia el ícono por un `CircularProgressIndicator`** mientras hay una corrida en curso — mismo patrón `_guardando` ya usado en los formularios del proyecto, aplicado acá a un botón en vez de a un formulario completo.
 - **Reemplaza a un botón temporal de depuración** (`[TEMPORAL] Sincronizar ahora`, sin el texto de última sincronización) que existió durante las Fases 1 y 2 del plan de Sync, mientras no había disparadores automáticos todavía.
+
+### 10. "Cambiar contraseña" (2026-08-21)
+
+```dart
+if (usuario != null && !usuario.esInvitado)
+  ListTile(
+    leading: const Icon(Icons.lock_outline),
+    title: Text(l10n.tituloCambiarContrasena),
+    trailing: const Icon(Icons.chevron_right),
+    onTap: () => Navigator.of(context).push(
+      MaterialPageRoute(builder: (context) => const CambiarContrasenaScreen()),
+    ),
+  ),
+```
+
+Retoque post-Sync (ver `decisiones_arquitectura.md`) — abre `CambiarContrasenaScreen` (ver `cambiarContrasenaScreen.md`), un formulario nuevo que pide la contraseña actual además de la nueva. Ubicado justo después del `ListTile` de "Cuenta" (email en texto plano) — mismo criterio de visibilidad "solo para registrados" que ese ítem y que "Sincronizar ahora" (punto 9), sin sentido para un invitado (no tiene contraseña que cambiar).

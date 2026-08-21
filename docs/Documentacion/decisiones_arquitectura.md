@@ -581,6 +581,16 @@ El más serio de los tres bugs de esta fase — no era un problema de "vuelve a 
 
 ---
 
+## 2026-08-21 — Retoques post-Sync: cambiar contraseña y política de privacidad
+
+Primeros dos de los tres "retoques" que quedaron anotados al cerrar Sync (ver memoria de sesión `project_retoques_post_sync`) — falta todavía el borrado de cuenta accesible desde la web (requisito de Play Store 2023+).
+
+**Cambiar contraseña.** Antes de programar, se le preguntó al usuario cómo lo abordaría (mismo método que en decisiones anteriores) — pidió una opción nueva en `AjustesScreen` junto con una pantalla dedicada (no un diálogo) que pida la contraseña actual y la nueva dos veces, más título, logo y el aviso de requisitos de contraseña visible. `CambiarContrasenaScreen` reutiliza `iniciarSesionConEmail` como mecanismo de "verificar contraseña actual" (Supabase Auth no tiene un endpoint dedicado para eso) — ver `cambiarContrasenaScreen.md` y `usuarioNotifier.md`, punto 12. Verificado contra la API de administración de Supabase (`updated_at` del usuario cambió justo después del re-login con la contraseña actual, confirmando que el cambio llegó de verdad al servidor, no solo a la app).
+
+**Política de privacidad.** Decisiones del usuario: en los tres idiomas de la app (es/en/pt), como páginas separadas con selector entre ellas, hosteadas en el mismo repo público `PatasAlDiaWeb` (GitHub Pages) que ya aloja la página de confirmación de correo — mismo motivo de siempre, Supabase Storage no puede servir HTML real. El link vive en `LoginScreen` (no solo en `AjustesScreen`), a pedido explícito del usuario, para que quede al alcance de cualquiera antes incluso de crear una cuenta de invitado. El idioma de la página que se abre se resuelve con `Localizations.localeOf(context)` (el idioma efectivamente activo en la app en ese momento), no con `usuario?.idioma` — en `LoginScreen` puede no existir ningún usuario todavía. Contacto de la política: `breakpointx.dev@gmail.com` (decisión explícita del usuario, el mismo correo que ya usa para el resto del proyecto). Ver `loginScreen.md`, punto 6.
+
+---
+
 ## De aquí en adelante
 
 Cada vez que se tome una decisión de arquitectura nueva (enfoque, tecnología, estructura — no un simple fix o ajuste de código), se agrega una entrada acá con: fecha, la decisión, el porqué, y alternativas consideradas si las hubo.

@@ -59,6 +59,9 @@ class AppLocalizationsPt extends AppLocalizations {
   String get loginContinuarInvitado => 'Continuar como convidado';
 
   @override
+  String get linkPoliticaPrivacidad => 'Política de privacidade';
+
+  @override
   String get tituloRegistrarse => 'Criar conta';
 
   @override
@@ -141,6 +144,28 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get campoNuevaContrasena => 'Nova senha';
+
+  @override
+  String get tituloCambiarContrasena => 'Alterar senha';
+
+  @override
+  String get cambiarContrasenaSubtitulo => 'Atualize a senha da sua conta';
+
+  @override
+  String get campoContrasenaActual => 'Senha atual';
+
+  @override
+  String get botonCambiarContrasena => 'Alterar senha';
+
+  @override
+  String get avisoRequisitosContrasena =>
+      'Mínimo de 8 caracteres, com pelo menos uma letra maiúscula e um número.';
+
+  @override
+  String get errorContrasenaActualIncorrecta => 'A senha atual está incorreta';
+
+  @override
+  String get avisoContrasenaActualizada => 'Senha atualizada';
 
   @override
   String get cuentaTooltip => 'Conta';

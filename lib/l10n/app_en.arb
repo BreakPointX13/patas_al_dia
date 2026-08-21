@@ -20,6 +20,7 @@
   "loginEslogan": "Manage your pet's health, wherever you are",
   "loginIniciarSesion": "Sign in",
   "loginContinuarInvitado": "Continue as guest",
+  "linkPoliticaPrivacidad": "Privacy policy",
 
   "tituloRegistrarse": "Create account",
   "botonRegistrarse": "Sign up",
@@ -47,6 +48,13 @@
   "botonEnviarEnlace": "Send link",
   "botonRestablecerContrasena": "Reset password",
   "campoNuevaContrasena": "New password",
+  "tituloCambiarContrasena": "Change password",
+  "cambiarContrasenaSubtitulo": "Update your account password",
+  "campoContrasenaActual": "Current password",
+  "botonCambiarContrasena": "Change password",
+  "avisoRequisitosContrasena": "At least 8 characters, with one uppercase letter and one number.",
+  "errorContrasenaActualIncorrecta": "The current password is incorrect",
+  "avisoContrasenaActualizada": "Password updated",
 
   "cuentaTooltip": "Account",
   "ajustesTitulo": "Settings",

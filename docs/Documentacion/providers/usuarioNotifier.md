@@ -213,3 +213,18 @@ Future<void> completarRecuperacion({required String nuevaContrasena}) async {
 ```
 
 Último paso de "olvidé mi contraseña" (ver `recuperarContrasenaScreen.md`, `nuevaContrasenaScreen.md` y `usuario.repository.md`, punto 6b). **Sin parámetros `email`/`codigo`** (a diferencia de la versión descartada con código de 6 dígitos) — cuando esto se llama, el enlace del correo ya estableció una sesión de recuperación válida (capturada en `main.dart`), así que `Supabase.instance.client.auth.currentUser` ya tiene el `id`/`email` de la cuenta, no hace falta que la pantalla los vuelva a pasar. De ahí en más es exactamente lo mismo que un login exitoso, por eso reusa `_activarSesionLocal` en vez de repetir la lógica de "buscar o crear" otra vez.
+
+### 12. `cambiarContrasena({contrasenaActual, nuevaContrasena})` (2026-08-21, retoque post-Sync)
+
+```dart
+Future<void> cambiarContrasena({
+  required String contrasenaActual,
+  required String nuevaContrasena,
+}) async {
+  final repo = ref.read(usuarioRepositoryProvider);
+  await repo.iniciarSesionConEmail(email: state!.email!, password: contrasenaActual);
+  await repo.actualizarContrasena(nuevaContrasena);
+}
+```
+
+Usado por `CambiarContrasenaScreen` (ver `cambiarContrasenaScreen.md`) — a diferencia del punto 11, acá **sí** hace falta probar la identidad antes de aceptar el cambio, porque no hay ningún enlace de correo de por medio: solo una sesión ya iniciada en el teléfono. Reautentica con `iniciarSesionConEmail` (mismo método que usa `iniciarSesion()`, punto 10) usando la contraseña que el usuario escribe como "actual" — si está mal, Supabase la rechaza con `invalid_credentials` y la excepción sube tal cual hasta la pantalla, sin llegar nunca a `actualizarContrasena`. `state!.email!` reusa el correo de la sesión ya activa, no hace falta pedirlo de nuevo.

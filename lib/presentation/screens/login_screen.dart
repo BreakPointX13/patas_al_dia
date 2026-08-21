@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:patas_al_dia/data/models/usuario_model.dart';
 import 'package:patas_al_dia/l10n/app_localizations.dart';
 import 'package:patas_al_dia/presentation/screens/iniciar_sesion_screen.dart';
@@ -9,6 +10,21 @@ import 'package:patas_al_dia/providers/usuario_provider.dart';
 
 class LoginScreen extends ConsumerWidget {
   const LoginScreen({super.key});
+
+  // Política de privacidad (2026-08-21, retoque post-Sync — ver
+  // decisiones_arquitectura.md), una página por idioma en el mismo repo de
+  // GitHub Pages que la de confirmación de correo (Supabase Storage no
+  // puede servir HTML real, ver esa entrada). Visible en LoginScreen (no
+  // solo en AjustesScreen) para que esté al alcance de cualquiera, incluido
+  // quien todavía no tiene ni siquiera una cuenta de invitado creada.
+  Future<void> _abrirPoliticaPrivacidad(BuildContext context) async {
+    final idioma = Localizations.localeOf(context).languageCode;
+    final sufijo = ['es', 'en', 'pt'].contains(idioma) ? idioma : 'es';
+    final uri = Uri.parse(
+      'https://breakpointx13.github.io/PatasAlDiaWeb/privacidad-$sufijo.html',
+    );
+    await launchUrl(uri, mode: LaunchMode.externalApplication);
+  }
 
   Future<void> _continuarComoInvitado(
     BuildContext context,
@@ -69,6 +85,11 @@ class LoginScreen extends ConsumerWidget {
                   onPressed: () => _continuarComoInvitado(context, ref),
                   child: Text(l10n.loginContinuarInvitado),
                 ),
+              ),
+              const SizedBox(height: 16),
+              TextButton(
+                onPressed: () => _abrirPoliticaPrivacidad(context),
+                child: Text(l10n.linkPoliticaPrivacidad),
               ),
             ],
           ),

@@ -119,6 +119,28 @@ class UsuarioNotifier extends Notifier<UsuarioModel?> {
     );
   }
 
+  // "Cambiar contraseña" desde AjustesScreen (2026-08-21, retoque post-Sync
+  // — ver decisiones_arquitectura.md), para un usuario que ya tiene sesión
+  // iniciada. A diferencia de completarRecuperacion() (que llega con una
+  // sesión de recuperación ya validada por el enlace del correo), acá no
+  // hay ninguna prueba previa de que quien tiene el teléfono en la mano sea
+  // el dueño de la cuenta — reautentica con `iniciarSesionConEmail` antes de
+  // permitir el cambio, usando la contraseña actual que el usuario escribe.
+  // Si esa contraseña está mal, propaga la `AuthException` tal cual (mismo
+  // criterio del resto del proyecto — ver usuario_repository.dart), sin
+  // llegar a tocar `actualizarContrasena`.
+  Future<void> cambiarContrasena({
+    required String contrasenaActual,
+    required String nuevaContrasena,
+  }) async {
+    final repo = ref.read(usuarioRepositoryProvider);
+    await repo.iniciarSesionConEmail(
+      email: state!.email!,
+      password: contrasenaActual,
+    );
+    await repo.actualizarContrasena(nuevaContrasena);
+  }
+
   // Compartido entre iniciarSesion() y completarRecuperacion() — mismo
   // criterio en los dos casos: si ya hay una fila local con ese id (mismo
   // dispositivo de siempre), se reactiva con todos sus datos intactos; si no

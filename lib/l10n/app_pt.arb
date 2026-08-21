@@ -20,6 +20,7 @@
   "loginEslogan": "Cuide da saúde do seu pet, onde você estiver",
   "loginIniciarSesion": "Entrar",
   "loginContinuarInvitado": "Continuar como convidado",
+  "linkPoliticaPrivacidad": "Política de privacidade",
 
   "tituloRegistrarse": "Criar conta",
   "botonRegistrarse": "Registrar-me",
@@ -47,6 +48,13 @@
   "botonEnviarEnlace": "Enviar link",
   "botonRestablecerContrasena": "Redefinir senha",
   "campoNuevaContrasena": "Nova senha",
+  "tituloCambiarContrasena": "Alterar senha",
+  "cambiarContrasenaSubtitulo": "Atualize a senha da sua conta",
+  "campoContrasenaActual": "Senha atual",
+  "botonCambiarContrasena": "Alterar senha",
+  "avisoRequisitosContrasena": "Mínimo de 8 caracteres, com pelo menos uma letra maiúscula e um número.",
+  "errorContrasenaActualIncorrecta": "A senha atual está incorreta",
+  "avisoContrasenaActualizada": "Senha atualizada",
 
   "cuentaTooltip": "Conta",
   "ajustesTitulo": "Configurações",

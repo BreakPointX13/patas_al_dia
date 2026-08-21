@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:patas_al_dia/l10n/app_localizations.dart';
+import 'package:patas_al_dia/presentation/screens/cambiar_contrasena_screen.dart';
 import 'package:patas_al_dia/presentation/screens/login_screen.dart';
 import 'package:patas_al_dia/presentation/screens/registro_screen.dart';
 import 'package:patas_al_dia/providers/agenda_evento_provider.dart';
@@ -318,6 +319,17 @@ class AjustesScreen extends ConsumerWidget {
             ListTile(
               leading: const Icon(Icons.verified_user_outlined),
               title: Text(usuario.email ?? ''),
+            ),
+          if (usuario != null && !usuario.esInvitado)
+            ListTile(
+              leading: const Icon(Icons.lock_outline),
+              title: Text(l10n.tituloCambiarContrasena),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () => Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => const CambiarContrasenaScreen(),
+                ),
+              ),
             ),
           // La sincronización en sí se dispara sola (ver main.dart) — este
           // botón queda como respaldo manual, más el estado de la última

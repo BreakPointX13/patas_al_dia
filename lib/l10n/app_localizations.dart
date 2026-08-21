@@ -196,6 +196,12 @@ abstract class AppLocalizations {
   /// **'Continuar como invitado'**
   String get loginContinuarInvitado;
 
+  /// No description provided for @linkPoliticaPrivacidad.
+  ///
+  /// In es, this message translates to:
+  /// **'Política de privacidad'**
+  String get linkPoliticaPrivacidad;
+
   /// No description provided for @tituloRegistrarse.
   ///
   /// In es, this message translates to:
@@ -351,6 +357,48 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Nueva contraseña'**
   String get campoNuevaContrasena;
+
+  /// No description provided for @tituloCambiarContrasena.
+  ///
+  /// In es, this message translates to:
+  /// **'Cambiar contraseña'**
+  String get tituloCambiarContrasena;
+
+  /// No description provided for @cambiarContrasenaSubtitulo.
+  ///
+  /// In es, this message translates to:
+  /// **'Actualiza la contraseña de tu cuenta'**
+  String get cambiarContrasenaSubtitulo;
+
+  /// No description provided for @campoContrasenaActual.
+  ///
+  /// In es, this message translates to:
+  /// **'Contraseña actual'**
+  String get campoContrasenaActual;
+
+  /// No description provided for @botonCambiarContrasena.
+  ///
+  /// In es, this message translates to:
+  /// **'Cambiar contraseña'**
+  String get botonCambiarContrasena;
+
+  /// No description provided for @avisoRequisitosContrasena.
+  ///
+  /// In es, this message translates to:
+  /// **'Mínimo 8 caracteres, con al menos una mayúscula y un número.'**
+  String get avisoRequisitosContrasena;
+
+  /// No description provided for @errorContrasenaActualIncorrecta.
+  ///
+  /// In es, this message translates to:
+  /// **'La contraseña actual es incorrecta'**
+  String get errorContrasenaActualIncorrecta;
+
+  /// No description provided for @avisoContrasenaActualizada.
+  ///
+  /// In es, this message translates to:
+  /// **'Contraseña actualizada'**
+  String get avisoContrasenaActualizada;
 
   /// No description provided for @cuentaTooltip.
   ///
