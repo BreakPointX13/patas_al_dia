@@ -23,7 +23,7 @@ Por ahora `DocumentoRepository` solo cubre la consulta por `mascota_id` (la vist
 ### 🔄 Comparativa y Ventajas Técnicas
 
 - **Proyecto Estándar:** El manejo de archivos adjuntos (PDFs, imágenes) suele delegarse enteramente a un servicio de Storage (S3, Firebase Storage), y la base de datos solo guarda la URL.
-- **Nuestro Enfoque:** Local-first: `filePath` apunta a una ruta local en el dispositivo mientras el usuario sea invitado. El campo `sincronizadoNube` (booleano) es la marca que indica si ese archivo ya se subió a Supabase Storage — la migración de local a nube se hará más adelante, sin cambiar el esquema de esta tabla.
+- **Nuestro Enfoque:** Local-first: `filePath` es **local-only** (`String?`, ver punto 7) — nunca viaja a Supabase ni se sobreescribe con un pull, así el dispositivo de origen sigue mostrando el archivo al instante sin depender de la red. `archivoRutaNube` (agregado en Sync, 2026-08-20, reemplaza al viejo `sincronizadoNube` booleano que nunca se llegó a usar) guarda la ruta del archivo dentro del bucket de Storage una vez subido.
 
 ---
 
@@ -57,9 +57,16 @@ Por ahora `DocumentoRepository` solo cubre la consulta por `mascota_id` (la vist
 ### 5. `actualizarDocumento(DocumentoModel documento)`
 
 - **Definición Estándar:** Operación **Update** — `UPDATE documentos SET ... WHERE id = ?`.
-- **En Nuestro Proyecto:** Usa `db.update('documentos', documento.toMap(), where: 'id = ?', whereArgs: [documento.id])`. Este método será el que marque `sincronizadoNube = true` una vez que el archivo se suba a Supabase Storage.
+- **En Nuestro Proyecto:** Usa `db.update('documentos', documento.toMap(), where: 'id = ?', whereArgs: [documento.id])`. Desde Sync (2026-08-20/21), agrega `actualizadoEn: DateTime.now().toUtc()` y `pendiente_push = 1` al mapa antes de escribir (ver punto 7).
 
-### 6. `eliminarDocumento(String id)`
+### 6. `eliminarDocumento(String id)` — soft-delete desde Sync (2026-08-20, corrige esta nota)
 
-- **Definición Estándar:** Operación **Delete** — `DELETE FROM documentos WHERE id = ?`.
-- **En Nuestro Proyecto:** Usa `db.delete('documentos', where: 'id = ?', whereArgs: [id])`. A diferencia de eliminar una mascota o un evento (que arrastran documentos en cascada o los desvinculan), eliminar un documento es una operación de un solo nivel: no tiene ninguna tabla hija que dependa de él en el esquema actual.
+- **Ya no es un `DELETE` real** — ver `mascota.repository.md`, punto 5, para el porqué general. Sigue siendo una operación de un solo nivel (sin tabla hija que dependa de `documentos`), así que el cambio es simple: `UPDATE documentos SET eliminado = 1, eliminado_en = ?, actualizado_en = ?, pendiente_push = 1 WHERE id = ?`.
+
+### 7. Sync (2026-08-20/21) — `pendiente_push`, `obtenerPendientesDePush`, `marcarComoSincronizadas`, `guardarDesdeSync`, `actualizarArchivoRutaNube`
+
+Mismo patrón que `MascotaRepository` — ver `mascota.repository.md`, puntos 6-9, para el detalle completo (incluido el bug real que `obtenerPendientesDePush` corrige, encontrado probando el checkpoint de la Fase 3 de Sync). Acá el usuario se resuelve vía join a `mascotas` (no hay `usuario_id` directo en esta tabla). `actualizarArchivoRutaNube(id, ruta)` es el equivalente de `actualizarFotoRutaNube` — se usa justo después de subir el archivo, sin tocar `pendiente_push`, por el mismo motivo (evitar que un `upsert` fallido justo después deje la fila marcada como sincronizada sin haber llegado a Supabase).
+
+### 8. `subirArchivo` / `descargarArchivo` — Storage (2026-08-20)
+
+Bucket privado `archivos_documentos` — mismo patrón que `fotos_mascotas` (ver `mascota.repository.md`, punto 10): ruta `usuarioId/documentoId.ext`, 4 políticas (select/insert/update/delete), `archivo_ruta_nube` guarda la ruta del bucket, no una URL (bucket privado, sin URL pública estable). Ver `TablaMaestraAppVetMovil1.sql`, sección 9, y `syncService.md`.

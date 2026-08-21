@@ -128,6 +128,25 @@
   "eliminarCuentaLabel": "Excluir conta",
   "eliminarCuentaContenido": "Todos os seus dados (pets, agenda, documentos) neste dispositivo serão excluídos permanentemente. Essa ação não pode ser desfeita. Excluir a conta mesmo assim?",
   "eliminarCuentaContenidoRegistrado": "Sua conta será excluída (você não vai poder entrar de novo com esse e-mail) junto com todos os seus dados neste dispositivo, permanentemente. Essa ação não pode ser desfeita. Excluir a conta mesmo assim?",
+  "sincronizarAhoraLabel": "Sincronizar agora",
+  "ultimaSincronizacionNunca": "Ainda não sincronizado",
+  "ultimaSincronizacionConValor": "Última sincronização: {tiempo}",
+  "@ultimaSincronizacionConValor": {
+    "placeholders": { "tiempo": {} }
+  },
+  "tiempoRelativoAhora": "agora mesmo",
+  "tiempoRelativoMinutos": "há {minutos} min",
+  "@tiempoRelativoMinutos": {
+    "placeholders": { "minutos": {} }
+  },
+  "tiempoRelativoHoras": "há {horas} h",
+  "@tiempoRelativoHoras": {
+    "placeholders": { "horas": {} }
+  },
+  "tiempoRelativoDias": "há {dias} dia(s)",
+  "@tiempoRelativoDias": {
+    "placeholders": { "dias": {} }
+  },
 
   "valorOtro": "Outro",
   "tipoEventoVacuna": "Vacina",

@@ -53,8 +53,32 @@ El **Repository Pattern** es uno de los patrones más usados en arquitectura de 
 - **En Nuestro Proyecto:** Usa `db.update('mascotas', mascota.toMap(), where: 'id = ?', whereArgs: [mascota.id])`. A diferencia de `crearMascota`, acá el `where` es obligatorio: sin él, `db.update()` sobrescribiría **todas** las filas de la tabla con los mismos valores.
 - **Valor de Retorno:** Devuelve `Future<int>` — la cantidad de filas afectadas por la actualización. Un valor `0` indica que ese `id` no existía en la tabla (útil para detectar errores silenciosos más adelante, por ejemplo si se intenta actualizar una mascota ya eliminada).
 
-### 5. `eliminarMascota(String id)`
+### 5. `eliminarMascota(String id)` — soft-delete desde Sync (2026-08-20, corrige esta nota)
 
-- **Definición Estándar:** Operación **Delete** — el equivalente a `DELETE FROM mascotas WHERE id = ?`.
-- **En Nuestro Proyecto:** Usa `db.delete('mascotas', where: 'id = ?', whereArgs: [id])`, estructuralmente casi idéntico a `actualizarMascota` pero sin el mapa de valores nuevos (no hace falta, porque se borra la fila entera).
-- **Efecto en Cascada:** Como la tabla `mascotas` fue creada con `FOREIGN KEY (mascota_id) REFERENCES mascotas (id) ON DELETE CASCADE` en `agenda_eventos`, `documentos` y `mascotas_extraviadas`, eliminar una mascota borra automáticamente todos sus eventos, documentos y reportes asociados a nivel de motor SQLite, sin que este repository tenga que orquestar esas eliminaciones manualmente.
+- **Ya no es un `DELETE` real.** Sync (ver más abajo, punto 8, y `syncService.md`) necesita que un borrado se pueda "empujar" a otro dispositivo — un `DELETE` no deja ningún rastro que sincronizar. Se reemplazó por una transacción manual (`db.transaction`) con `UPDATE ... SET eliminado = 1, eliminado_en = ?, actualizado_en = ?, pendiente_push = 1`, en cuatro tablas: `mascotas`, `agenda_eventos`, `medicamentos_evento` y `documentos` (todas las filas hijas de esta mascota).
+- **Por qué no alcanza con el `ON DELETE CASCADE` real del schema:** ese cascade (ver `database.helper.md`, punto 8b) sigue activo y sigue siendo correcto para un `DELETE` de verdad, pero acá no se ejecuta ningún `DELETE` — el soft-delete tiene que imitar a mano el mismo alcance (mascota + su agenda + los medicamentos de esa agenda + sus documentos), porque un `UPDATE` no dispara ninguna cascada de foreign keys.
+- **Transacción explícita, no repositories separados:** las cuatro escrituras corren dentro de `db.transaction((txn) async {...})`, con `txn.rawUpdate` directo sobre cada tabla — mismo patrón ya usado en `UsuarioRepository.convertirAInvitadoRegistrado` — para que las cuatro sean atómicas (o se aplican las cuatro, o ninguna).
+- **Las filas "borradas" se siguen leyendo:** `obtenerMascotasPorUsuario` filtra `eliminado = 0` (no las muestra en la UI), pero `obtenerMascotaPorId` no filtra por `eliminado` a propósito — el motor de sync necesita poder encontrar y comparar una fila localmente borrada al resolver conflictos.
+
+### 6. `obtenerPendientesDePush(String usuarioId)` (2026-08-21, reemplaza a `obtenerModificadosDesde`)
+
+- **El problema que reemplaza:** la primera versión de este método filtraba por fecha (`actualizado_en > desde`) para decidir qué empujar a Supabase. Eso mezclaba dos cosas distintas: "esto lo edité yo en este dispositivo" y "esto tiene una fecha reciente" — una fila recién *traída* por pull también tiene una fecha reciente, así que el dispositivo la volvía a empujar en la corrida siguiente, sin comparar contra lo que hubiera en Supabase en ese momento, pisando cualquier edición más nueva que hubiera llegado de otro lado mientras tanto. Encontrado probando el checkpoint de la Fase 3 del plan de Sync — ver `decisiones_arquitectura.md`.
+- **La solución:** columna `pendiente_push INTEGER DEFAULT 0`, que es la única fuente de verdad de "esto lo tocó este dispositivo y todavía no se subió". Este método pasó a ser `SELECT * FROM mascotas WHERE usuario_id = ? AND pendiente_push = 1`, sin ningún parámetro de fecha.
+- **Sin filtrar por `eliminado`**, mismo motivo que `obtenerMascotaPorId`: una mascota borrada también necesita empujarse (para que el borrado llegue a otro dispositivo).
+
+### 7. `marcarComoSincronizadas(List<String> ids)` (2026-08-21)
+
+Apaga `pendiente_push` (`UPDATE mascotas SET pendiente_push = 0 WHERE id IN (...)`) para las filas que se acaban de subir con éxito. `sync_service.dart` lo llama siempre *después* de que el `upsert` a Supabase ya terminó sin error — si el `upsert` fallara, esta llamada nunca se ejecuta y la fila sigue con `pendiente_push = 1`, lista para reintentarse en la próxima corrida.
+
+### 8. `guardarDesdeSync(MascotaModel mascota)` / `crearMascota` y `actualizarMascota` marcan `pendiente_push` (2026-08-20/21)
+
+- **`crearMascota`/`actualizarMascota`** ahora estampan `actualizadoEn: DateTime.now().toUtc()` (ver el punto 9) y agregan `pendiente_push = 1` al mapa antes de escribir — cualquier edición hecha en este dispositivo queda marcada para subirse en la próxima sincronización.
+- **`guardarDesdeSync`** es el método que usa el motor de sync para escribir una fila que **llegó** de Supabase (`db.insert(..., conflictAlgorithm: ConflictAlgorithm.replace)`, equivalente local del `upsert` remoto). A propósito no incluye `pendiente_push` en el mapa que escribe — como es un `INSERT OR REPLACE`, cualquier columna no mencionada queda en su `DEFAULT` (0), así que una fila recién traída por pull nace correctamente marcada como "no pendiente de push" (ya coincide con lo que hay en el servidor, no hay nada que reenviar).
+
+### 9. `actualizarFotoRutaNube(String id, String ruta)` (2026-08-21)
+
+Usado por el motor de sync justo después de subir una foto a Storage, para guardar la ruta del bucket (`foto_ruta_nube`) sin tocar `pendiente_push`. A propósito **no** usa `guardarDesdeSync` para esto: como ese método es un `REPLACE INTO`, pisaría `pendiente_push` con su `DEFAULT` (0) antes de que el `upsert` de la fila completa a Supabase termine — si ese `upsert` fallara justo después de subir la foto, la fila quedaría marcada como sincronizada sin haber llegado nunca a la tabla `mascotas` de Supabase. Un `UPDATE` puntual sobre una sola columna evita ese riesgo.
+
+### 10. `subirFoto` / `descargarFoto` — Storage (2026-08-20)
+
+Bucket privado `fotos_mascotas` (a diferencia de `fotos_reportes`, público — una foto de mascota es privada). Mismo patrón de ruta que `fotos_reportes` (`usuarioId/entidadId.ext`, ver `mascotaExtraviada.repository.md`), pero con 4 políticas en vez de 3: `upload(..., fileOptions: FileOptions(upsert: true))` (necesario porque editar la foto de una mascota vuelve a subir a la misma ruta) exige política de `update`, además de `select`/`insert`/`delete`. `foto_ruta_nube` guarda la **ruta dentro del bucket, no una URL** — un bucket privado no tiene URL pública estable (`getPublicUrl()` da 403); `descargarFoto` usa `.download(ruta)` en su lugar. Ver `TablaMaestraAppVetMovil1.sql`, sección 9, y `syncService.md`.

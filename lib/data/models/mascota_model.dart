@@ -12,8 +12,20 @@ class MascotaModel {
   final String? numeroChip;
   final DateTime? fechaNacimiento;
   final double? pesoActual;
+  // Ruta LOCAL del dispositivo (nunca viaja por Sync) — ver fotoRutaNube.
   final String? fotoUrl;
+  // Ruta dentro del bucket de Storage `fotos_mascotas`, una vez subida la
+  // foto (2026-08-20, Sync — ver sync_service.dart). null hasta la primera
+  // sincronización con foto.
+  final String? fotoRutaNube;
   final bool fechaEstimada;
+  // Sync (2026-08-20): última modificación (para saber qué empujar y para
+  // resolver conflictos — gana el cambio más reciente) y soft-delete (un
+  // DELETE real no deja rastro que sincronizar a otro dispositivo). Los
+  // repositories son responsables de mantenerlas, no quien llama.
+  final DateTime? actualizadoEn;
+  final bool eliminado;
+  final DateTime? eliminadoEn;
 
   MascotaModel({
     required this.id,
@@ -30,7 +42,11 @@ class MascotaModel {
     this.fechaNacimiento,
     this.pesoActual,
     this.fotoUrl,
+    this.fotoRutaNube,
     this.fechaEstimada = false,
+    this.actualizadoEn,
+    this.eliminado = false,
+    this.eliminadoEn,
   });
 
   // Convierte un Mapa (fila de la BDD) a un objeto MascotaModel
@@ -60,8 +76,18 @@ class MascotaModel {
           ? (map['peso_actual'] as num).toDouble()
           : null,
       fotoUrl: map['foto_url'] != null ? map['foto_url'] as String : null,
+      fotoRutaNube: map['foto_ruta_nube'] != null
+          ? map['foto_ruta_nube'] as String
+          : null,
       fechaEstimada:
           map['fecha_estimada'] == 1 || map['fecha_estimada'] == true,
+      actualizadoEn: map['actualizado_en'] != null
+          ? DateTime.parse(map['actualizado_en'] as String)
+          : null,
+      eliminado: map['eliminado'] == 1 || map['eliminado'] == true,
+      eliminadoEn: map['eliminado_en'] != null
+          ? DateTime.parse(map['eliminado_en'] as String)
+          : null,
     );
   }
 
@@ -86,7 +112,11 @@ class MascotaModel {
       )[0], // Guarda solo YYYY-MM-DD
       'peso_actual': pesoActual,
       'foto_url': fotoUrl,
+      'foto_ruta_nube': fotoRutaNube,
       'fecha_estimada': fechaEstimada ? 1 : 0,
+      'actualizado_en': actualizadoEn?.toIso8601String(),
+      'eliminado': eliminado ? 1 : 0,
+      'eliminado_en': eliminadoEn?.toIso8601String(),
     };
   }
 
@@ -106,7 +136,11 @@ class MascotaModel {
     DateTime? fechaNacimiento,
     double? pesoActual,
     String? fotoUrl,
+    String? fotoRutaNube,
     bool? fechaEstimada,
+    DateTime? actualizadoEn,
+    bool? eliminado,
+    DateTime? eliminadoEn,
   }) {
     return MascotaModel(
       id: id ?? this.id,
@@ -123,7 +157,11 @@ class MascotaModel {
       fechaNacimiento: fechaNacimiento ?? this.fechaNacimiento,
       pesoActual: pesoActual ?? this.pesoActual,
       fotoUrl: fotoUrl ?? this.fotoUrl,
+      fotoRutaNube: fotoRutaNube ?? this.fotoRutaNube,
       fechaEstimada: fechaEstimada ?? this.fechaEstimada,
+      actualizadoEn: actualizadoEn ?? this.actualizadoEn,
+      eliminado: eliminado ?? this.eliminado,
+      eliminadoEn: eliminadoEn ?? this.eliminadoEn,
     );
   }
 }

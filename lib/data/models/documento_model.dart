@@ -5,14 +5,24 @@ class DocumentoModel {
   final String titulo;
   final String tipoDocumento;
   final String? tipoDocumentoPersonalizado;
-  final String filePath;
+  // Ruta LOCAL del dispositivo — nunca viaja por Sync. Nullable desde
+  // 2026-08-20 (Sync): una fila recién traída de otro dispositivo no tiene
+  // archivo local todavía, hasta que se descarga (ver archivoRutaNube).
+  final String? filePath;
   final String? fileExtension;
+  // Ruta dentro del bucket de Storage `archivos_documentos`, una vez
+  // subido el archivo (2026-08-20, Sync — ver sync_service.dart).
+  // Reemplaza a `sincronizadoNube` (campo viejo, nunca usado en el código).
+  final String? archivoRutaNube;
   final DateTime? fechaEmision;
   final DateTime? fechaVencimiento;
   final bool recordatorioVencimiento;
   final DateTime? fechaSubida;
   final String? notasAsociadas;
-  final bool sincronizadoNube;
+  // Sync (2026-08-20) — ver mascota_model.dart para el porqué de estos tres.
+  final DateTime? actualizadoEn;
+  final bool eliminado;
+  final DateTime? eliminadoEn;
 
   DocumentoModel({
     required this.id,
@@ -21,14 +31,17 @@ class DocumentoModel {
     required this.titulo,
     required this.tipoDocumento,
     this.tipoDocumentoPersonalizado,
-    required this.filePath,
+    this.filePath,
     this.fileExtension,
+    this.archivoRutaNube,
     this.fechaEmision,
     this.fechaVencimiento,
     this.recordatorioVencimiento = false,
     this.fechaSubida,
     this.notasAsociadas,
-    this.sincronizadoNube = false,
+    this.actualizadoEn,
+    this.eliminado = false,
+    this.eliminadoEn,
   });
 
   // Convierte un Mapa (fila de la BDD) a un objeto DocumentoModel
@@ -42,9 +55,12 @@ class DocumentoModel {
       tipoDocumentoPersonalizado: map['tipo_documento_personalizado'] != null
           ? map['tipo_documento_personalizado'] as String
           : null,
-      filePath: map['file_path'] as String,
+      filePath: map['file_path'] != null ? map['file_path'] as String : null,
       fileExtension: map['file_extension'] != null
           ? map['file_extension'] as String
+          : null,
+      archivoRutaNube: map['archivo_ruta_nube'] != null
+          ? map['archivo_ruta_nube'] as String
           : null,
       fechaEmision: map['fecha_emision'] != null
           ? DateTime.parse(map['fecha_emision'] as String)
@@ -61,8 +77,13 @@ class DocumentoModel {
       notasAsociadas: map['notas_asociadas'] != null
           ? map['notas_asociadas'] as String
           : null,
-      sincronizadoNube:
-          map['sincronizado_nube'] == 1 || map['sincronizado_nube'] == true,
+      actualizadoEn: map['actualizado_en'] != null
+          ? DateTime.parse(map['actualizado_en'] as String)
+          : null,
+      eliminado: map['eliminado'] == 1 || map['eliminado'] == true,
+      eliminadoEn: map['eliminado_en'] != null
+          ? DateTime.parse(map['eliminado_en'] as String)
+          : null,
     );
   }
 
@@ -77,6 +98,7 @@ class DocumentoModel {
       'tipo_documento_personalizado': tipoDocumentoPersonalizado,
       'file_path': filePath,
       'file_extension': fileExtension,
+      'archivo_ruta_nube': archivoRutaNube,
       'fecha_emision': fechaEmision?.toIso8601String().split(
         'T',
       )[0], // Solo YYYY-MM-DD
@@ -88,7 +110,9 @@ class DocumentoModel {
           : 0, // SQLite almacena booleanos como 0 o 1
       'fecha_subida': fechaSubida?.toIso8601String(),
       'notas_asociadas': notasAsociadas,
-      'sincronizado_nube': sincronizadoNube ? 1 : 0,
+      'actualizado_en': actualizadoEn?.toIso8601String(),
+      'eliminado': eliminado ? 1 : 0,
+      'eliminado_en': eliminadoEn?.toIso8601String(),
     };
   }
 
@@ -102,12 +126,15 @@ class DocumentoModel {
     String? tipoDocumentoPersonalizado,
     String? filePath,
     String? fileExtension,
+    String? archivoRutaNube,
     DateTime? fechaEmision,
     DateTime? fechaVencimiento,
     bool? recordatorioVencimiento,
     DateTime? fechaSubida,
     String? notasAsociadas,
-    bool? sincronizadoNube,
+    DateTime? actualizadoEn,
+    bool? eliminado,
+    DateTime? eliminadoEn,
   }) {
     return DocumentoModel(
       id: id ?? this.id,
@@ -119,13 +146,16 @@ class DocumentoModel {
           tipoDocumentoPersonalizado ?? this.tipoDocumentoPersonalizado,
       filePath: filePath ?? this.filePath,
       fileExtension: fileExtension ?? this.fileExtension,
+      archivoRutaNube: archivoRutaNube ?? this.archivoRutaNube,
       fechaEmision: fechaEmision ?? this.fechaEmision,
       fechaVencimiento: fechaVencimiento ?? this.fechaVencimiento,
       recordatorioVencimiento:
           recordatorioVencimiento ?? this.recordatorioVencimiento,
       fechaSubida: fechaSubida ?? this.fechaSubida,
       notasAsociadas: notasAsociadas ?? this.notasAsociadas,
-      sincronizadoNube: sincronizadoNube ?? this.sincronizadoNube,
+      actualizadoEn: actualizadoEn ?? this.actualizadoEn,
+      eliminado: eliminado ?? this.eliminado,
+      eliminadoEn: eliminadoEn ?? this.eliminadoEn,
     );
   }
 }

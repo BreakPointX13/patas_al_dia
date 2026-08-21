@@ -140,6 +140,25 @@
   "eliminarCuentaLabel": "Eliminar cuenta",
   "eliminarCuentaContenido": "Se van a borrar todos tus datos (mascotas, agenda, documentos) de este dispositivo, de forma permanente. Esta acción no se puede deshacer. ¿Eliminar cuenta de todos modos?",
   "eliminarCuentaContenidoRegistrado": "Se va a borrar tu cuenta (no vas a poder volver a iniciar sesión con este correo) y todos tus datos de este dispositivo, de forma permanente. Esta acción no se puede deshacer. ¿Eliminar cuenta de todos modos?",
+  "sincronizarAhoraLabel": "Sincronizar ahora",
+  "ultimaSincronizacionNunca": "Todavía no se sincronizó",
+  "ultimaSincronizacionConValor": "Última sincronización: {tiempo}",
+  "@ultimaSincronizacionConValor": {
+    "placeholders": { "tiempo": {} }
+  },
+  "tiempoRelativoAhora": "hace un momento",
+  "tiempoRelativoMinutos": "hace {minutos} min",
+  "@tiempoRelativoMinutos": {
+    "placeholders": { "minutos": {} }
+  },
+  "tiempoRelativoHoras": "hace {horas} h",
+  "@tiempoRelativoHoras": {
+    "placeholders": { "horas": {} }
+  },
+  "tiempoRelativoDias": "hace {dias} día(s)",
+  "@tiempoRelativoDias": {
+    "placeholders": { "dias": {} }
+  },
 
   "valorOtro": "Otro",
   "tipoEventoVacuna": "Vacuna",

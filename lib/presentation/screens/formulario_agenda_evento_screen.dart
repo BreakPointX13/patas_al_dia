@@ -12,6 +12,7 @@ import 'package:patas_al_dia/providers/agenda_evento_provider.dart';
 import 'package:patas_al_dia/providers/documento_provider.dart';
 import 'package:patas_al_dia/providers/mascota_provider.dart';
 import 'package:patas_al_dia/providers/medicamento_evento_provider.dart';
+import 'package:patas_al_dia/services/almacenamiento_local_service.dart';
 import 'package:patas_al_dia/services/notificacion_service.dart';
 
 Map<int, String> _opcionesRecordatorio(AppLocalizations l10n) => {
@@ -397,11 +398,21 @@ class _FormularioAgendaEventoScreenState
 
     String? rutaArchivo;
     switch (opcion) {
+      // Compresión suave, no la agresiva de la foto de reporte — ver
+      // formulario_documento_screen.dart (mismo criterio, mismos valores).
       case 'camara':
-        final foto = await _picker.pickImage(source: ImageSource.camera);
+        final foto = await _picker.pickImage(
+          source: ImageSource.camera,
+          maxWidth: 2000,
+          imageQuality: 90,
+        );
         rutaArchivo = foto?.path;
       case 'galeria':
-        final foto = await _picker.pickImage(source: ImageSource.gallery);
+        final foto = await _picker.pickImage(
+          source: ImageSource.gallery,
+          maxWidth: 2000,
+          imageQuality: 90,
+        );
         rutaArchivo = foto?.path;
       case 'pdf':
         final resultado = await FilePicker.pickFile(
@@ -466,21 +477,48 @@ class _FormularioAgendaEventoScreenState
               child: Text(l10n.accionCancelar),
             ),
             ElevatedButton(
-              onPressed: () {
+              onPressed: () async {
                 if (tituloController.text.trim().isEmpty) {
+                  return;
+                }
+                final documentoId = existente?.id ?? const Uuid().v4();
+                // Mismo tratamiento que formulario_documento_screen.dart —
+                // copia a directorio persistente solo si el archivo
+                // cambió, y resetea archivoRutaNube para que sync lo
+                // vuelva a subir en ese caso.
+                final archivoCambio = existente?.filePath != filePath;
+                var filePathFinal = existente?.filePath ?? filePath;
+                if (archivoCambio) {
+                  final ext = filePath.split('.').last;
+                  final nombre = AlmacenamientoLocalService.nombreArchivo(
+                    entidadId: documentoId,
+                    ext: ext,
+                  );
+                  final rutaPersistente =
+                      await AlmacenamientoLocalService.rutaArchivosDocumentos(
+                        nombre,
+                      );
+                  filePathFinal =
+                      await AlmacenamientoLocalService.copiarAPersistente(
+                        rutaOrigen: filePath,
+                        rutaDestino: rutaPersistente,
+                      );
+                }
+                if (!context.mounted) {
                   return;
                 }
                 Navigator.of(context).pop(
                   DocumentoModel(
-                    id: existente?.id ?? const Uuid().v4(),
+                    id: documentoId,
                     mascotaId: _mascotaId!,
                     eventoId: _eventoId,
                     titulo: tituloController.text.trim(),
                     tipoDocumento: tipo,
-                    filePath: existente?.filePath ?? filePath,
-                    fileExtension: (existente?.filePath ?? filePath)
-                        .split('.')
-                        .last,
+                    filePath: filePathFinal,
+                    fileExtension: filePathFinal.split('.').last,
+                    archivoRutaNube: archivoCambio
+                        ? null
+                        : existente?.archivoRutaNube,
                     fechaSubida: existente?.fechaSubida ?? DateTime.now(),
                   ),
                 );
@@ -802,7 +840,10 @@ class _FormularioAgendaEventoScreenState
                       tipoDocumentoMostrar(l10n, documento.tipoDocumento),
                     ),
                     onTap: () => _abrirDialogoDatosDocumento(
-                      documento.filePath,
+                      // Esta lista solo contiene documentos recién elegidos
+                      // en esta misma sesión de formulario (no traídos por
+                      // Sync), así que siempre tienen ruta local.
+                      documento.filePath!,
                       existente: documento,
                     ),
                     trailing: IconButton(

@@ -4,6 +4,10 @@ class MedicamentoEventoModel {
   final String tipoPresentacion;
   final String nombre;
   final String? observaciones;
+  // Sync (2026-08-20) — ver mascota_model.dart para el porqué de estos tres.
+  final DateTime? actualizadoEn;
+  final bool eliminado;
+  final DateTime? eliminadoEn;
 
   MedicamentoEventoModel({
     required this.id,
@@ -11,6 +15,9 @@ class MedicamentoEventoModel {
     required this.tipoPresentacion,
     required this.nombre,
     this.observaciones,
+    this.actualizadoEn,
+    this.eliminado = false,
+    this.eliminadoEn,
   });
 
   // Convierte un Mapa (fila de la BDD) a un objeto MedicamentoEventoModel
@@ -23,6 +30,13 @@ class MedicamentoEventoModel {
       observaciones: map['observaciones'] != null
           ? map['observaciones'] as String
           : null,
+      actualizadoEn: map['actualizado_en'] != null
+          ? DateTime.parse(map['actualizado_en'] as String)
+          : null,
+      eliminado: map['eliminado'] == 1 || map['eliminado'] == true,
+      eliminadoEn: map['eliminado_en'] != null
+          ? DateTime.parse(map['eliminado_en'] as String)
+          : null,
     );
   }
 
@@ -34,6 +48,9 @@ class MedicamentoEventoModel {
       'tipo_presentacion': tipoPresentacion,
       'nombre': nombre,
       'observaciones': observaciones,
+      'actualizado_en': actualizadoEn?.toIso8601String(),
+      'eliminado': eliminado ? 1 : 0,
+      'eliminado_en': eliminadoEn?.toIso8601String(),
     };
   }
 
@@ -44,6 +61,9 @@ class MedicamentoEventoModel {
     String? tipoPresentacion,
     String? nombre,
     String? observaciones,
+    DateTime? actualizadoEn,
+    bool? eliminado,
+    DateTime? eliminadoEn,
   }) {
     return MedicamentoEventoModel(
       id: id ?? this.id,
@@ -51,6 +71,9 @@ class MedicamentoEventoModel {
       tipoPresentacion: tipoPresentacion ?? this.tipoPresentacion,
       nombre: nombre ?? this.nombre,
       observaciones: observaciones ?? this.observaciones,
+      actualizadoEn: actualizadoEn ?? this.actualizadoEn,
+      eliminado: eliminado ?? this.eliminado,
+      eliminadoEn: eliminadoEn ?? this.eliminadoEn,
     );
   }
 }

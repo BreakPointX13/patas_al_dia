@@ -8,11 +8,13 @@
 -- 2026-08-18). Se pega tal cual en el SQL Editor de Supabase.
 --
 -- Pendiente para las próximas fases (no resuelto en este archivo):
--- - `usuarios.id` referencia `auth.users(id)` asumiendo que cada usuario,
---   invitado o registrado, termina teniendo una sesión real de Supabase
---   Auth (con "Anonymous Sign-ins" habilitado para los invitados). Conectar
---   el `usuarioId` que hoy genera la app localmente con ese `auth.uid()` es
---   trabajo de la fase de login real/conexión, no de este esquema.
+-- - Sync (Fase 6): la tabla `public.usuarios` de acá abajo nunca se pobló
+--   hasta ahora (Login real, Fase 4, no la tocaba a propósito). Como
+--   `mascotas.usuario_id` referencia `public.usuarios(id)` con un FK real
+--   (no solo un chequeo de RLS contra `auth.uid()`), el motor de sync tiene
+--   que insertar/actualizar la fila de `usuarios` correspondiente ANTES de
+--   empujar la primera mascota — ver `sync_service.dart` y
+--   `decisiones_arquitectura.md`, entrada del 2026-08-20.
 
 -- =========================================================
 -- 1. usuarios
@@ -41,6 +43,10 @@ create policy "usuarios: ver/editar solo su propia fila"
 -- =========================================================
 -- 2. mascotas
 -- =========================================================
+-- foto_url queda sin usar del lado de Postgres — es una ruta local del
+-- dispositivo (ver database_helper.dart), nunca viaja por Sync. La columna
+-- real que Sync sube/baja es foto_ruta_nube (ruta dentro del bucket
+-- fotos_mascotas, ver sync_service.dart, sección 8 más abajo).
 create table public.mascotas (
   id uuid primary key,
   usuario_id uuid not null references public.usuarios (id) on delete cascade,
@@ -56,7 +62,11 @@ create table public.mascotas (
   fecha_nacimiento date,
   peso_actual numeric(5, 2),
   foto_url text,
-  fecha_estimada boolean default false
+  foto_ruta_nube text,
+  fecha_estimada boolean default false,
+  actualizado_en timestamptz,
+  eliminado boolean default false,
+  eliminado_en timestamptz
 );
 
 alter table public.mascotas enable row level security;
@@ -78,7 +88,10 @@ create table public.agenda_eventos (
   observaciones text,
   fecha_programada timestamptz not null,
   fecha_realizada timestamptz,
-  recordatorio_horas_antes text
+  recordatorio_horas_antes text,
+  actualizado_en timestamptz,
+  eliminado boolean default false,
+  eliminado_en timestamptz
 );
 
 alter table public.agenda_eventos enable row level security;
@@ -96,7 +109,10 @@ create table public.medicamentos_evento (
   agenda_evento_id uuid not null references public.agenda_eventos (id) on delete cascade,
   tipo_presentacion text not null,
   nombre text not null,
-  observaciones text
+  observaciones text,
+  actualizado_en timestamptz,
+  eliminado boolean default false,
+  eliminado_en timestamptz
 );
 
 alter table public.medicamentos_evento enable row level security;
@@ -121,6 +137,13 @@ create policy "medicamentos_evento: solo el dueño del evento"
 -- =========================================================
 -- 4. documentos
 -- =========================================================
+-- file_path era NOT NULL en el diseño original, pero es una ruta LOCAL del
+-- dispositivo (ver database_helper.dart) — sin sentido del lado de
+-- Postgres, y Sync nunca la empuja. Pasa a nullable (2026-08-20); la
+-- columna real que Sync sube/baja es archivo_ruta_nube (ruta dentro del
+-- bucket archivos_documentos, ver sync_service.dart). sincronizado_nube
+-- (nunca usada en ningún lado del código) se reemplaza por esa misma
+-- columna.
 create table public.documentos (
   id uuid primary key,
   mascota_id uuid not null references public.mascotas (id) on delete cascade,
@@ -128,14 +151,17 @@ create table public.documentos (
   titulo text not null,
   tipo_documento text not null,
   tipo_documento_personalizado text,
-  file_path text not null,
+  file_path text,
   file_extension text,
+  archivo_ruta_nube text,
   fecha_emision date,
   fecha_vencimiento date,
   recordatorio_vencimiento boolean default false,
   fecha_subida timestamptz default now(),
   notas_asociadas text,
-  sincronizado_nube boolean default false
+  actualizado_en timestamptz,
+  eliminado boolean default false,
+  eliminado_en timestamptz
 );
 
 alter table public.documentos enable row level security;
@@ -344,3 +370,43 @@ values ('paginas_publicas', 'paginas_publicas', true);
 create policy paginas_publicas_lectura_publica
   on storage.objects for select
   using (bucket_id = 'paginas_publicas');
+
+-- =========================================================
+-- 9. Storage: fotos_mascotas, archivos_documentos (Sync, 2026-08-20)
+-- =========================================================
+-- A diferencia de fotos_reportes (público — cualquiera necesita ver la foto
+-- de un reporte en el mapa), estos dos son privados: una foto de mascota o
+-- un documento médico son datos privados del dueño, mismo criterio que las
+-- políticas de las tablas mascotas/documentos. Ruta dentro del bucket:
+-- "usuarioId/entidadId.ext", mismo patrón que fotos_reportes.
+--
+-- 4 políticas, no 3 — a diferencia de fotos_reportes (que nunca vuelve a
+-- subir a una ruta ya existente), acá `upload(..., upsert: true)` hace
+-- falta porque editar la foto de una mascota vuelve a subir a la MISMA
+-- ruta — eso exige política de `update` además de select/insert/delete
+-- (confirmado: Supabase rechaza el upsert con 42501 sin ella).
+insert into storage.buckets (id, name, public)
+values ('fotos_mascotas', 'fotos_mascotas', false);
+
+create policy fotos_mascotas_seleccionar_dueno on storage.objects for select
+  using (bucket_id = 'fotos_mascotas' and (storage.foldername(name))[1] = auth.uid()::text);
+create policy fotos_mascotas_subir_dueno on storage.objects for insert
+  with check (bucket_id = 'fotos_mascotas' and (storage.foldername(name))[1] = auth.uid()::text);
+create policy fotos_mascotas_actualizar_dueno on storage.objects for update
+  using (bucket_id = 'fotos_mascotas' and (storage.foldername(name))[1] = auth.uid()::text)
+  with check (bucket_id = 'fotos_mascotas' and (storage.foldername(name))[1] = auth.uid()::text);
+create policy fotos_mascotas_borrar_dueno on storage.objects for delete
+  using (bucket_id = 'fotos_mascotas' and (storage.foldername(name))[1] = auth.uid()::text);
+
+insert into storage.buckets (id, name, public)
+values ('archivos_documentos', 'archivos_documentos', false);
+
+create policy archivos_documentos_seleccionar_dueno on storage.objects for select
+  using (bucket_id = 'archivos_documentos' and (storage.foldername(name))[1] = auth.uid()::text);
+create policy archivos_documentos_subir_dueno on storage.objects for insert
+  with check (bucket_id = 'archivos_documentos' and (storage.foldername(name))[1] = auth.uid()::text);
+create policy archivos_documentos_actualizar_dueno on storage.objects for update
+  using (bucket_id = 'archivos_documentos' and (storage.foldername(name))[1] = auth.uid()::text)
+  with check (bucket_id = 'archivos_documentos' and (storage.foldername(name))[1] = auth.uid()::text);
+create policy archivos_documentos_borrar_dueno on storage.objects for delete
+  using (bucket_id = 'archivos_documentos' and (storage.foldername(name))[1] = auth.uid()::text);

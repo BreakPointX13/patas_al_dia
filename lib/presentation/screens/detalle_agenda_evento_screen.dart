@@ -58,8 +58,14 @@ class _DetalleAgendaEventoScreenState
   }
 
   Future<void> _abrirDocumento(DocumentoModel documento) async {
+    // filePath es nullable desde Sync (2026-08-20) — una fila recién traída
+    // de otro dispositivo puede no tener el archivo descargado todavía.
+    final filePath = documento.filePath;
+    if (filePath == null) {
+      return;
+    }
     if (documento.fileExtension == 'pdf') {
-      await OpenFilex.open(documento.filePath);
+      await OpenFilex.open(filePath);
       return;
     }
     if (!mounted) {
@@ -67,10 +73,8 @@ class _DetalleAgendaEventoScreenState
     }
     Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (context) => VisorImagenScreen(
-          filePath: documento.filePath,
-          titulo: documento.titulo,
-        ),
+        builder: (context) =>
+            VisorImagenScreen(filePath: filePath, titulo: documento.titulo),
       ),
     );
   }
@@ -224,10 +228,12 @@ class _DetalleAgendaEventoScreenState
                 contentPadding: EdgeInsets.zero,
                 leading: documento.fileExtension == 'pdf'
                     ? const Icon(Icons.picture_as_pdf)
+                    : documento.filePath == null
+                    ? const Icon(Icons.cloud_download_outlined)
                     : ClipRRect(
                         borderRadius: BorderRadius.circular(4),
                         child: Image.file(
-                          File(documento.filePath),
+                          File(documento.filePath!),
                           width: 40,
                           height: 40,
                           fit: BoxFit.cover,

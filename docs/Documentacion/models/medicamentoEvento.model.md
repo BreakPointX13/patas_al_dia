@@ -26,4 +26,8 @@ A diferencia de `eventoId` en `DocumentoModel` (opcional, `ON DELETE SET NULL`),
 
 ### 2. `fromMap` / `toMap` / `copyWith`
 
-Mismo patrón exacto que `MascotaModel`/`AgendaEventoModel`: `fromMap` deserializa desde SQLite, `toMap` serializa hacia SQLite, `copyWith` genera una copia inmutable reemplazando solo los campos pasados. No hay campos booleanos ni fechas en este modelo, así que no hace falta ninguna de las conversiones especiales (`== 1`, `.toIso8601String()`) que sí aparecen en los otros modelos.
+Mismo patrón exacto que `MascotaModel`/`AgendaEventoModel`: `fromMap` deserializa desde SQLite, `toMap` serializa hacia SQLite, `copyWith` genera una copia inmutable reemplazando solo los campos pasados. Desde Sync (2026-08-20) sí hay una conversión booleana (`eliminado`, ver punto 3) que antes no existía.
+
+### 3. Sync (2026-08-20) — `actualizadoEn`, `eliminado`/`eliminadoEn`
+
+Ver `mascota.model.md`, punto 7. Mismo criterio que el resto de las entidades sincronizadas.

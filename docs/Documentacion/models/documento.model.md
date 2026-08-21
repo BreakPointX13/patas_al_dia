@@ -49,10 +49,15 @@ Los sistemas que gestionan archivos adjuntos (gestores documentales, historiales
 ### 4. Constructor de Fábrica (`factory DocumentoModel.fromMap`) y `toMap()`
 
 - **Lógicas Complejas:**
-    - **Conversión de Booleanos:** `recordatorioVencimiento` y `sincronizadoNube` usan la misma técnica tolerante que el resto de los modelos: `map['campo'] == 1 || map['campo'] == true`.
-    - **`sincronizadoNube`:** Este campo es clave para la futura sincronización con Supabase — permite saber qué documentos ya se subieron a Storage y cuáles siguen pendientes, sin necesitar una tabla de cola aparte.
+    - **Conversión de Booleanos:** `recordatorioVencimiento` y `eliminado` (ver punto 6) usan la misma técnica tolerante que el resto de los modelos: `map['campo'] == 1 || map['campo'] == true`.
 
 ### 5. Copia Inmutable (`copyWith()`)
 
-- **En Nuestro Proyecto:** Como todos los campos son `final`, actualizar el estado de sincronización de un documento (por ejemplo, después de subirlo exitosamente a Supabase Storage) se hace con `documento.copyWith(sincronizadoNube: true)`, generando un objeto nuevo con ese único campo cambiado y el resto (`filePath`, `titulo`, `tipoDocumento`, etc.) igual al original.
-- **Caso de uso típico:** Además de `sincronizadoNube`, este método sirve para activar `recordatorioVencimiento` sobre un documento ya existente sin tener que reconstruir manualmente los 14 campos del modelo.
+- **En Nuestro Proyecto:** Como todos los campos son `final`, actualizar un documento (por ejemplo, después de subirlo exitosamente a Supabase Storage) se hace con `documento.copyWith(archivoRutaNube: ruta)`, generando un objeto nuevo con ese único campo cambiado y el resto (`filePath`, `titulo`, `tipoDocumento`, etc.) igual al original.
+- **Caso de uso típico:** Además de `archivoRutaNube`, este método sirve para activar `recordatorioVencimiento` sobre un documento ya existente sin tener que reconstruir manualmente todos los campos del modelo.
+
+### 6. Sync (2026-08-20) — `actualizadoEn`/`eliminado`/`eliminadoEn`, `archivoRutaNube` reemplaza a `sincronizadoNube`, `filePath` pasa a nullable
+
+- **`sincronizadoNube` (booleano) se borró** — quedó desde el esquema original sin usarse en ningún lado del código (confirmado, código muerto). En su lugar, `archivoRutaNube` (`String?`) guarda la ruta real del archivo dentro del bucket de Storage una vez subido — no un booleano suelto, la ruta en sí (necesaria para poder descargarlo desde otro dispositivo). Ver `documento.repository.md`, puntos 7-8.
+- **`filePath` pasó de `String` obligatorio a `String?`** — es **local-only** (nunca viaja a Supabase, nunca se sobreescribe con un pull). Un documento traído de otro dispositivo por sync puede no tener el archivo descargado todavía (solo `archivoRutaNube`, apuntando a Storage) — esa es la razón real del cambio: antes de Sync, todo documento visible ya tenía su archivo local por definición (se creaba junto con el archivo elegido en el formulario); con Sync, "existe la fila" y "el archivo ya está en este dispositivo" pasaron a ser dos cosas distintas en el tiempo. `DetalleDocumentoScreen`/`DetalleAgendaEventoScreen` muestran un ícono de "descarga pendiente" (`Icons.cloud_download_outlined`) cuando `filePath` es `null`.
+- **`actualizadoEn`/`eliminado`/`eliminadoEn`**: mismo patrón que el resto de las entidades sincronizadas — ver `mascota.model.md`, punto 7, para el detalle completo (soft-delete, conflictos por timestamp, por qué `actualizadoEn` se guarda siempre en UTC).

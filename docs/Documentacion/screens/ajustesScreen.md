@@ -8,7 +8,7 @@ Se accede desde `MenuUsuarioAvatar` (ver `menuUsuarioAvatar.md`), presente en el
 
 ## 🎯 Propósito del Archivo
 
-Pantalla de ajustes de la app. Tiene siete opciones: "Tema" (2026-08-18, ver punto 5), "Tamaño de letra" (2026-08-18, ver punto 4), "Idioma" (2026-08-18, ver punto 6), "Aportes voluntarios" (2026-08-17, ver punto 3), "Cuenta" (2026-08-19, ver punto 7 — solo para invitados, es el punto de entrada para registrarse), "Cerrar sesión" y "Eliminar cuenta" (2026-08-19, ver punto 8). Desde esta pasada, todos sus textos salen de `AppLocalizations` (ver `sistemaIdiomas.md`) en vez de estar escritos fijo en español.
+Pantalla de ajustes de la app. Tiene ocho opciones: "Tema" (2026-08-18, ver punto 5), "Tamaño de letra" (2026-08-18, ver punto 4), "Idioma" (2026-08-18, ver punto 6), "Aportes voluntarios" (2026-08-17, ver punto 3), "Cuenta" (2026-08-19, ver punto 7 — solo para invitados, es el punto de entrada para registrarse), "Sincronizar ahora" (2026-08-21, ver punto 9 — solo para usuarios registrados), "Cerrar sesión" y "Eliminar cuenta" (2026-08-19, ver punto 8). Desde esta pasada, todos sus textos salen de `AppLocalizations` (ver `sistemaIdiomas.md`) en vez de estar escritos fijo en español.
 
 ---
 
@@ -186,3 +186,23 @@ Mismo patrón de confirmación que `_confirmarCerrarSesion` (punto 1) — `Alert
 **A diferencia de `_cerrarSesion`, acá sí hace falta manejar errores.** Cerrar sesión no puede fallar de una forma que valga la pena mostrarle al usuario — pero eliminar cuenta sí: para un usuario registrado, `UsuarioNotifier.eliminarUsuario()` (ver `usuarioNotifier.md`, punto 4) llama primero a una Edge Function remota (`eliminarCuentaSupabase`), que puede fallar por falta de conexión o un error del servidor. `_eliminarCuenta` envuelve esa llamada en un `try/catch` (mismo patrón `debugPrint` marcado `// TEMPORAL` que el resto del proyecto con Supabase) y muestra `errorAutenticacionGenerico` si falla, **sin** navegar a `LoginScreen` ni invalidar los providers — el usuario sigue viendo Ajustes tal cual, con su cuenta intacta, para poder reintentar.
 
 **El método que llama, `UsuarioNotifier.eliminarUsuario()`, ya existía desde el CRUD base** (ver `usuarioNotifier.md`) pero nunca había estado conectado a ningún botón — esta es su primera vez en uso real.
+
+### 9. "Sincronizar ahora" + "Última sincronización: hace X" (2026-08-21)
+
+```dart
+if (usuario != null && !usuario.esInvitado)
+  ListTile(
+    leading: sincronizando
+        ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(strokeWidth: 2))
+        : const Icon(Icons.sync),
+    title: Text(l10n.sincronizarAhoraLabel),
+    subtitle: Text(_tiempoRelativo(l10n, usuario.ultimaSincronizacion)),
+    onTap: sincronizando ? null : () => ref.read(syncServiceProvider).sincronizar(),
+  ),
+```
+
+- **Solo visible para usuarios registrados** (`!usuario.esInvitado`) — mismo criterio que Sync en general (ver `syncService.md`): un invitado no tiene con qué sincronizar.
+- **Respaldo manual, no el disparador principal.** La sincronización real pasa sola, en tres momentos (arranque con sesión activa, cada 5 minutos en primer plano, al pasar a segundo plano — ver `main.dart` y `syncService.md`). Este `ListTile` es la vía manual para forzarla al toque, y a la vez la única señal visible en toda la app de que Sync existe y está funcionando.
+- **`_tiempoRelativo(l10n, DateTime? momento)`** — función privada del archivo, no un paquete nuevo (`intl` no trae un helper de tiempo relativo listo). Cuatro escalones nada más (recién ahora / hace X min / hace X h / hace X día(s)), sin necesitar semanas ni meses para este uso — calcula `DateTime.now().difference(momento)` y elige el primer escalón que corresponda. No se actualiza sola mientras la pantalla queda abierta (sin `Timer` propio) — se recalcula la próxima vez que `AjustesScreen` se reconstruya, que en la práctica coincide con cada sync exitoso (`usuarioProvider` cambia, y esta pantalla lo escucha vía `ref.watch`).
+- **`sincronizando` (de `sincronizandoProvider`, ver `syncProvider.md`) deshabilita el `onTap` y cambia el ícono por un `CircularProgressIndicator`** mientras hay una corrida en curso — mismo patrón `_guardando` ya usado en los formularios del proyecto, aplicado acá a un botón en vez de a un formulario completo.
+- **Reemplaza a un botón temporal de depuración** (`[TEMPORAL] Sincronizar ahora`, sin el texto de última sincronización) que existió durante las Fases 1 y 2 del plan de Sync, mientras no había disparadores automáticos todavía.

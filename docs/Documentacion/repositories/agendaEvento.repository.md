@@ -20,6 +20,8 @@ Las tablas de "agenda" o "eventos programados" en apps de salud/veterinaria suel
 
 Por ahora `AgendaEventoRepository` cubre el CRUD base filtrando por `mascota_id` (para listar la agenda de una mascota puntual) y por `id` (para operar sobre un evento específico). Las consultas por rango de fecha (ej. "próximos 7 días" o "vencidos") quedan para cuando se construya la pantalla de agenda — se agregarán como métodos adicionales sobre este mismo repository, reutilizando el patrón `where`/`whereArgs` ya establecido.
 
+Desde Sync (2026-08-20/21) suma además `obtenerPendientesDePush`/`marcarComoSincronizadas` (mismo criterio que `MascotaRepository`, ver `mascota.repository.md`, puntos 6-8) y `guardarDesdeSync` para el motor de sincronización — ver `syncService.md`.
+
 ### 🔄 Comparativa y Ventajas Técnicas
 
 - **Proyecto Estándar:** Muchas apps delegan el cálculo de "próxima repetición" (ej. recordar la próxima vacuna cada `N` meses) a un job en el backend o a una Cloud Function.
@@ -54,7 +56,9 @@ Por ahora `AgendaEventoRepository` cubre el CRUD base filtrando por `mascota_id`
 - **Definición Estándar:** Operación **Read** filtrada con múltiples valores — el equivalente a `SELECT * FROM agenda_eventos WHERE mascota_id IN (?, ?, ...)`.
 - **En Nuestro Proyecto:** Agregado el 2026-08-14 para alimentar la pestaña Agenda del navbar, que puede mostrar los eventos de **todas** las mascotas del usuario a la vez (o de un subconjunto elegido con el filtro), no solo de una. El número de `?` en la cláusula `IN (...)` se arma dinámicamente con `List.filled(mascotaIds.length, '?').join(',')`, y `whereArgs: mascotaIds` sigue estando parametrizado (sin concatenar los ids directo en el string SQL) — mismo nivel de seguridad que el resto de las queries del proyecto. Si `mascotaIds` está vacío, devuelve `[]` sin tocar la base de datos, para no ejecutar un `IN ()` inválido en SQL.
 
-### 6. `eliminarAgendaEvento(String id)`
+### 6. `eliminarAgendaEvento(String id)` — soft-delete desde Sync (2026-08-20, corrige esta nota)
 
-- **Definición Estándar:** Operación **Delete** — `DELETE FROM agenda_eventos WHERE id = ?`.
-- **En Nuestro Proyecto:** Usa `db.delete('agenda_eventos', where: 'id = ?', whereArgs: [id])`. Como `documentos` tiene `FOREIGN KEY (evento_id) REFERENCES agenda_eventos (id) ON DELETE SET NULL`, eliminar un evento de agenda no borra los documentos asociados (ej. la boleta de la vacuna) — el motor SQLite simplemente pone `evento_id` en `NULL` en esos documentos, desvinculándolos del evento sin perder el archivo.
+- **Ya no es un `DELETE` real** — ver `mascota.repository.md`, punto 5, para el porqué general (Sync necesita que un borrado deje rastro para poder empujarlo). Acá la cascada **no es uniforme**, a diferencia de `eliminarMascota`:
+  - `agenda_eventos` (el evento en sí) y `medicamentos_evento` (sus medicamentos) → soft-delete real (`eliminado = 1, eliminado_en = ?`), mismo `ON DELETE CASCADE` que tenía el schema.
+  - `documentos` → **no** se soft-deletea. Solo `UPDATE documentos SET evento_id = NULL, ...`, preservando el `ON DELETE SET NULL` original: el documento sobrevive, solo se desvincula del evento (ej. la boleta de la vacuna no desaparece, deja de estar ligada a esa consulta puntual).
+- **Las tres tablas suman `actualizado_en` y `pendiente_push = 1`** en la misma transacción — incluida `documentos`: desvincular un evento es un cambio real que también hay que empujar en el próximo sync, aunque esa fila no se haya "borrado".

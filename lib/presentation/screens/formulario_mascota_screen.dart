@@ -8,6 +8,7 @@ import 'package:patas_al_dia/providers/usuario_provider.dart';
 import 'dart:io';
 import 'package:image_picker/image_picker.dart';
 import 'package:patas_al_dia/presentation/widgets/separador_seccion_ficha.dart';
+import 'package:patas_al_dia/services/almacenamiento_local_service.dart';
 
 const especiesDisponibles = [
   'Perro',
@@ -58,7 +59,14 @@ class _FormularioMascotaScreenState
   String? _fotoPath;
 
   Future<void> _elegirFoto() async {
-    final imagen = await _picker.pickImage(source: ImageSource.gallery);
+    // maxWidth/imageQuality (2026-08-20, Sync — ver decisiones_arquitectura.md):
+    // es la única foto de mascota que ahora sube a Storage, mismo criterio
+    // de compresión que ya usa la foto de reporte del módulo Mapa.
+    final imagen = await _picker.pickImage(
+      source: ImageSource.gallery,
+      maxWidth: 1600,
+      imageQuality: 75,
+    );
     if (imagen != null) {
       setState(() {
         _fotoPath = imagen.path;
@@ -141,9 +149,34 @@ class _FormularioMascotaScreenState
             DateTime.now().day,
           )
         : _fechaNacimiento;
+    final mascotaId = widget.mascotaExistente?.id ?? const Uuid().v4();
+
+    // Copia la foto elegida a un directorio persistente (2026-08-20, Sync)
+    // — image_picker devuelve una ruta de caché que en iOS el sistema
+    // puede limpiar sola (ver pendientes_ios.md, punto 1), y Sync necesita
+    // un archivo estable para poder subirlo. Solo si la foto realmente
+    // cambió (comparado contra la que ya tenía al editar) — si no, ya está
+    // en el directorio persistente de una vez anterior.
+    final fotoCambio =
+        _fotoPath != null && _fotoPath != widget.mascotaExistente?.fotoUrl;
+    var fotoPathFinal = _fotoPath;
+    if (fotoCambio) {
+      final ext = _fotoPath!.split('.').last;
+      final nombre = AlmacenamientoLocalService.nombreArchivo(
+        entidadId: mascotaId,
+        ext: ext,
+      );
+      final rutaPersistente = await AlmacenamientoLocalService.rutaFotosMascotas(
+        nombre,
+      );
+      fotoPathFinal = await AlmacenamientoLocalService.copiarAPersistente(
+        rutaOrigen: _fotoPath!,
+        rutaDestino: rutaPersistente,
+      );
+    }
 
     final mascota = MascotaModel(
-      id: widget.mascotaExistente?.id ?? const Uuid().v4(),
+      id: mascotaId,
       usuarioId: usuarioId,
       nombre: _nombreController.text.trim(),
       especie: _especie,
@@ -169,7 +202,13 @@ class _FormularioMascotaScreenState
       fechaNacimiento: fechaNacimientoFinal,
       fechaEstimada: _fechaEstimada,
       pesoActual: peso,
-      fotoUrl: _fotoPath,
+      fotoUrl: fotoPathFinal,
+      // Si la foto cambió, se resetea a null a propósito — le indica al
+      // motor de sync que tiene que volver a subirla (ver sync_service.dart,
+      // que solo sube "una vez", si fotoRutaNube todavía es null). Si no
+      // cambió, se preserva la ya subida para no forzar una re-subida
+      // innecesaria en cada edición del resto de los campos.
+      fotoRutaNube: fotoCambio ? null : widget.mascotaExistente?.fotoRutaNube,
     );
 
     if (widget.mascotaExistente == null) {

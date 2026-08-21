@@ -128,6 +128,25 @@
   "eliminarCuentaLabel": "Delete account",
   "eliminarCuentaContenido": "All your data (pets, schedule, documents) on this device will be permanently deleted. This can't be undone. Delete account anyway?",
   "eliminarCuentaContenidoRegistrado": "Your account will be deleted (you won't be able to sign in with this email again) along with all your data on this device, permanently. This can't be undone. Delete account anyway?",
+  "sincronizarAhoraLabel": "Sync now",
+  "ultimaSincronizacionNunca": "Not synced yet",
+  "ultimaSincronizacionConValor": "Last synced: {tiempo}",
+  "@ultimaSincronizacionConValor": {
+    "placeholders": { "tiempo": {} }
+  },
+  "tiempoRelativoAhora": "just now",
+  "tiempoRelativoMinutos": "{minutos} min ago",
+  "@tiempoRelativoMinutos": {
+    "placeholders": { "minutos": {} }
+  },
+  "tiempoRelativoHoras": "{horas} h ago",
+  "@tiempoRelativoHoras": {
+    "placeholders": { "horas": {} }
+  },
+  "tiempoRelativoDias": "{dias} day(s) ago",
+  "@tiempoRelativoDias": {
+    "placeholders": { "dias": {} }
+  },
 
   "valorOtro": "Other",
   "tipoEventoVacuna": "Vaccine",

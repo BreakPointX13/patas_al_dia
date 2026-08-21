@@ -378,6 +378,35 @@ class AppLocalizationsPt extends AppLocalizations {
       'Sua conta será excluída (você não vai poder entrar de novo com esse e-mail) junto com todos os seus dados neste dispositivo, permanentemente. Essa ação não pode ser desfeita. Excluir a conta mesmo assim?';
 
   @override
+  String get sincronizarAhoraLabel => 'Sincronizar agora';
+
+  @override
+  String get ultimaSincronizacionNunca => 'Ainda não sincronizado';
+
+  @override
+  String ultimaSincronizacionConValor(Object tiempo) {
+    return 'Última sincronização: $tiempo';
+  }
+
+  @override
+  String get tiempoRelativoAhora => 'agora mesmo';
+
+  @override
+  String tiempoRelativoMinutos(Object minutos) {
+    return 'há $minutos min';
+  }
+
+  @override
+  String tiempoRelativoHoras(Object horas) {
+    return 'há $horas h';
+  }
+
+  @override
+  String tiempoRelativoDias(Object dias) {
+    return 'há $dias dia(s)';
+  }
+
+  @override
   String get valorOtro => 'Outro';
 
   @override

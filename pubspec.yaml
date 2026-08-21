@@ -55,6 +55,12 @@ dependencies:
   latlong2: ^0.9.1
   geolocator: ^14.0.2
   http: ^1.6.0
+  # Sync (2026-08-20) — para tener un directorio local persistente donde
+  # guardar fotos/documentos descargados de otro dispositivo. De paso
+  # resuelve un riesgo ya documentado en pendientes_ios.md (punto 1): las
+  # rutas de caché que da image_picker/file_picker hoy pueden limpiarse
+  # solas en iOS.
+  path_provider: ^2.1.4
 
 dev_dependencies:
   flutter_test:

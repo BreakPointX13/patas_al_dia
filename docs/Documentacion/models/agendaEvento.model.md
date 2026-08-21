@@ -58,3 +58,7 @@ Los sistemas de agenda o calendario en producción (Google Calendar, apps de sal
 
 - **En Nuestro Proyecto:** Como todos los campos son `final`, "completar" un evento (pasar de agendado a realizado) no se puede hacer mutando el objeto — se genera uno nuevo con `evento.copyWith(fechaRealizada: DateTime.now())`. El resto de los campos (`titulo`, `fechaProgramada`, `recordatorioHorasAntes`, etc.) se conservan automáticamente gracias al operador `??` dentro del método, que solo reemplaza el campo que se le pasa explícitamente.
 - **Caso de uso típico:** `DetalleAgendaEventoScreen` usa exactamente este patrón para el switch "Marcar como realizado" — ver `detalleAgendaEventoScreen.md`.
+
+### 5. Sync (2026-08-20) — `actualizadoEn`, `eliminado`/`eliminadoEn`
+
+Ver `mascota.model.md`, punto 7, para el detalle completo (son los mismos tres campos, mismo criterio, en las cuatro entidades sincronizadas). Acá no hay ningún campo de tipo `fotoRutaNube`/`archivoRutaNube` — un evento de agenda no tiene archivo propio adjunto (eso vive en `documentos`, vinculado opcionalmente vía `eventoId`).

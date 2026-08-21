@@ -7,6 +7,7 @@ import 'package:patas_al_dia/data/models/documento_model.dart';
 import 'package:patas_al_dia/l10n/app_localizations.dart';
 import 'package:patas_al_dia/presentation/utils/etiquetas_localizadas.dart';
 import 'package:patas_al_dia/providers/documento_provider.dart';
+import 'package:patas_al_dia/services/almacenamiento_local_service.dart';
 
 const tiposDocumentoDisponibles = [
   'Carnet de vacunación',
@@ -107,11 +108,24 @@ class _FormularioDocumentoScreenState
 
     String? rutaArchivo;
     switch (opcion) {
+      // maxWidth/imageQuality (2026-08-20, Sync — ver decisiones_arquitectura.md):
+      // compresión suave, no la agresiva de la foto de reporte — acá
+      // importa mantener legible la letra chica de un documento (dosis,
+      // fechas). El branch 'pdf' queda sin comprimir a propósito, no hay
+      // paquete maduro de compresión de PDF para Flutter (investigado).
       case 'camara':
-        final foto = await _picker.pickImage(source: ImageSource.camera);
+        final foto = await _picker.pickImage(
+          source: ImageSource.camera,
+          maxWidth: 2000,
+          imageQuality: 90,
+        );
         rutaArchivo = foto?.path;
       case 'galeria':
-        final foto = await _picker.pickImage(source: ImageSource.gallery);
+        final foto = await _picker.pickImage(
+          source: ImageSource.gallery,
+          maxWidth: 2000,
+          imageQuality: 90,
+        );
         rutaArchivo = foto?.path;
       case 'pdf':
         final resultado = await FilePicker.pickFile(
@@ -161,8 +175,28 @@ class _FormularioDocumentoScreenState
       return;
     }
 
+    final documentoId = widget.documentoExistente?.id ?? const Uuid().v4();
+
+    // Copia el archivo elegido a un directorio persistente (2026-08-20,
+    // Sync) — mismo motivo que en formulario_mascota_screen.dart. Solo si
+    // el archivo realmente cambió respecto al que ya tenía al editar.
+    final archivoCambio = _filePath != widget.documentoExistente?.filePath;
+    var filePathFinal = _filePath!;
+    if (archivoCambio) {
+      final nombre = AlmacenamientoLocalService.nombreArchivo(
+        entidadId: documentoId,
+        ext: _fileExtension ?? _filePath!.split('.').last,
+      );
+      final rutaPersistente =
+          await AlmacenamientoLocalService.rutaArchivosDocumentos(nombre);
+      filePathFinal = await AlmacenamientoLocalService.copiarAPersistente(
+        rutaOrigen: _filePath!,
+        rutaDestino: rutaPersistente,
+      );
+    }
+
     final documento = DocumentoModel(
-      id: widget.documentoExistente?.id ?? const Uuid().v4(),
+      id: documentoId,
       mascotaId: widget.mascotaId,
       eventoId: widget.documentoExistente?.eventoId,
       titulo: _tituloController.text.trim(),
@@ -172,8 +206,14 @@ class _FormularioDocumentoScreenState
                 ? null
                 : _tipoPersonalizadoController.text.trim())
           : null,
-      filePath: _filePath!,
+      filePath: filePathFinal,
       fileExtension: _fileExtension,
+      // Si el archivo cambió, se resetea a null a propósito — le indica al
+      // motor de sync que tiene que volver a subirlo (ver
+      // sync_service.dart). Si no cambió, se preserva el ya subido.
+      archivoRutaNube: archivoCambio
+          ? null
+          : widget.documentoExistente?.archivoRutaNube,
       fechaEmision: _fechaEmision,
       fechaVencimiento: _fechaVencimiento,
       recordatorioVencimiento: _recordatorioVencimiento,

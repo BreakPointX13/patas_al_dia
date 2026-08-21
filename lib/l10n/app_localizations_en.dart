@@ -376,6 +376,35 @@ class AppLocalizationsEn extends AppLocalizations {
       'Your account will be deleted (you won\'t be able to sign in with this email again) along with all your data on this device, permanently. This can\'t be undone. Delete account anyway?';
 
   @override
+  String get sincronizarAhoraLabel => 'Sync now';
+
+  @override
+  String get ultimaSincronizacionNunca => 'Not synced yet';
+
+  @override
+  String ultimaSincronizacionConValor(Object tiempo) {
+    return 'Last synced: $tiempo';
+  }
+
+  @override
+  String get tiempoRelativoAhora => 'just now';
+
+  @override
+  String tiempoRelativoMinutos(Object minutos) {
+    return '$minutos min ago';
+  }
+
+  @override
+  String tiempoRelativoHoras(Object horas) {
+    return '$horas h ago';
+  }
+
+  @override
+  String tiempoRelativoDias(Object dias) {
+    return '$dias day(s) ago';
+  }
+
+  @override
   String get valorOtro => 'Other';
 
   @override

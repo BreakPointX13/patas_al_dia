@@ -51,8 +51,16 @@ class _DetalleDocumentoScreenState
   }
 
   Future<void> _abrirArchivo(DocumentoModel documento) async {
+    // filePath es nullable desde Sync (2026-08-20) — una fila recién traída
+    // de otro dispositivo puede no tener el archivo descargado todavía (ver
+    // decisiones_arquitectura.md). Acá no hay nada que abrir hasta que
+    // termine de bajar.
+    final filePath = documento.filePath;
+    if (filePath == null) {
+      return;
+    }
     if (documento.fileExtension == 'pdf') {
-      await OpenFilex.open(documento.filePath);
+      await OpenFilex.open(filePath);
       return;
     }
     if (!mounted) {
@@ -60,10 +68,8 @@ class _DetalleDocumentoScreenState
     }
     Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (context) => VisorImagenScreen(
-          filePath: documento.filePath,
-          titulo: documento.titulo,
-        ),
+        builder: (context) =>
+            VisorImagenScreen(filePath: filePath, titulo: documento.titulo),
       ),
     );
   }
@@ -144,15 +150,19 @@ class _DetalleDocumentoScreenState
                     height: 320,
                     width: double.infinity,
                     color: Theme.of(context).colorScheme.surfaceContainerHighest,
-                    child: InteractiveViewer(
-                      minScale: 0.5,
-                      maxScale: 4,
-                      child: Image.file(
-                        File(documento.filePath),
-                        fit: BoxFit.contain,
-                        width: double.infinity,
-                      ),
-                    ),
+                    // filePath nullable desde Sync — todavía sin descargar
+                    // en este dispositivo, ver _abrirArchivo.
+                    child: documento.filePath == null
+                        ? const Center(child: Icon(Icons.cloud_download_outlined, size: 48))
+                        : InteractiveViewer(
+                            minScale: 0.5,
+                            maxScale: 4,
+                            child: Image.file(
+                              File(documento.filePath!),
+                              fit: BoxFit.contain,
+                              width: double.infinity,
+                            ),
+                          ),
                   ),
                 ),
               ),

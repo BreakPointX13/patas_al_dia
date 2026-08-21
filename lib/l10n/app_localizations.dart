@@ -796,6 +796,48 @@ abstract class AppLocalizations {
   /// **'Se va a borrar tu cuenta (no vas a poder volver a iniciar sesión con este correo) y todos tus datos de este dispositivo, de forma permanente. Esta acción no se puede deshacer. ¿Eliminar cuenta de todos modos?'**
   String get eliminarCuentaContenidoRegistrado;
 
+  /// No description provided for @sincronizarAhoraLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Sincronizar ahora'**
+  String get sincronizarAhoraLabel;
+
+  /// No description provided for @ultimaSincronizacionNunca.
+  ///
+  /// In es, this message translates to:
+  /// **'Todavía no se sincronizó'**
+  String get ultimaSincronizacionNunca;
+
+  /// No description provided for @ultimaSincronizacionConValor.
+  ///
+  /// In es, this message translates to:
+  /// **'Última sincronización: {tiempo}'**
+  String ultimaSincronizacionConValor(Object tiempo);
+
+  /// No description provided for @tiempoRelativoAhora.
+  ///
+  /// In es, this message translates to:
+  /// **'hace un momento'**
+  String get tiempoRelativoAhora;
+
+  /// No description provided for @tiempoRelativoMinutos.
+  ///
+  /// In es, this message translates to:
+  /// **'hace {minutos} min'**
+  String tiempoRelativoMinutos(Object minutos);
+
+  /// No description provided for @tiempoRelativoHoras.
+  ///
+  /// In es, this message translates to:
+  /// **'hace {horas} h'**
+  String tiempoRelativoHoras(Object horas);
+
+  /// No description provided for @tiempoRelativoDias.
+  ///
+  /// In es, this message translates to:
+  /// **'hace {dias} día(s)'**
+  String tiempoRelativoDias(Object dias);
+
   /// No description provided for @valorOtro.
   ///
   /// In es, this message translates to:

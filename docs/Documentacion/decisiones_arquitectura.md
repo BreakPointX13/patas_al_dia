@@ -519,6 +519,58 @@ Retomado el pendiente de la sesión anterior (ver memoria de sesión `project_pa
 
 ---
 
+## 2026-08-20/21 — Sync (Fase 6 de Supabase)
+
+Última fase grande del plan de Supabase. Con Login real, Storage y los retoques ya cerrados, un usuario registrado no tenía ninguna diferencia real frente a un invitado: sus datos vivían solo en el dispositivo donde se cargaron. Antes de programar, se discutieron seis decisiones con el usuario (mismo método que en Login real — se le preguntó primero cómo lo abordaría él):
+
+1. **Dos sentidos** (multi-dispositivo real, no solo respaldo).
+2. **Automático pero no instantáneo**: se dispara en momentos naturales (abrir la app, cada 5 minutos mientras está abierta, antes de pasar a segundo plano — ver `main.dart`), agrupando cambios en vez de sincronizar en cada tecla. Sin conexión, los cambios quedan pendientes para la próxima vez que la haya (mismo criterio reactivo ya usado en el módulo Mapa, sin paquete de detección de conectividad).
+3. **Sincroniza todo**: las 4 entidades (Mascota, AgendaEvento, MedicamentoEvento, Documento), incluidos sus archivos — no solo las filas de la base.
+4. **Compresión de imágenes**: foto de mascota con compresión agresiva (igual que la foto de reporte, `maxWidth: 1600, imageQuality: 75`). Documentos-imagen con compresión suave que preserve legibilidad (`maxWidth: 2000, imageQuality: 90`). PDFs sin comprimir — investigado, no existe un paquete maduro de compresión de PDF para Flutter; se descartó sumar uno.
+5. **Conflictos: gana el cambio más reciente** (por timestamp), sin avisos ni merge manual.
+6. **Solo usuarios registrados sincronizan** — un invitado no tiene una identidad estable contra la cual sincronizar.
+
+**Plan formal, primera vez en el proyecto.** Dado el tamaño de la fase, se usó por primera vez el flujo de Plan Mode: investigación de la capa de datos existente, un pase de validación técnica que encontró un bug bloqueante real antes de escribir una sola línea (ver el hallazgo del FK, abajo), plan escrito a 5 fases con checkpoints detallados, aprobado por el usuario después de una ronda de ajuste (pidió más detalle en los pasos de prueba y preguntó cómo probar "otro dispositivo" sin tener la app publicada — se resolvió simulándolo con llamadas directas a la API de Supabase con la `service_role key`, sin necesitar una segunda app corriendo, dado que esta máquina ya mostraba problemas de RAM compilando para un solo dispositivo).
+
+### Hallazgo 1 (encontrado en el diseño, antes de programar) — FK real de `public.usuarios`
+
+`mascotas.usuario_id` tiene un `FOREIGN KEY` real hacia `public.usuarios(id)` en Postgres, no solo una política de RLS. Esa tabla nunca se pobló durante Login real (documentado como pendiente en su momento, ver la entrada del 2026-08-19). Sin corregirlo, el primer `push` de cualquier mascota habría fallado por violación de FK. Se resolvió con un `upsert` mínimo a `usuarios` (`id`/`email`/`es_invitado`, sin tocar preferencias) al principio de cada corrida de sync — ver `syncService.md`, punto 2.
+
+### Hallazgo 2 (encontrado en el diseño) — ruta de Storage, no URL
+
+El diseño inicial imaginaba `fotoRutaNube`/`archivoRutaNube` guardando una URL pública. Corregido en la validación: los buckets de Sync (`fotos_mascotas`, `archivos_documentos`) son privados — a diferencia de `fotos_reportes` (público) — y un bucket privado no tiene URL pública estable (`getPublicUrl()` da 403). Esos campos guardan la ruta del objeto dentro del bucket; la descarga usa `.download(ruta)`, no un `Uri` directo.
+
+### Soft-delete, no `DELETE` real
+
+Sincronizar borrados en dos sentidos exige que un borrado deje rastro — un `DELETE` no lo hace. Las 4 tablas suman `eliminado`/`eliminado_en`, y cada `eliminarX` pasó de un `DELETE` a una transacción manual (`db.transaction`) que respeta las cascadas *reales* del schema, no las aplana: `eliminarMascota` propaga a agenda/documentos/medicamentos (mismo alcance que el `ON DELETE CASCADE` real); `eliminarAgendaEvento` sí soft-deletea sus medicamentos, pero solo desvincula (`evento_id = NULL`) sus documentos, preservando el `ON DELETE SET NULL` original — un documento sobrevive al borrado del evento que lo generó. Ver `mascota.repository.md` y `agendaEvento.repository.md`.
+
+### Bug real 1 (encontrado probando el checkpoint de la Fase 3) — timestamps mezclando zona horaria
+
+Probando que un cambio hecho "desde otro dispositivo" (simulado editando la fila directo en Supabase) apareciera solo al reabrir la app, se encontró que la edición manual quedaba pisada de vuelta al valor viejo apenas la app sincronizaba. Causa: `actualizado_en` se escribía con `DateTime.now()` (hora local del dispositivo, sin zona) en las escrituras locales, pero con hora UTC (con "Z") en las filas traídas por pull desde Postgres — comparar ambos formatos como texto plano en una consulta SQL (`WHERE actualizado_en > ?`) daba resultados incorrectos según el desfase horario real del dispositivo (Chile, UTC-3/-4), haciendo que una fila recién traída pareciera "modificada más recientemente" de lo que en verdad estaba. Corregido cambiando los 5 puntos donde el proyecto estampa esta columna (4 repositories + `sync_service.dart`) de `DateTime.now()` a `DateTime.now().toUtc()`. Ver `mascota.model.md`, punto 7.
+
+### Bug real 2 (encontrado en la misma sesión de pruebas, más de fondo) — `pendiente_push`
+
+Corregido el bug de zona horaria, el mismo síntoma volvió a aparecer una corrida después: una edición manual en Supabase se pisaba de vuelta al valor viejo, esta vez con los timestamps ya consistentes. Causa real, más estructural: el motor decidía qué empujar mirando si `actualizado_en` era más nuevo que la última sincronización exitosa — eso no distingue "lo edité yo acá" de "esta fila tiene una fecha reciente porque la acabo de traer por pull". Una fila recién traída volvía a calificar para el `push` en la corrida siguiente, y ese `push` no comparaba contra lo que hubiera en Supabase en ese momento — simplemente sobrescribía, sin importar si mientras tanto había llegado una edición más nueva de otro lado.
+
+**La solución:** columna `pendiente_push`, puramente local (no existe en Postgres), prendida solo por escrituras genuinamente locales y apagada solo después de un `push` exitoso — o implícitamente al recibir una fila por pull (`guardarDesdeSync`, un `INSERT OR REPLACE`, deja cualquier columna no mencionada en su `DEFAULT`, 0). El filtro de "qué empujar" pasó de comparar fechas a `WHERE pendiente_push = 1`, sin ambigüedad posible entre "lo edité" y "tiene fecha reciente". Ver `database.helper.md`, punto 9, `syncService.md`, punto 5, y `mascota.repository.md`, puntos 6-9, para el detalle completo — incluida una segunda corrección de paso (`actualizarFotoRutaNube`/`actualizarArchivoRutaNube` en vez de `guardarDesdeSync` al guardar la ruta de un archivo recién subido, para no apagar `pendiente_push` antes de tiempo si el `push` de la fila completa fallara justo después).
+
+**Verificado con pruebas reales contra Supabase**, no solo revisión de código: simulando "otro dispositivo" con ediciones directas vía `service_role key` (REST API), con la app real corriendo en el teléfono de prueba — el mismo método de verificación que ya se venía usando en las fases anteriores de Sync, sin necesitar una segunda app corriendo en paralelo.
+
+### `documentos.file_path` pasa a nullable (2026-08-21, bug real encontrado en el mismo pase)
+
+Probando el primer login limpio con datos ya existentes en Supabase, la sincronización moría a mitad de camino con `NOT NULL constraint failed: documentos.file_path`. La columna local se había dejado obligatoria bajo el supuesto de que "toda fila activa localmente siempre tiene un archivo" — cierto antes de Sync (un documento nacía siempre junto con su archivo elegido en el formulario), falso apenas existe la posibilidad de traer por pull una fila cuyo archivo todavía no se descargó (o cuya descarga falló). El lado de Postgres ya era nullable desde que se diseñó el schema completo; solo faltaba corregir la columna local. Ver `database.helper.md`, punto 9, y `documento.model.md`, punto 6.
+
+### Disparadores automáticos (Fase 3) — `main.dart`
+
+`MyApp` pasó de `ConsumerWidget` a `ConsumerStatefulWidget` con `WidgetsBindingObserver`. Tres disparadores, los tres llaman a `sincronizar()` sin condición (la guarda de invitado/sin sesión ya vive dentro de `SyncService`):
+- `ref.listen<UsuarioModel?>(usuarioProvider, ...)` dentro de `build()`, disparando en la transición exacta de "no elegible" a "elegible para sync" — cubre de una sola vez arranque en frío con sesión ya existente, login recién hecho, registro recién hecho y conversión de invitado a registrado, sin depender de `initState`/`didChangeAppLifecycleState` (que no cubren de forma confiable el arranque en frío). Comparado explícitamente contra el `anterior` de cada cambio (no solo "¿es elegible ahora?"), para no volver a disparar sync en cada edición de preferencias de un usuario que ya estaba sincronizando desde antes.
+- `Timer.periodic(Duration(minutes: 5))` mientras la app está en primer plano — arranca en `initState` y se reinicia en cada `resumed`, se cancela en `paused`.
+- `didChangeAppLifecycleState(AppLifecycleState.paused)` — un intento más, best-effort, justo antes de pasar a segundo plano.
+
+Los tres confirmados con pruebas reales en el checkpoint de esta fase (edición manual en Supabase con la app cerrada, con la app abierta esperando el timer, y pasando a segundo plano justo después de una edición) — ver `ajustesScreen.md`, punto 9, para el respaldo manual que queda en la UI.
+
+---
+
 ## De aquí en adelante
 
 Cada vez que se tome una decisión de arquitectura nueva (enfoque, tecnología, estructura — no un simple fix o ajuste de código), se agrega una entrada acá con: fecha, la decisión, el porqué, y alternativas consideradas si las hubo.

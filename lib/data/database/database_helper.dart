@@ -61,6 +61,20 @@ class DatabaseHelper {
     ''');
 
     // 2. Tabla Mascotas
+    //
+    // actualizado_en/eliminado/eliminado_en (2026-08-20, Sync — ver
+    // decisiones_arquitectura.md): "eliminar" una mascota ya no es un
+    // DELETE real, es soft-delete — un DELETE no deja ningún rastro que
+    // Sync pueda empujar a otro dispositivo. actualizado_en se usa tanto
+    // para saber qué empujar (todo lo más nuevo que la última sync) como
+    // para resolver conflictos (gana el cambio más reciente). Los
+    // repositories son responsables de mantener estas columnas, no las
+    // pantallas — ver mascota_repository.dart.
+    //
+    // foto_ruta_nube: a diferencia de foto_url (una ruta LOCAL del
+    // dispositivo, nunca se sincroniza), esta columna guarda la ruta del
+    // archivo dentro del bucket de Storage una vez subido — es la que sí
+    // viaja por Sync. Ver sync_service.dart.
     await db.execute('''
       CREATE TABLE mascotas (
         id TEXT PRIMARY KEY,
@@ -77,7 +91,12 @@ class DatabaseHelper {
         fecha_nacimiento TEXT,
         peso_actual REAL,
         foto_url TEXT,
+        foto_ruta_nube TEXT,
         fecha_estimada INTEGER DEFAULT 0,
+        actualizado_en TEXT,
+        eliminado INTEGER DEFAULT 0,
+        eliminado_en TEXT,
+        pendiente_push INTEGER DEFAULT 0,
         FOREIGN KEY (usuario_id) REFERENCES usuarios (id) ON DELETE CASCADE
       )
     ''');
@@ -94,6 +113,10 @@ class DatabaseHelper {
         fecha_programada TEXT NOT NULL,
         fecha_realizada TEXT,
         recordatorio_horas_antes TEXT,
+        actualizado_en TEXT,
+        eliminado INTEGER DEFAULT 0,
+        eliminado_en TEXT,
+        pendiente_push INTEGER DEFAULT 0,
         FOREIGN KEY (mascota_id) REFERENCES mascotas (id) ON DELETE CASCADE
       )
     ''');
@@ -106,11 +129,21 @@ class DatabaseHelper {
         tipo_presentacion TEXT NOT NULL,
         nombre TEXT NOT NULL,
         observaciones TEXT,
+        actualizado_en TEXT,
+        eliminado INTEGER DEFAULT 0,
+        eliminado_en TEXT,
+        pendiente_push INTEGER DEFAULT 0,
         FOREIGN KEY (agenda_evento_id) REFERENCES agenda_eventos (id) ON DELETE CASCADE
       )
     ''');
 
     // 4. Tabla Documentos (Lógica de Doble Entrada)
+    //
+    // archivo_ruta_nube reemplaza a sincronizado_nube (2026-08-20, Sync) —
+    // ese campo llevaba desde el schema original sin usarse en ningún lado
+    // del código (confirmado, código muerto); con Sync ya hace falta una
+    // columna real para esto, mismo criterio que foto_ruta_nube arriba:
+    // file_path es local-only, archivo_ruta_nube es la ruta en el bucket.
     await db.execute('''
       CREATE TABLE documentos (
         id TEXT PRIMARY KEY,
@@ -119,14 +152,18 @@ class DatabaseHelper {
         titulo TEXT NOT NULL,
         tipo_documento TEXT NOT NULL,
         tipo_documento_personalizado TEXT,
-        file_path TEXT NOT NULL,
+        file_path TEXT,
         file_extension TEXT,
+        archivo_ruta_nube TEXT,
         fecha_emision TEXT,
         fecha_vencimiento TEXT,
         recordatorio_vencimiento INTEGER DEFAULT 0,
         fecha_subida TEXT DEFAULT CURRENT_TIMESTAMP,
         notas_asociadas TEXT,
-        sincronizado_nube INTEGER DEFAULT 0,
+        actualizado_en TEXT,
+        eliminado INTEGER DEFAULT 0,
+        eliminado_en TEXT,
+        pendiente_push INTEGER DEFAULT 0,
         FOREIGN KEY (mascota_id) REFERENCES mascotas (id) ON DELETE CASCADE,
         FOREIGN KEY (evento_id) REFERENCES agenda_eventos (id) ON DELETE SET NULL
       )

@@ -378,6 +378,35 @@ class AppLocalizationsEs extends AppLocalizations {
       'Se va a borrar tu cuenta (no vas a poder volver a iniciar sesión con este correo) y todos tus datos de este dispositivo, de forma permanente. Esta acción no se puede deshacer. ¿Eliminar cuenta de todos modos?';
 
   @override
+  String get sincronizarAhoraLabel => 'Sincronizar ahora';
+
+  @override
+  String get ultimaSincronizacionNunca => 'Todavía no se sincronizó';
+
+  @override
+  String ultimaSincronizacionConValor(Object tiempo) {
+    return 'Última sincronización: $tiempo';
+  }
+
+  @override
+  String get tiempoRelativoAhora => 'hace un momento';
+
+  @override
+  String tiempoRelativoMinutos(Object minutos) {
+    return 'hace $minutos min';
+  }
+
+  @override
+  String tiempoRelativoHoras(Object horas) {
+    return 'hace $horas h';
+  }
+
+  @override
+  String tiempoRelativoDias(Object dias) {
+    return 'hace $dias día(s)';
+  }
+
+  @override
   String get valorOtro => 'Otro';
 
   @override

@@ -7,10 +7,37 @@ import 'package:patas_al_dia/providers/agenda_evento_provider.dart';
 import 'package:patas_al_dia/providers/documento_provider.dart';
 import 'package:patas_al_dia/providers/mascota_provider.dart';
 import 'package:patas_al_dia/providers/medicamento_evento_provider.dart';
+import 'package:patas_al_dia/providers/sync_provider.dart';
 import 'package:patas_al_dia/providers/usuario_provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 final _urlKoFi = Uri.parse('https://ko-fi.com/breakpointx');
+
+// Sin paquete nuevo — intl no trae un helper de tiempo relativo, se calcula
+// a mano. Solo necesita cuatro escalones (nunca, minutos, horas, días), no
+// hace falta granularidad de semanas/meses para esta pantalla.
+String _tiempoRelativo(AppLocalizations l10n, DateTime? momento) {
+  if (momento == null) {
+    return l10n.ultimaSincronizacionNunca;
+  }
+  final diferencia = DateTime.now().difference(momento);
+  if (diferencia.inMinutes < 1) {
+    return l10n.ultimaSincronizacionConValor(l10n.tiempoRelativoAhora);
+  }
+  if (diferencia.inHours < 1) {
+    return l10n.ultimaSincronizacionConValor(
+      l10n.tiempoRelativoMinutos(diferencia.inMinutes),
+    );
+  }
+  if (diferencia.inDays < 1) {
+    return l10n.ultimaSincronizacionConValor(
+      l10n.tiempoRelativoHoras(diferencia.inHours),
+    );
+  }
+  return l10n.ultimaSincronizacionConValor(
+    l10n.tiempoRelativoDias(diferencia.inDays),
+  );
+}
 
 const _escalasTexto = [0.85, 1.0, 1.2];
 const _temas = ['sistema', 'claro', 'oscuro'];
@@ -174,6 +201,7 @@ class AjustesScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
     final usuario = ref.watch(usuarioProvider);
+    final sincronizando = ref.watch(sincronizandoProvider);
     final escalaActual = usuario?.escalaTexto ?? 1.0;
     var indiceActual = _escalasTexto.indexOf(escalaActual);
     if (indiceActual == -1) {
@@ -290,6 +318,26 @@ class AjustesScreen extends ConsumerWidget {
             ListTile(
               leading: const Icon(Icons.verified_user_outlined),
               title: Text(usuario.email ?? ''),
+            ),
+          // La sincronización en sí se dispara sola (ver main.dart) — este
+          // botón queda como respaldo manual, más el estado de la última
+          // corrida para que el usuario tenga algo visible en qué confiar.
+          if (usuario != null && !usuario.esInvitado)
+            ListTile(
+              leading: sincronizando
+                  ? const SizedBox(
+                      width: 24,
+                      height: 24,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : const Icon(Icons.sync),
+              title: Text(l10n.sincronizarAhoraLabel),
+              subtitle: Text(
+                _tiempoRelativo(l10n, usuario.ultimaSincronizacion),
+              ),
+              onTap: sincronizando
+                  ? null
+                  : () => ref.read(syncServiceProvider).sincronizar(),
             ),
           ListTile(
             leading: const Icon(Icons.logout),

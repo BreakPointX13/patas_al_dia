@@ -8,6 +8,10 @@ class AgendaEventoModel {
   final DateTime fechaProgramada;
   final DateTime? fechaRealizada;
   final List<int> recordatorioHorasAntes;
+  // Sync (2026-08-20) — ver mascota_model.dart para el porqué de estos tres.
+  final DateTime? actualizadoEn;
+  final bool eliminado;
+  final DateTime? eliminadoEn;
 
   AgendaEventoModel({
     required this.id,
@@ -19,6 +23,9 @@ class AgendaEventoModel {
     required this.fechaProgramada,
     this.fechaRealizada,
     this.recordatorioHorasAntes = const [],
+    this.actualizadoEn,
+    this.eliminado = false,
+    this.eliminadoEn,
   });
 
   // Convierte un Mapa (fila de la BDD) a un objeto AgendaEventoModel
@@ -48,6 +55,13 @@ class AgendaEventoModel {
                 .split(',')
                 .map(int.parse)
                 .toList(),
+      actualizadoEn: map['actualizado_en'] != null
+          ? DateTime.parse(map['actualizado_en'] as String)
+          : null,
+      eliminado: map['eliminado'] == 1 || map['eliminado'] == true,
+      eliminadoEn: map['eliminado_en'] != null
+          ? DateTime.parse(map['eliminado_en'] as String)
+          : null,
     );
   }
 
@@ -65,6 +79,9 @@ class AgendaEventoModel {
       'recordatorio_horas_antes': recordatorioHorasAntes.isEmpty
           ? null
           : recordatorioHorasAntes.join(','),
+      'actualizado_en': actualizadoEn?.toIso8601String(),
+      'eliminado': eliminado ? 1 : 0,
+      'eliminado_en': eliminadoEn?.toIso8601String(),
     };
   }
 
@@ -79,6 +96,9 @@ class AgendaEventoModel {
     DateTime? fechaProgramada,
     DateTime? fechaRealizada,
     List<int>? recordatorioHorasAntes,
+    DateTime? actualizadoEn,
+    bool? eliminado,
+    DateTime? eliminadoEn,
   }) {
     return AgendaEventoModel(
       id: id ?? this.id,
@@ -92,6 +112,9 @@ class AgendaEventoModel {
       fechaRealizada: fechaRealizada ?? this.fechaRealizada,
       recordatorioHorasAntes:
           recordatorioHorasAntes ?? this.recordatorioHorasAntes,
+      actualizadoEn: actualizadoEn ?? this.actualizadoEn,
+      eliminado: eliminado ?? this.eliminado,
+      eliminadoEn: eliminadoEn ?? this.eliminadoEn,
     );
   }
 }

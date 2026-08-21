@@ -1,11 +1,15 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/date_symbol_data_local.dart';
+import 'package:patas_al_dia/data/models/usuario_model.dart';
 import 'package:patas_al_dia/l10n/app_localizations.dart';
 import 'package:patas_al_dia/presentation/screens/nueva_contrasena_screen.dart';
 import 'package:patas_al_dia/presentation/screens/sesion_inicial_screen.dart';
 import 'package:patas_al_dia/presentation/theme/tema_app.dart';
+import 'package:patas_al_dia/providers/sync_provider.dart';
 import 'package:patas_al_dia/providers/usuario_provider.dart';
 import 'package:patas_al_dia/services/notificacion_service.dart';
 import 'package:patas_al_dia/services/supabase_config.dart';
@@ -52,11 +56,69 @@ void main() async {
   runApp(const ProviderScope(child: MyApp()));
 }
 
-class MyApp extends ConsumerWidget {
+class MyApp extends ConsumerStatefulWidget {
   const MyApp({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends ConsumerState<MyApp> with WidgetsBindingObserver {
+  Timer? _timerSync;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    _iniciarTimerSync();
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    _timerSync?.cancel();
+    super.dispose();
+  }
+
+  // Corre mientras la app está en primer plano — se reinicia cada vez que
+  // vuelve a `resumed` y se cancela al pasar a `paused` (ver
+  // didChangeAppLifecycleState). La guarda de invitado/sin sesión vive
+  // adentro de SyncService, no hace falta repetirla acá.
+  void _iniciarTimerSync() {
+    _timerSync?.cancel();
+    _timerSync = Timer.periodic(
+      const Duration(minutes: 5),
+      (_) => ref.read(syncServiceProvider).sincronizar(),
+    );
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      _iniciarTimerSync();
+      ref.read(syncServiceProvider).sincronizar();
+    } else if (state == AppLifecycleState.paused) {
+      _timerSync?.cancel();
+      // Intento best-effort antes de pasar a segundo plano — puede no
+      // alcanzar a terminar si el sistema mata el proceso, pero cubre el
+      // caso común de que solo se minimice.
+      ref.read(syncServiceProvider).sincronizar();
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    // Dispara al momento exacto en que el usuario pasa a ser "elegible
+    // para sync" (con sesión y no invitado) — cubre de una sola vez
+    // arranque en frío con sesión ya existente, login, registro y
+    // conversión de invitado a registrado.
+    ref.listen<UsuarioModel?>(usuarioProvider, (anterior, actual) {
+      final anteriorElegible = anterior != null && !anterior.esInvitado;
+      final actualElegible = actual != null && !actual.esInvitado;
+      if (!anteriorElegible && actualElegible) {
+        ref.read(syncServiceProvider).sincronizar();
+      }
+    });
     final usuario = ref.watch(usuarioProvider);
     final escalaTexto = usuario?.escalaTexto ?? 1.0;
     final themeMode = switch (usuario?.tema) {
