@@ -1,4 +1,4 @@
-package com.example.patas_al_dia
+package dev.breakpointx.patasaldia
 
 import io.flutter.embedding.android.FlutterActivity
 
