@@ -11,6 +11,7 @@ import 'package:patas_al_dia/presentation/widgets/dialogo_confirmacion.dart';
 import 'package:patas_al_dia/presentation/widgets/icono_tipo_reporte.dart';
 import 'package:patas_al_dia/providers/mascota_extraviada_provider.dart';
 
+// Ficha de un reporte de mascota perdida/encontrada, con mapa y acciones (denunciar, resolver, borrar).
 class DetalleReporteMascotaExtraviadaScreen extends ConsumerStatefulWidget {
   final String reporteId;
 
@@ -26,6 +27,7 @@ class DetalleReporteMascotaExtraviadaScreen extends ConsumerStatefulWidget {
 
 class _DetalleReporteMascotaExtraviadaScreenState
     extends ConsumerState<DetalleReporteMascotaExtraviadaScreen> {
+  // Confirma y marca el reporte como denunciado por abuso.
   Future<void> _denunciar(MascotaExtraviadaModel reporte) async {
     final l10n = AppLocalizations.of(context);
     final confirmar = await confirmarAccion(
@@ -48,6 +50,7 @@ class _DetalleReporteMascotaExtraviadaScreenState
     ).showSnackBar(SnackBar(content: Text(l10n.denunciaEnviadaAviso)));
   }
 
+  // Confirma y marca el reporte como resuelto (mascota encontrada/entregada).
   Future<void> _marcarComoResuelto(MascotaExtraviadaModel reporte) async {
     final l10n = AppLocalizations.of(context);
     final confirmar = await confirmarAccion(
@@ -67,6 +70,7 @@ class _DetalleReporteMascotaExtraviadaScreenState
     }
   }
 
+  // Confirma y borra el reporte (borrado real, incluida la foto en Storage).
   Future<void> _eliminar(MascotaExtraviadaModel reporte) async {
     final l10n = AppLocalizations.of(context);
     final confirmar = await confirmarAccion(
@@ -197,7 +201,7 @@ class _DetalleReporteMascotaExtraviadaScreenState
                   children: [
                     TileLayer(
                       urlTemplate: urlTilesSegunTema(context),
-                      userAgentPackageName: 'com.example.patas_al_dia',
+                      userAgentPackageName: 'dev.breakpointx.patasaldia',
                       minZoom: 2,
                       maxZoom: 19,
                     ),

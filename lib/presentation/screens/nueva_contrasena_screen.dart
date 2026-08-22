@@ -35,6 +35,7 @@ class _NuevaContrasenaScreenState
     super.dispose();
   }
 
+  // Valida y guarda la contraseña nueva en la sesión de recuperación.
   Future<void> _restablecer() async {
     if (!_formKey.currentState!.validate()) {
       return;

@@ -1,15 +1,19 @@
 import 'package:flutter/material.dart';
 
+// Paleta base para modo claro, generada desde el color Naranja de la marca.
 final colorSchemeClaro = ColorScheme.fromSeed(
   seedColor: const Color(0xFFD06D1F),
   surface: const Color(0xFFFFF7EC),
 );
 
+// Misma semilla de color, versión oscura.
 final colorSchemeOscuro = ColorScheme.fromSeed(
   seedColor: const Color(0xFFD06D1F),
   brightness: Brightness.dark,
 );
 
+// Arma un ThemeData completo (AppBar, botones, tarjetas, tipografía) a
+// partir de un ColorScheme — se reutiliza igual para claro y oscuro.
 ThemeData _construirTema(ColorScheme colorScheme) {
   return ThemeData(
     colorScheme: colorScheme,

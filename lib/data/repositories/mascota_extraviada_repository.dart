@@ -5,7 +5,9 @@ import 'package:patas_al_dia/data/models/mascota_extraviada_model.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:uuid/uuid.dart';
 
+// Reportes de mascotas perdidas/encontradas — vive solo en Supabase, no en SQLite.
 class MascotaExtraviadaRepository {
+  // Consigue un usuario de Supabase (real o anónimo) para poder publicar.
   // El módulo Mapa es el único que necesita una sesión de Supabase Auth
   // (aunque sea anónima) — el resto de la app funciona 100% offline sin
   // tocar Supabase para nada. Por eso la sesión se crea recién acá, cuando
@@ -43,6 +45,7 @@ class MascotaExtraviadaRepository {
     return client.storage.from('fotos_reportes').getPublicUrl(rutaStorage);
   }
 
+  // Publica un reporte nuevo de mascota perdida/encontrada.
   Future<MascotaExtraviadaModel> crearReporte(
     MascotaExtraviadaModel reporte,
   ) async {
@@ -53,6 +56,7 @@ class MascotaExtraviadaRepository {
     return reporte;
   }
 
+  // Trae todos los reportes que siguen sin marcarse como resueltos.
   Future<List<MascotaExtraviadaModel>> obtenerReportesActivos() async {
     final client = Supabase.instance.client;
     final maps = await client
@@ -64,6 +68,7 @@ class MascotaExtraviadaRepository {
     return maps.map(MascotaExtraviadaModel.fromMap).toList();
   }
 
+  // Actualiza un reporte existente (por ejemplo, marcarlo como resuelto).
   Future<int> actualizarReporte(MascotaExtraviadaModel reporte) async {
     final client = Supabase.instance.client;
 
@@ -76,6 +81,7 @@ class MascotaExtraviadaRepository {
     return filasActualizadas.length;
   }
 
+  // Borra un reporte y, de paso, su foto en Storage.
   // Recibe el reporte completo, no solo el id — necesita `mascotaFotoUrl`
   // para poder borrar también la foto del bucket `fotos_reportes` (2026-08-20,
   // ver decisiones_arquitectura.md). Antes de esto, borrar un reporte solo
@@ -99,6 +105,7 @@ class MascotaExtraviadaRepository {
     await client.from('mascotas_extraviadas').delete().eq('id', reporte.id);
   }
 
+  // Registra que un usuario denunció un reporte (contenido falso, abuso, etc.).
   // Sin motivo de texto libre (decisión del usuario) — solo registra "quién
   // denunció qué reporte". `unique (reporte_id, usuario_id)` en la base
   // evita que el mismo usuario denuncie el mismo reporte más de una vez;

@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:patas_al_dia/services/sync_service.dart';
 
+// Instancia única del motor de sync.
 final syncServiceProvider = Provider<SyncService>((ref) => SyncService(ref));
 
 // Doble función (2026-08-20, Sync): señal visible para la UI

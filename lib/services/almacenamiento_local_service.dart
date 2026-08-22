@@ -14,17 +14,21 @@ import 'package:path_provider/path_provider.dart';
 // correspondiente (ver mascota_repository.dart/documento_repository.dart) —
 // una sola función arma el nombre de archivo para los dos lados.
 class AlmacenamientoLocalService {
+  // Nombre de archivo consistente entre el disco local y el bucket de Storage.
   static String nombreArchivo({required String entidadId, required String ext}) =>
       '$entidadId.$ext';
 
+  // Ruta persistente donde vive la foto de una mascota en este dispositivo.
   static Future<String> rutaFotosMascotas(String nombreArchivo) async {
     return _rutaEnCarpeta('fotos_mascotas', nombreArchivo);
   }
 
+  // Ruta persistente donde vive el archivo de un documento en este dispositivo.
   static Future<String> rutaArchivosDocumentos(String nombreArchivo) async {
     return _rutaEnCarpeta('archivos_documentos', nombreArchivo);
   }
 
+  // Crea la subcarpeta si falta y arma la ruta completa dentro de ella.
   static Future<String> _rutaEnCarpeta(
     String carpeta,
     String nombreArchivo,

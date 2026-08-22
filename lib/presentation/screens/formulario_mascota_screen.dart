@@ -27,6 +27,7 @@ const especiesDisponibles = [
   'Otro',
 ];
 
+// Formulario para crear/editar una mascota.
 class FormularioMascotaScreen extends ConsumerStatefulWidget {
   final MascotaModel? mascotaExistente;
   const FormularioMascotaScreen({super.key, this.mascotaExistente});
@@ -59,6 +60,7 @@ class _FormularioMascotaScreenState
   final ImagePicker _picker = ImagePicker();
   String? _fotoPath;
 
+  // Elige una foto de la galería con compresión para subir a Storage.
   Future<void> _elegirFoto() async {
     // maxWidth/imageQuality (2026-08-20, Sync — ver decisiones_arquitectura.md):
     // es la única foto de mascota que ahora sube a Storage, mismo criterio
@@ -120,6 +122,7 @@ class _FormularioMascotaScreenState
     super.dispose();
   }
 
+  // Abre selector de fecha de nacimiento (solo hasta hoy).
   Future<void> _seleccionarFecha() async {
     final fecha = await showDatePicker(
       context: context,
@@ -135,6 +138,7 @@ class _FormularioMascotaScreenState
     }
   }
 
+  // Valida, copia la foto a almacenamiento persistente y guarda la mascota.
   Future<void> _guardar() async {
     if (!_formKey.currentState!.validate()) {
       return;

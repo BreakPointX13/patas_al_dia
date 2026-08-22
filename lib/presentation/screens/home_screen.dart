@@ -12,6 +12,7 @@ import 'package:patas_al_dia/presentation/widgets/tarjeta_clara.dart';
 import 'package:patas_al_dia/providers/mascota_provider.dart';
 import 'package:patas_al_dia/providers/usuario_provider.dart';
 
+// Pestaña principal: lista de mascotas registradas del usuario.
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
 
@@ -23,10 +24,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   @override
   void initState() {
     super.initState();
+    // Carga las mascotas del usuario apenas se abre la pantalla.
     final usuarioId = ref.read(usuarioProvider)!.id;
     ref.read(mascotasProvider.notifier).cargarMascotas(usuarioId);
   }
 
+  // Abre el formulario para registrar una mascota nueva.
   void _irAAgregarMascota() {
     Navigator.of(context).push(
       MaterialPageRoute(builder: (context) => const FormularioMascotaScreen()),

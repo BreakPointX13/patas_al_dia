@@ -1,3 +1,4 @@
+// Un documento adjunto a una mascota (carnet, examen, receta, etc.).
 class DocumentoModel {
   final String id;
   final String mascotaId;

@@ -7,6 +7,7 @@ import 'package:patas_al_dia/presentation/utils/errores_autenticacion.dart';
 import 'package:patas_al_dia/presentation/utils/validador_contrasena.dart';
 import 'package:patas_al_dia/providers/usuario_provider.dart';
 
+// Formulario de registro de una cuenta nueva (correo y contraseña).
 class RegistroScreen extends ConsumerStatefulWidget {
   // true (default): se llega acá desde LoginScreen, sin ningún shell de la
   // app todavía montado — al registrarse hay que navegar adentro. false: se
@@ -35,6 +36,7 @@ class _RegistroScreenState extends ConsumerState<RegistroScreen> {
     super.dispose();
   }
 
+  // Valida el formulario y crea la cuenta en Supabase Auth.
   Future<void> _registrar() async {
     if (!_formKey.currentState!.validate()) {
       return;

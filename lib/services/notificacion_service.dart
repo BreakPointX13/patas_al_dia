@@ -32,6 +32,7 @@ class NotificacionService {
   // para detectar la zona horaria real del dispositivo.
   static const _zonaHoraria = 'America/Santiago';
 
+  // Prepara el plugin y pide permisos de notificación y alarma exacta.
   Future<void> inicializar() async {
     tz_data.initializeTimeZones();
     tz.setLocalLocation(tz.getLocation(_zonaHoraria));
@@ -78,6 +79,7 @@ class NotificacionService {
         : '${evento.titulo}, ${evento.tipoEvento}';
   }
 
+  // Programa un recordatorio por cada "horas antes" elegido en el evento.
   Future<void> programarRecordatorio(AgendaEventoModel evento) async {
     for (final horasAntes in evento.recordatorioHorasAntes) {
       await _programarUnRecordatorio(evento, horasAntes);
@@ -132,6 +134,7 @@ class NotificacionService {
     }
   }
 
+  // Cancela todos los recordatorios posibles de un evento, tenga o no cada uno.
   Future<void> cancelarRecordatorio(String eventoId) async {
     for (final horasAntes in horasPosibles) {
       await _plugin.cancel(id: _idParaRecordatorio(eventoId, horasAntes));

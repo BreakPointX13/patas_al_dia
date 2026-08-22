@@ -9,6 +9,7 @@ import 'package:patas_al_dia/presentation/utils/etiquetas_localizadas.dart';
 import 'package:patas_al_dia/providers/mascota_provider.dart';
 import 'package:share_plus/share_plus.dart';
 
+// Tarjeta tipo credencial con los datos de la mascota, compartible como imagen.
 class CredencialMascotaScreen extends ConsumerStatefulWidget {
   final String mascotaId;
   const CredencialMascotaScreen({super.key, required this.mascotaId});
@@ -23,6 +24,7 @@ class _CredencialMascotaScreenState
   final _tarjetaKey = GlobalKey();
   bool _compartiendo = false;
 
+  // Convierte la tarjeta a imagen PNG y abre el diálogo de compartir del sistema.
   Future<void> _compartirCredencial(String nombreMascota) async {
     setState(() => _compartiendo = true);
     try {
@@ -225,6 +227,7 @@ class _CredencialMascotaScreenState
     );
   }
 
+  // Calcula la edad en años a partir de la fecha de nacimiento.
   String? _edadTexto(BuildContext context, DateTime? fechaNacimiento) {
     if (fechaNacimiento == null) {
       return null;

@@ -8,6 +8,7 @@ import 'package:patas_al_dia/presentation/screens/iniciar_sesion_screen.dart';
 import 'package:patas_al_dia/presentation/screens/navegacion_principal_screen.dart';
 import 'package:patas_al_dia/providers/usuario_provider.dart';
 
+// Pantalla de bienvenida: iniciar sesión, registrarse o entrar como invitado.
 class LoginScreen extends ConsumerWidget {
   const LoginScreen({super.key});
 
@@ -26,6 +27,7 @@ class LoginScreen extends ConsumerWidget {
     await launchUrl(uri, mode: LaunchMode.externalApplication);
   }
 
+  // Crea un usuario invitado local (sin cuenta) y entra a la app.
   Future<void> _continuarComoInvitado(
     BuildContext context,
     WidgetRef ref,
@@ -42,6 +44,7 @@ class LoginScreen extends ConsumerWidget {
     );
   }
 
+  // Abre la pantalla de inicio de sesión.
   void _irAIniciarSesion(BuildContext context) {
     Navigator.of(context).push(
       MaterialPageRoute(builder: (context) => const IniciarSesionScreen()),

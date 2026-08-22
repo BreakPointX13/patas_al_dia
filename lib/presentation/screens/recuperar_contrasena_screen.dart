@@ -32,6 +32,7 @@ class _RecuperarContrasenaScreenState
     super.dispose();
   }
 
+  // Pide a Supabase que mande el correo con el enlace de recuperación.
   Future<void> _enviarEnlace() async {
     if (!_formKey.currentState!.validate()) {
       return;

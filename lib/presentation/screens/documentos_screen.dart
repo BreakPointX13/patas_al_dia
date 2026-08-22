@@ -46,6 +46,7 @@ String _fechaMostrar(DocumentoModel documento) {
   return '${fecha.day}/${fecha.month}/${fecha.year}';
 }
 
+// Lista de documentos de una mascota, agrupados por tipo o en orden cronológico.
 class DocumentosScreen extends ConsumerStatefulWidget {
   final String mascotaId;
   const DocumentosScreen({super.key, required this.mascotaId});
@@ -131,6 +132,7 @@ class _DocumentosScreenState extends ConsumerState<DocumentosScreen> {
     );
   }
 
+  // Lista plana de documentos, ordenada por fecha, sin agrupar por tipo.
   Widget _vistaCronologicaWidget(
     AppLocalizations l10n,
     List<DocumentoModel> documentos,
@@ -167,6 +169,7 @@ class _DocumentosScreenState extends ConsumerState<DocumentosScreen> {
     );
   }
 
+  // Separador + tarjetas de los documentos de un tipo (vacío si no hay ninguno).
   List<Widget> _seccionTipo(
     BuildContext context,
     AppLocalizations l10n,

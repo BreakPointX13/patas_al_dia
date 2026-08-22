@@ -1,3 +1,4 @@
+// Un medicamento recetado dentro de un evento de agenda (ej: una consulta).
 class MedicamentoEventoModel {
   final String id;
   final String agendaEventoId;

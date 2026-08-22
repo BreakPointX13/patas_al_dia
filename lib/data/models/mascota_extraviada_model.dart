@@ -1,3 +1,5 @@
+// Un reporte de mascota perdida o encontrada, visible en el mapa. Vive solo
+// en Supabase (no en SQLite local) porque otros usuarios necesitan verlo.
 class MascotaExtraviadaModel {
   final String id;
   final String usuarioId;

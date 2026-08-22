@@ -55,6 +55,7 @@ String fechaHoraCorta(DateTime fecha) {
   return '${fecha.day}/${fecha.month}/${fecha.year} $hora:$minuto';
 }
 
+// Atajo de especieValorMostrar cuando ya tienes la MascotaModel completa.
 String especieMostrar(BuildContext context, MascotaModel mascota) {
   return especieValorMostrar(
     AppLocalizations.of(context),

@@ -8,6 +8,7 @@ import 'package:patas_al_dia/presentation/screens/ajustes_screen.dart';
 class MenuUsuarioAvatar extends StatelessWidget {
   const MenuUsuarioAvatar({super.key});
 
+  // Abre la pantalla de Ajustes encima de la actual.
   void _irAAjustes(BuildContext context) {
     Navigator.of(
       context,

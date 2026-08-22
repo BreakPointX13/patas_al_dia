@@ -7,6 +7,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:patas_al_dia/l10n/app_localizations.dart';
 import 'package:patas_al_dia/services/reportar_bug_service.dart';
 
+// Formulario para reportar un bug: descripción + imagen opcional, por correo.
 class ReportarBugScreen extends ConsumerStatefulWidget {
   const ReportarBugScreen({super.key});
 
@@ -69,6 +70,7 @@ class _ReportarBugScreenState extends ConsumerState<ReportarBugScreen> {
     setState(() => _imagenPath = foto.path);
   }
 
+  // Codifica la imagen (si hay) y envía el reporte por la Edge Function.
   Future<void> _enviar() async {
     if (!_formKey.currentState!.validate()) {
       return;

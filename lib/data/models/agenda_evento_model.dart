@@ -1,3 +1,4 @@
+// Un evento de la agenda veterinaria (vacuna, control, etc.) de una mascota.
 class AgendaEventoModel {
   final String id;
   final String mascotaId;
@@ -7,6 +8,7 @@ class AgendaEventoModel {
   final String? observaciones;
   final DateTime fechaProgramada;
   final DateTime? fechaRealizada;
+  // Horas antes del evento en que avisar (ej: [24, 1]); se guarda como texto separado por comas.
   final List<int> recordatorioHorasAntes;
   // Sync (2026-08-20) — ver mascota_model.dart para el porqué de estos tres.
   final DateTime? actualizadoEn;

@@ -19,6 +19,7 @@ const tiposDocumentoDisponibles = [
   'Otro',
 ];
 
+// Formulario para crear/editar un documento (foto o PDF) de una mascota.
 class FormularioDocumentoScreen extends ConsumerStatefulWidget {
   final String mascotaId;
   final DocumentoModel? documentoExistente;
@@ -76,6 +77,7 @@ class _FormularioDocumentoScreenState
     super.dispose();
   }
 
+  // Hoja inferior para elegir cámara/galería/PDF como archivo del documento.
   Future<void> _elegirArchivo() async {
     final l10n = AppLocalizations.of(context);
     final opcion = await showModalBottomSheet<String>(
@@ -146,6 +148,7 @@ class _FormularioDocumentoScreenState
     });
   }
 
+  // Abre selector de fecha de emisión o de vencimiento, según el parámetro.
   Future<void> _seleccionarFecha({required bool esVencimiento}) async {
     final actual = esVencimiento ? _fechaVencimiento : _fechaEmision;
     final fecha = await showDatePicker(
@@ -166,6 +169,7 @@ class _FormularioDocumentoScreenState
     });
   }
 
+  // Valida, copia el archivo a almacenamiento persistente y guarda el documento.
   Future<void> _guardar() async {
     if (!_formKey.currentState!.validate()) {
       return;

@@ -11,6 +11,7 @@ import 'package:patas_al_dia/presentation/widgets/dialogo_confirmacion.dart';
 import 'package:patas_al_dia/providers/agenda_evento_provider.dart';
 import 'package:patas_al_dia/providers/documento_provider.dart';
 
+// Ficha de un documento: vista previa, datos y evento vinculado si tiene.
 class DetalleDocumentoScreen extends ConsumerStatefulWidget {
   final String documentoId;
   const DetalleDocumentoScreen({super.key, required this.documentoId});
@@ -30,6 +31,7 @@ class _DetalleDocumentoScreenState
     WidgetsBinding.instance.addPostFrameCallback((_) => _cargarEventoVinculado());
   }
 
+  // Si el documento está ligado a un evento de agenda, busca su título.
   Future<void> _cargarEventoVinculado() async {
     final documentos = ref.read(documentosProvider);
     DocumentoModel? documento;
@@ -51,6 +53,7 @@ class _DetalleDocumentoScreenState
     setState(() => _tituloEventoVinculado = evento.titulo);
   }
 
+  // Abre el PDF con la app del sistema, o la imagen en el visor propio.
   Future<void> _abrirArchivo(DocumentoModel documento) async {
     // filePath es nullable desde Sync (2026-08-20) — una fila recién traída
     // de otro dispositivo puede no tener el archivo descargado todavía (ver
@@ -75,6 +78,7 @@ class _DetalleDocumentoScreenState
     );
   }
 
+  // Confirma y borra el documento (soft-delete).
   Future<void> _eliminarDocumento(DocumentoModel documento) async {
     final l10n = AppLocalizations.of(context);
     final confirmar = await confirmarAccion(

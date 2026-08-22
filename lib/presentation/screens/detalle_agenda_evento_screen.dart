@@ -16,6 +16,7 @@ import 'package:patas_al_dia/providers/mascota_provider.dart';
 import 'package:patas_al_dia/providers/medicamento_evento_provider.dart';
 import 'package:patas_al_dia/services/notificacion_service.dart';
 
+// Ficha de un evento de agenda: datos, medicamentos y documentos adjuntos.
 class DetalleAgendaEventoScreen extends ConsumerStatefulWidget {
   final String eventoId;
   const DetalleAgendaEventoScreen({super.key, required this.eventoId});
@@ -38,6 +39,7 @@ class _DetalleAgendaEventoScreenState
         .cargarDocumentosDeEvento(widget.eventoId);
   }
 
+  // Marca el evento como realizado con la fecha de hoy.
   Future<void> _marcarRealizado(AgendaEventoModel evento) async {
     final eventoActualizado = evento.copyWith(fechaRealizada: DateTime.now());
     await ref
@@ -58,6 +60,7 @@ class _DetalleAgendaEventoScreenState
     return l10n.mascotaFallback;
   }
 
+  // Abre el PDF con la app del sistema, o la imagen en el visor propio.
   Future<void> _abrirDocumento(DocumentoModel documento) async {
     // filePath es nullable desde Sync (2026-08-20) — una fila recién traída
     // de otro dispositivo puede no tener el archivo descargado todavía.
@@ -80,6 +83,7 @@ class _DetalleAgendaEventoScreenState
     );
   }
 
+  // Confirma, cancela el recordatorio y borra el evento (soft-delete).
   Future<void> _eliminarEvento(AgendaEventoModel evento) async {
     final l10n = AppLocalizations.of(context);
     final confirmar = await confirmarAccion(

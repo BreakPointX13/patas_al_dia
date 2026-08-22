@@ -1,3 +1,4 @@
+// Una mascota registrada por el usuario, con sus datos básicos.
 class MascotaModel {
   final String id;
   final String usuarioId;

@@ -27,6 +27,7 @@ const _mascotaNoRegistrada = Object();
 // como base de la app.
 const _centroPorDefecto = LatLng(-33.4489, -70.6693);
 
+// Pestaña Mapa: muestra los reportes activos de mascotas perdidas/encontradas.
 class MapaScreen extends ConsumerStatefulWidget {
   final ValueNotifier<int> indiceActualNotifier;
 
@@ -139,6 +140,7 @@ class _MapaScreenState extends ConsumerState<MapaScreen> {
     }
   }
 
+  // Abre el detalle de un reporte.
   void _abrirDetalle(String reporteId) {
     Navigator.of(context).push(
       MaterialPageRoute(
@@ -148,6 +150,7 @@ class _MapaScreenState extends ConsumerState<MapaScreen> {
     );
   }
 
+  // Abre el formulario de reporte, ya sea con una mascota o sin ella.
   void _irAFormulario({MascotaModel? mascota, required String tipo}) {
     Navigator.of(context).push(
       MaterialPageRoute(
@@ -159,6 +162,7 @@ class _MapaScreenState extends ConsumerState<MapaScreen> {
     );
   }
 
+  // Pide elegir cuál mascota registrada se perdió (o "no registrada").
   Future<void> _elegirMascotaParaPerdida() async {
     final mascotas = ref.read(mascotasProvider);
     if (mascotas.isEmpty) {
@@ -206,6 +210,7 @@ class _MapaScreenState extends ConsumerState<MapaScreen> {
     );
   }
 
+  // Hoja inferior: elegir entre reportar mascota perdida o encontrada.
   void _abrirOpcionesReportar() {
     final l10n = AppLocalizations.of(context);
     showModalBottomSheet<void>(

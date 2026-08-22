@@ -3,16 +3,19 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:patas_al_dia/data/repositories/usuario_repository.dart';
 import 'package:patas_al_dia/data/models/usuario_model.dart';
 
+// Instancia única del repository, para no crearla de nuevo en cada pantalla.
 final usuarioRepositoryProvider = Provider<UsuarioRepository>((ref) {
   return UsuarioRepository();
 });
 
+// Guarda en memoria el usuario actual (invitado o registrado), o null si no hay sesión.
 class UsuarioNotifier extends Notifier<UsuarioModel?> {
   @override
   UsuarioModel? build() {
     return null;
   }
 
+  // Busca si hay una sesión activa guardada (invitado o registrado) al abrir la app.
   Future<bool> cargarSesionActiva() async {
     final repo = ref.read(usuarioRepositoryProvider);
     state = await repo.obtenerUsuarioConSesionActiva();
@@ -158,18 +161,21 @@ class UsuarioNotifier extends Notifier<UsuarioModel?> {
     }
   }
 
+  // Crea el usuario invitado inicial (primera vez que se abre la app).
   Future<void> crearUsuario(UsuarioModel usuario) async {
     final repo = ref.read(usuarioRepositoryProvider);
     await repo.crearUsuario(usuario);
     state = usuario;
   }
 
+  // Guarda cualquier cambio sobre el usuario actual (preferencias, sync, etc.).
   Future<void> actualizarUsuario(UsuarioModel usuario) async {
     final repo = ref.read(usuarioRepositoryProvider);
     await repo.actualizarUsuario(usuario);
     state = usuario;
   }
 
+  // Cambia el tamaño de letra elegido en Ajustes.
   Future<void> actualizarEscalaTexto(double escalaTexto) async {
     if (state == null) {
       return;
@@ -177,6 +183,7 @@ class UsuarioNotifier extends Notifier<UsuarioModel?> {
     await actualizarUsuario(state!.copyWith(escalaTexto: escalaTexto));
   }
 
+  // Cambia el tema (claro/oscuro/sistema) elegido en Ajustes.
   Future<void> actualizarTema(String tema) async {
     if (state == null) {
       return;
@@ -184,6 +191,7 @@ class UsuarioNotifier extends Notifier<UsuarioModel?> {
     await actualizarUsuario(state!.copyWith(tema: tema));
   }
 
+  // Cambia el idioma de la app elegido en Ajustes.
   Future<void> actualizarIdioma(String idioma) async {
     if (state == null) {
       return;
@@ -191,6 +199,7 @@ class UsuarioNotifier extends Notifier<UsuarioModel?> {
     await actualizarUsuario(state!.copyWith(idioma: idioma));
   }
 
+  // Marca que el usuario ya vio el aviso inicial del módulo Mapa, para no repetirlo.
   Future<void> marcarAvisoMapaVisto() async {
     if (state == null) {
       return;

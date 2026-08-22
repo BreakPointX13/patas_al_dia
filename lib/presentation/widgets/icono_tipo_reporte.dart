@@ -50,6 +50,7 @@ class IconoTipoReporte extends StatelessWidget {
   }
 }
 
+// Dibuja el triángulo relleno de fondo del ícono.
 class _TrianguloRelleno extends CustomPainter {
   final Color color;
   const _TrianguloRelleno(this.color);
@@ -64,6 +65,7 @@ class _TrianguloRelleno extends CustomPainter {
     canvas.drawPath(path, Paint()..color = color);
   }
 
+  // Solo se vuelve a dibujar si cambió el color (perdido/encontrado).
   @override
   bool shouldRepaint(covariant _TrianguloRelleno oldDelegate) =>
       oldDelegate.color != color;

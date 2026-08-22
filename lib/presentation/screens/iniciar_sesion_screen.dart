@@ -8,6 +8,7 @@ import 'package:patas_al_dia/presentation/screens/registro_screen.dart';
 import 'package:patas_al_dia/presentation/utils/errores_autenticacion.dart';
 import 'package:patas_al_dia/providers/usuario_provider.dart';
 
+// Formulario de inicio de sesión con correo y contraseña.
 class IniciarSesionScreen extends ConsumerStatefulWidget {
   const IniciarSesionScreen({super.key});
 
@@ -29,6 +30,7 @@ class _IniciarSesionScreenState extends ConsumerState<IniciarSesionScreen> {
     super.dispose();
   }
 
+  // Valida el formulario e inicia sesión contra Supabase Auth.
   Future<void> _iniciarSesion() async {
     if (!_formKey.currentState!.validate()) {
       return;

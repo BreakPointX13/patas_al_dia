@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 
+// Punto único de acceso a la base SQLite local (patrón Singleton).
 class DatabaseHelper {
   // Constructor privado necesario para el patrón Singleton
   DatabaseHelper._internal();
@@ -96,7 +97,7 @@ class DatabaseHelper {
         actualizado_en TEXT,
         eliminado INTEGER DEFAULT 0,
         eliminado_en TEXT,
-        pendiente_push INTEGER DEFAULT 0,
+        pendiente_push INTEGER DEFAULT 0, -- 1 mientras el cambio no se ha subido a Supabase
         FOREIGN KEY (usuario_id) REFERENCES usuarios (id) ON DELETE CASCADE
       )
     ''');
@@ -116,7 +117,7 @@ class DatabaseHelper {
         actualizado_en TEXT,
         eliminado INTEGER DEFAULT 0,
         eliminado_en TEXT,
-        pendiente_push INTEGER DEFAULT 0,
+        pendiente_push INTEGER DEFAULT 0, -- 1 mientras el cambio no se ha subido a Supabase
         FOREIGN KEY (mascota_id) REFERENCES mascotas (id) ON DELETE CASCADE
       )
     ''');
@@ -132,7 +133,7 @@ class DatabaseHelper {
         actualizado_en TEXT,
         eliminado INTEGER DEFAULT 0,
         eliminado_en TEXT,
-        pendiente_push INTEGER DEFAULT 0,
+        pendiente_push INTEGER DEFAULT 0, -- 1 mientras el cambio no se ha subido a Supabase
         FOREIGN KEY (agenda_evento_id) REFERENCES agenda_eventos (id) ON DELETE CASCADE
       )
     ''');
@@ -163,13 +164,14 @@ class DatabaseHelper {
         actualizado_en TEXT,
         eliminado INTEGER DEFAULT 0,
         eliminado_en TEXT,
-        pendiente_push INTEGER DEFAULT 0,
+        pendiente_push INTEGER DEFAULT 0, -- 1 mientras el cambio no se ha subido a Supabase
         FOREIGN KEY (mascota_id) REFERENCES mascotas (id) ON DELETE CASCADE,
         FOREIGN KEY (evento_id) REFERENCES agenda_eventos (id) ON DELETE SET NULL
       )
     ''');
 
-    // 5. Tabla Mascotas Extraviadas (Mapa)
+    // 5. Tabla Mascotas Extraviadas (Mapa) — copia local histórica; el
+    // repository de esta entidad opera directo contra Supabase, no acá.
     await db.execute('''
       CREATE TABLE mascotas_extraviadas (
         id TEXT PRIMARY KEY,

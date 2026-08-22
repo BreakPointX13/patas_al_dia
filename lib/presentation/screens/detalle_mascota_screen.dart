@@ -13,6 +13,7 @@ import 'package:patas_al_dia/presentation/widgets/separador_seccion_ficha.dart';
 import 'package:patas_al_dia/presentation/widgets/tarjeta_clara.dart';
 import 'package:patas_al_dia/providers/mascota_provider.dart';
 
+// Confirma y borra la mascota (soft-delete, con cascada a sus datos).
 Future<void> _eliminarMascota(
   BuildContext context,
   WidgetRef ref,
@@ -38,6 +39,7 @@ Future<void> _eliminarMascota(
   }
 }
 
+// Ficha completa de una mascota: datos, accesos a agenda/documentos y reporte de pérdida.
 class DetalleMascotaScreen extends ConsumerWidget {
   final String mascotaId;
   const DetalleMascotaScreen({super.key, required this.mascotaId});

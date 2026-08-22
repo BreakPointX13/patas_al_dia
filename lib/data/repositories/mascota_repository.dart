@@ -5,7 +5,10 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:patas_al_dia/data/database/database_helper.dart';
 import 'package:patas_al_dia/data/models/mascota_model.dart';
 
+// Guarda y consulta las mascotas del usuario; es el modelo de referencia
+// para el patrón de sync/soft-delete que copian los demás repositories.
 class MascotaRepository {
+  // Sube la foto de una mascota al Storage de Supabase.
   // Sync (2026-08-20) — bucket privado `fotos_mascotas` (ver
   // TablaMaestraAppVetMovil1.sql, sección 9), mismo patrón de ruta que
   // `fotos_reportes` (usuarioId/entidadId.ext, ver
@@ -29,6 +32,7 @@ class MascotaRepository {
     return rutaStorage;
   }
 
+  // Descarga la foto de una mascota desde el Storage de Supabase.
   Future<Uint8List> descargarFoto(String rutaStorage) {
     final client = Supabase.instance.client;
     return client.storage.from('fotos_mascotas').download(rutaStorage);
@@ -117,6 +121,7 @@ class MascotaRepository {
     );
   }
 
+  // Crea una mascota nueva y la marca pendiente de subir a la nube.
   Future<MascotaModel> crearMascota(MascotaModel mascota) async {
     final db = await DatabaseHelper.instance.database;
     // actualizado_en lo fija el repository, no quien llama — Sync (ver
@@ -161,6 +166,7 @@ class MascotaRepository {
     return MascotaModel.fromMap(maps.first);
   }
 
+  // Actualiza una mascota existente y la marca pendiente de subir a la nube.
   Future<int> actualizarMascota(MascotaModel mascota) async {
     final db = await DatabaseHelper.instance.database;
     final conTimestamp = mascota.copyWith(actualizadoEn: DateTime.now().toUtc());

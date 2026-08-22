@@ -15,6 +15,7 @@ class SeparadorSeccionFicha extends StatelessWidget {
     icono: const Icon(Icons.pets, color: _colorIcono, size: 26),
   );
 
+  /// Ícono de la sección "Identificación" (chip, esterilización, etc.).
   factory SeparadorSeccionFicha.identificacion({Key? key}) =>
       SeparadorSeccionFicha(
         key: key,
@@ -25,6 +26,7 @@ class SeparadorSeccionFicha extends StatelessWidget {
         ),
       );
 
+  /// Ícono de la sección "Datos" (peso, raza, fecha de nacimiento, etc.).
   factory SeparadorSeccionFicha.datos({Key? key}) => SeparadorSeccionFicha(
     key: key,
     icono: SvgPicture.asset(

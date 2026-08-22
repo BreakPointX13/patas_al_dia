@@ -69,6 +69,7 @@ String _localeIntl(BuildContext context) =>
 String _capitalizar(String texto) =>
     texto.isEmpty ? texto : texto[0].toUpperCase() + texto.substring(1);
 
+// Pantalla de agenda: vista calendario o lista de eventos veterinarios.
 class AgendaScreen extends ConsumerStatefulWidget {
   final String? mascotaIdInicial;
 
@@ -94,6 +95,7 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) => _cargarEventos());
   }
 
+  // Trae los eventos de las mascotas filtradas y marca cuáles tienen documento adjunto.
   Future<void> _cargarEventos() async {
     final mascotas = ref.read(mascotasProvider);
     final ids =
@@ -114,6 +116,7 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
     setState(() => _eventoIdsConDocumento = idsConDocumento);
   }
 
+  // Diálogo para elegir qué mascotas mostrar en la agenda.
   Future<void> _abrirFiltro(List<MascotaModel> mascotas) async {
     final l10n = AppLocalizations.of(context);
     var seleccionTemporal = Set<String>.from(
@@ -184,6 +187,7 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
     }
   }
 
+  // Pregunta si el evento es futuro o pasado y abre el formulario correspondiente.
   Future<void> _irAAgregarEvento() async {
     final l10n = AppLocalizations.of(context);
     final esPasado = await showModalBottomSheet<bool>(
@@ -284,6 +288,7 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
     );
   }
 
+  // Tarjeta destacada del evento más próximo sin realizar.
   Widget _tarjetaProximoEvento(
     AgendaEventoModel evento,
     List<MascotaModel> mascotas,
@@ -410,6 +415,7 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
     );
   }
 
+  // Tarjeta chica de un evento dentro del timeline o la lista del día.
   Widget _tarjetaEventoTimeline(
     AgendaEventoModel evento,
     List<MascotaModel> mascotas,
@@ -523,6 +529,7 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
     );
   }
 
+  // Vista en lista: próximo evento arriba, resto agrupado por mes.
   Widget _vistaLista(
     List<AgendaEventoModel> eventos,
     List<MascotaModel> mascotas,
@@ -574,6 +581,7 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
     );
   }
 
+  // Vista en calendario con los eventos del día seleccionado debajo.
   Widget _vistaCalendarioWidget(
     List<AgendaEventoModel> eventos,
     List<MascotaModel> mascotas,
@@ -687,6 +695,7 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
     );
   }
 
+  // Mensaje de "sin eventos" para el día elegido, con los próximos eventos como respaldo.
   Widget _sinEventosDelDia(
     DateTime dia,
     List<AgendaEventoModel> eventos,

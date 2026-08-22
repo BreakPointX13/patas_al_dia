@@ -1,7 +1,9 @@
 import 'package:patas_al_dia/data/database/database_helper.dart';
 import 'package:patas_al_dia/data/models/medicamento_evento_model.dart';
 
+// Guarda y consulta los medicamentos recetados dentro de un evento de agenda.
 class MedicamentoEventoRepository {
+  // Devuelve los medicamentos con cambios locales aún no subidos a la nube.
   // Para el motor de sync (2026-08-20) — ver mascota_repository.dart,
   // obtenerPendientesDePush, para el criterio general (filtra por
   // `pendiente_push`, no por fecha). Acá el usuario se resuelve vía doble
@@ -19,6 +21,7 @@ class MedicamentoEventoRepository {
     return maps.map((mapa) => MedicamentoEventoModel.fromMap(mapa)).toList();
   }
 
+  // Apaga la bandera de "pendiente de subir" tras un push exitoso.
   // Ver mascota_repository.dart, marcarComoSincronizadas, mismo criterio.
   Future<void> marcarComoSincronizadas(List<String> ids) async {
     if (ids.isEmpty) {
@@ -32,6 +35,7 @@ class MedicamentoEventoRepository {
     );
   }
 
+  // Guarda (inserta o actualiza) un medicamento que llegó desde otro dispositivo.
   // Ver mascota_repository.dart, guardarDesdeSync, mismo criterio. Acá no
   // hay tabla hija que dependa de `medicamentos_evento` (sin riesgo de
   // cascada), pero se corrige igual por consistencia y por el mismo
@@ -53,6 +57,7 @@ class MedicamentoEventoRepository {
     );
   }
 
+  // Busca un medicamento por su id, incluidos los borrados.
   // Sin filtrar por `eliminado` a propósito — ver mascota_repository.dart,
   // mismo criterio (lo necesita el motor de sync para resolver conflictos).
   // Agregado 2026-08-21 — corrige un hallazgo real: sin este método, el pull
@@ -75,6 +80,7 @@ class MedicamentoEventoRepository {
     return MedicamentoEventoModel.fromMap(maps.first);
   }
 
+  // Crea un medicamento nuevo y lo marca pendiente de subir a la nube.
   Future<MedicamentoEventoModel> crearMedicamentoEvento(
     MedicamentoEventoModel medicamento,
   ) async {
@@ -88,6 +94,7 @@ class MedicamentoEventoRepository {
     return conTimestamp;
   }
 
+  // Devuelve los medicamentos activos (no borrados) de un evento de agenda.
   // Filtra `eliminado = 0` — ver mascota_repository.dart, mismo criterio.
   Future<List<MedicamentoEventoModel>> obtenerMedicamentosPorEvento(
     String agendaEventoId,
@@ -101,6 +108,7 @@ class MedicamentoEventoRepository {
     return maps.map((mapa) => MedicamentoEventoModel.fromMap(mapa)).toList();
   }
 
+  // Actualiza un medicamento existente y lo marca pendiente de subir a la nube.
   Future<int> actualizarMedicamentoEvento(
     MedicamentoEventoModel medicamento,
   ) async {
@@ -118,6 +126,7 @@ class MedicamentoEventoRepository {
     return filasActualizadas;
   }
 
+  // "Borra" un medicamento (en realidad lo marca como eliminado).
   // Soft-delete simple, sin hijos (2026-08-20, Sync) — ver
   // mascota_repository.dart para el porqué del soft-delete en general.
   Future<int> eliminarMedicamentoEvento(String id) async {

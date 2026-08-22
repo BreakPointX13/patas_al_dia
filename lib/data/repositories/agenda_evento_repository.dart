@@ -1,7 +1,9 @@
 import 'package:patas_al_dia/data/database/database_helper.dart';
 import 'package:patas_al_dia/data/models/agenda_evento_model.dart';
 
+// Guarda y consulta los eventos de agenda (citas, vacunas, controles) de una mascota.
 class AgendaEventoRepository {
+  // Devuelve los eventos con cambios locales aún no subidos a la nube.
   // Para el motor de sync (2026-08-20) — ver mascota_repository.dart,
   // obtenerPendientesDePush, para el criterio general (filtra por
   // `pendiente_push`, no por fecha). Acá el usuario se resuelve vía join a
@@ -17,6 +19,7 @@ class AgendaEventoRepository {
     return maps.map((mapa) => AgendaEventoModel.fromMap(mapa)).toList();
   }
 
+  // Apaga la bandera de "pendiente de subir" tras un push exitoso.
   // Ver mascota_repository.dart, marcarComoSincronizadas, mismo criterio.
   Future<void> marcarComoSincronizadas(List<String> ids) async {
     if (ids.isEmpty) {
@@ -30,6 +33,7 @@ class AgendaEventoRepository {
     );
   }
 
+  // Guarda (inserta o actualiza) un evento que llegó desde otro dispositivo.
   // Ver mascota_repository.dart, guardarDesdeSync, mismo criterio — acá
   // corrige el mismo bug real: un `agenda_evento` con `medicamentos_evento`
   // locales sin sincronizar se los borraba de verdad al traer un pull sobre
@@ -52,6 +56,7 @@ class AgendaEventoRepository {
     );
   }
 
+  // Crea un evento nuevo y lo marca pendiente de subir a la nube.
   Future<AgendaEventoModel> crearAgendaEvento(
     AgendaEventoModel agendaEvento,
   ) async {
@@ -65,6 +70,7 @@ class AgendaEventoRepository {
     return conTimestamp;
   }
 
+  // Devuelve los eventos activos (no borrados) de una mascota.
   // Filtra `eliminado = 0` — ver mascota_repository.dart, mismo criterio.
   Future<List<AgendaEventoModel>> obtenerAgendaEventoPorMascota(
     String mascotaId,
@@ -78,6 +84,7 @@ class AgendaEventoRepository {
     return maps.map((mapa) => AgendaEventoModel.fromMap(mapa)).toList();
   }
 
+  // Igual que obtenerAgendaEventoPorMascota, pero para varias mascotas a la vez.
   Future<List<AgendaEventoModel>> obtenerAgendaEventosPorMascotas(
     List<String> mascotaIds,
   ) async {
@@ -95,6 +102,7 @@ class AgendaEventoRepository {
     return maps.map((mapa) => AgendaEventoModel.fromMap(mapa)).toList();
   }
 
+  // Busca un evento por su id, incluidos los borrados.
   // Sin filtrar por `eliminado` a propósito — ver mascota_repository.dart,
   // mismo criterio (lo necesita el motor de sync).
   Future<AgendaEventoModel?> obtenerAgendaEventoPorId(String id) async {
@@ -110,6 +118,7 @@ class AgendaEventoRepository {
     return AgendaEventoModel.fromMap(maps.first);
   }
 
+  // Actualiza un evento existente y lo marca pendiente de subir a la nube.
   Future<int> actualizarAgendaEvento(AgendaEventoModel agendaEvento) async {
     final db = await DatabaseHelper.instance.database;
     final conTimestamp = agendaEvento.copyWith(actualizadoEn: DateTime.now().toUtc());
@@ -125,6 +134,7 @@ class AgendaEventoRepository {
     return filasActualizadas;
   }
 
+  // "Borra" un evento (en realidad lo marca como eliminado) y sus medicamentos.
   // Soft-delete (2026-08-20, Sync) — a diferencia de eliminarMascota, acá
   // la cascada NO es uniforme: medicamentos_evento sí se soft-deletea en
   // cascada (mismo `ON DELETE CASCADE` real del schema), pero documentos

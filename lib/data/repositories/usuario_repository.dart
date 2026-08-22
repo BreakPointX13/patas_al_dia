@@ -3,7 +3,9 @@ import 'package:patas_al_dia/data/database/database_helper.dart';
 import 'package:patas_al_dia/data/models/usuario_model.dart';
 import 'package:patas_al_dia/services/supabase_config.dart';
 
+// Maneja la cuenta del usuario: login/registro en Supabase Auth y su fila local.
 class UsuarioRepository {
+  // Crea una cuenta nueva en Supabase Auth (correo + contraseña).
   // Login real (2026-08-19) — a diferencia de la sesión anónima del módulo
   // Mapa (ver mascotaExtraviada.repository.md), acá sí se propagan las
   // excepciones de Supabase Auth tal cual (`AuthException`), sin atraparlas
@@ -20,6 +22,7 @@ class UsuarioRepository {
     );
   }
 
+  // Inicia sesión con correo y contraseña en Supabase Auth.
   Future<AuthResponse> iniciarSesionConEmail({
     required String email,
     required String password,
@@ -30,6 +33,7 @@ class UsuarioRepository {
     );
   }
 
+  // Cierra la sesión activa en Supabase Auth.
   Future<void> cerrarSesionSupabase() {
     return Supabase.instance.client.auth.signOut();
   }
@@ -69,12 +73,14 @@ class UsuarioRepository {
     );
   }
 
+  // Cambia la contraseña del usuario con sesión activa.
   Future<void> actualizarContrasena(String nuevaContrasena) {
     return Supabase.instance.client.auth.updateUser(
       UserAttributes(password: nuevaContrasena),
     );
   }
 
+  // Crea la fila local del usuario (invitado o recién registrado).
   Future<UsuarioModel> crearUsuario(UsuarioModel usuario) async {
     final db = await DatabaseHelper.instance.database;
 
@@ -83,6 +89,7 @@ class UsuarioRepository {
     return usuario;
   }
 
+  // Busca un usuario local por su id.
   Future<UsuarioModel?> obtenerUsuarioPorId(String id) async {
     final db = await DatabaseHelper.instance.database;
     final List<Map<String, dynamic>> maps = await db.query(
@@ -96,6 +103,7 @@ class UsuarioRepository {
     return UsuarioModel.fromMap(maps.first);
   }
 
+  // Busca el usuario local marcado con la sesión activa (solo puede haber uno).
   Future<UsuarioModel?> obtenerUsuarioConSesionActiva() async {
     final db = await DatabaseHelper.instance.database;
     final List<Map<String, dynamic>> maps = await db.query(
@@ -110,6 +118,7 @@ class UsuarioRepository {
     return UsuarioModel.fromMap(maps.first);
   }
 
+  // Actualiza los datos locales del usuario.
   Future<int> actualizarUsuario(UsuarioModel usuario) async {
     final db = await DatabaseHelper.instance.database;
     final int filasActualizadas = await db.update(
@@ -122,6 +131,7 @@ class UsuarioRepository {
     return filasActualizadas;
   }
 
+  // Borra la fila local del usuario (borrado real, no soft-delete).
   Future<int> eliminarUsuario(String id) async {
     final db = await DatabaseHelper.instance.database;
     final int filasEliminadas = await db.delete(

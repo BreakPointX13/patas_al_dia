@@ -90,9 +90,11 @@ const _iconosIdioma = [
   Icons.language,
 ];
 
+// Pantalla de ajustes: apariencia, cuenta, sync, ayuda y cierre de sesión.
 class AjustesScreen extends ConsumerWidget {
   const AjustesScreen({super.key});
 
+  // Abre la página de Ko-fi en el navegador del sistema.
   Future<void> _abrirKoFi(BuildContext context) async {
     final abierto = await launchUrl(
       _urlKoFi,
@@ -105,6 +107,7 @@ class AjustesScreen extends ConsumerWidget {
     }
   }
 
+  // Pide confirmación antes de cerrar sesión.
   Future<void> _confirmarCerrarSesion(
     BuildContext context,
     WidgetRef ref,
@@ -126,6 +129,7 @@ class AjustesScreen extends ConsumerWidget {
     await _cerrarSesion(context, ref);
   }
 
+  // Cierra sesión, limpia el estado en memoria y vuelve al login.
   Future<void> _cerrarSesion(BuildContext context, WidgetRef ref) async {
     await ref.read(usuarioProvider.notifier).cerrarSesion();
 
@@ -149,6 +153,7 @@ class AjustesScreen extends ConsumerWidget {
     );
   }
 
+  // Pide confirmación destructiva antes de eliminar la cuenta.
   Future<void> _confirmarEliminarCuenta(
     BuildContext context,
     WidgetRef ref,
@@ -171,6 +176,7 @@ class AjustesScreen extends ConsumerWidget {
     await _eliminarCuenta(context, ref);
   }
 
+  // Borra la cuenta (Supabase Auth + datos locales) y vuelve al login.
   Future<void> _eliminarCuenta(BuildContext context, WidgetRef ref) async {
     final l10n = AppLocalizations.of(context);
     try {

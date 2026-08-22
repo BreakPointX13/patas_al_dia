@@ -1,6 +1,8 @@
+// El usuario del dispositivo — invitado (solo local) o registrado (con Sync).
 class UsuarioModel {
   final String id;
   final String? email;
+  // Si es false, id == auth.uid() de Supabase (así Sync no traduce ids).
   final bool esInvitado;
   final DateTime? fechaRegistro;
   final DateTime? ultimaSincronizacion;

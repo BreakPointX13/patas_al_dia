@@ -5,7 +5,9 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:patas_al_dia/data/database/database_helper.dart';
 import 'package:patas_al_dia/data/models/documento_model.dart';
 
+// Guarda y consulta los documentos (carnet, exámenes, recetas) de una mascota.
 class DocumentoRepository {
+  // Sube el archivo (PDF o imagen) de un documento al Storage de Supabase.
   // Sync (2026-08-20) — ver mascota_repository.dart, mismo patrón, bucket
   // privado `archivos_documentos`.
   Future<String> subirArchivo({
@@ -26,11 +28,13 @@ class DocumentoRepository {
     return rutaStorage;
   }
 
+  // Descarga el archivo de un documento desde el Storage de Supabase.
   Future<Uint8List> descargarArchivo(String rutaStorage) {
     final client = Supabase.instance.client;
     return client.storage.from('archivos_documentos').download(rutaStorage);
   }
 
+  // Guarda dónde quedó el archivo en la nube, sin tocar `pendiente_push`.
   // Ver mascota_repository.dart, actualizarFotoRutaNube, mismo motivo.
   Future<void> actualizarArchivoRutaNube(String id, String ruta) async {
     final db = await DatabaseHelper.instance.database;
@@ -40,6 +44,7 @@ class DocumentoRepository {
     );
   }
 
+  // Devuelve los documentos con cambios locales aún no subidos a la nube.
   // Para el motor de sync (2026-08-20) — ver mascota_repository.dart,
   // obtenerPendientesDePush, para el criterio general (filtra por
   // `pendiente_push`, no por fecha). Acá el usuario se resuelve vía join a
@@ -55,6 +60,7 @@ class DocumentoRepository {
     return maps.map((mapa) => DocumentoModel.fromMap(mapa)).toList();
   }
 
+  // Apaga la bandera de "pendiente de subir" tras un push exitoso.
   // Ver mascota_repository.dart, marcarComoSincronizadas, mismo criterio.
   Future<void> marcarComoSincronizadas(List<String> ids) async {
     if (ids.isEmpty) {
@@ -68,6 +74,7 @@ class DocumentoRepository {
     );
   }
 
+  // Guarda (inserta o actualiza) un documento que llegó desde otro dispositivo.
   // Ver mascota_repository.dart, guardarDesdeSync, mismo criterio. Acá no
   // hay tabla hija que dependa de `documentos` (sin riesgo de cascada),
   // pero se corrige igual por consistencia y por el mismo problema de
@@ -89,6 +96,7 @@ class DocumentoRepository {
     );
   }
 
+  // Crea un documento nuevo y lo marca pendiente de subir a la nube.
   Future<DocumentoModel> crearDocumento(DocumentoModel documento) async {
     final db = await DatabaseHelper.instance.database;
     final conTimestamp = documento.copyWith(actualizadoEn: DateTime.now().toUtc());
@@ -100,6 +108,7 @@ class DocumentoRepository {
     return conTimestamp;
   }
 
+  // Devuelve los documentos activos (no borrados) de una mascota.
   // Filtra `eliminado = 0` — ver mascota_repository.dart, mismo criterio.
   Future<List<DocumentoModel>> obtenerDocumentosPorMascota(
     String mascotaId,
@@ -114,6 +123,7 @@ class DocumentoRepository {
     return maps.map((mapa) => DocumentoModel.fromMap(mapa)).toList();
   }
 
+  // Devuelve los documentos ligados a un evento de agenda puntual.
   Future<List<DocumentoModel>> obtenerDocumentosPorEvento(
     String eventoId,
   ) async {
@@ -127,6 +137,7 @@ class DocumentoRepository {
     return maps.map((mapa) => DocumentoModel.fromMap(mapa)).toList();
   }
 
+  // Indica qué eventos de agenda ya tienen algún documento adjunto.
   Future<Set<String>> obtenerEventoIdsConDocumento(
     List<String> eventoIds,
   ) async {
@@ -145,6 +156,7 @@ class DocumentoRepository {
     return maps.map((mapa) => mapa['evento_id'] as String).toSet();
   }
 
+  // Busca un documento por su id, incluidos los borrados.
   // Sin filtrar por `eliminado` a propósito — ver mascota_repository.dart,
   // mismo criterio (lo necesita el motor de sync).
   Future<DocumentoModel?> obtenerDocumentoPorId(String id) async {
@@ -160,6 +172,7 @@ class DocumentoRepository {
     return DocumentoModel.fromMap(maps.first);
   }
 
+  // Actualiza un documento existente y lo marca pendiente de subir a la nube.
   Future<int> actualizarDocumento(DocumentoModel documento) async {
     final db = await DatabaseHelper.instance.database;
     final conTimestamp = documento.copyWith(actualizadoEn: DateTime.now().toUtc());
@@ -176,6 +189,7 @@ class DocumentoRepository {
     return filasActualizadas;
   }
 
+  // "Borra" un documento (en realidad lo marca como eliminado).
   // Soft-delete simple, sin hijos (2026-08-20, Sync) — ver
   // mascota_repository.dart para el porqué del soft-delete en general.
   Future<int> eliminarDocumento(String id) async {

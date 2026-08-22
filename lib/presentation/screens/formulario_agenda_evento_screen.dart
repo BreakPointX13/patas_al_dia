@@ -45,6 +45,7 @@ const _tiposEvento = [
   'Otro',
 ];
 
+// Formulario para crear/editar un evento de agenda, con medicamentos y documentos adjuntos.
 class FormularioAgendaEventoScreen extends ConsumerStatefulWidget {
   final AgendaEventoModel? eventoExistente;
   final String? mascotaIdInicial;
@@ -157,6 +158,7 @@ class _FormularioAgendaEventoScreenState
     }
   }
 
+  // Trae los medicamentos ya guardados de este evento (al editar).
   Future<void> _cargarMedicamentosExistentes() async {
     final repo = ref.read(medicamentoEventoRepositoryProvider);
     final lista = await repo.obtenerMedicamentosPorEvento(_eventoId);
@@ -169,6 +171,7 @@ class _FormularioAgendaEventoScreenState
     });
   }
 
+  // Trae los documentos ya guardados de este evento (al editar).
   Future<void> _cargarDocumentosExistentes() async {
     final repo = ref.read(documentoRepositoryProvider);
     final lista = await repo.obtenerDocumentosPorEvento(_eventoId);
@@ -189,6 +192,7 @@ class _FormularioAgendaEventoScreenState
     super.dispose();
   }
 
+  // Abre selector de fecha y hora, limitado a pasado o futuro según el modo.
   Future<void> _seleccionarFechaHora() async {
     final ahora = DateTime.now();
     final esCreacionPasado =
@@ -246,6 +250,7 @@ class _FormularioAgendaEventoScreenState
     });
   }
 
+  // Abre selector de fecha para el evento de seguimiento opcional.
   Future<void> _seleccionarFechaProximaConsulta() async {
     final fecha = await showDatePicker(
       context: context,
@@ -258,6 +263,7 @@ class _FormularioAgendaEventoScreenState
     }
   }
 
+  // Diálogo para agregar o editar un medicamento del evento (solo en memoria, se guarda con el resto).
   Future<void> _abrirDialogoMedicamento({
     MedicamentoEventoModel? existente,
   }) async {
@@ -359,6 +365,7 @@ class _FormularioAgendaEventoScreenState
     });
   }
 
+  // Hoja inferior para elegir cámara/galería/PDF, luego pide los datos del documento.
   Future<void> _abrirSelectorDocumento() async {
     final l10n = AppLocalizations.of(context);
     if (_mascotaId == null) {
@@ -430,6 +437,7 @@ class _FormularioAgendaEventoScreenState
     await _abrirDialogoDatosDocumento(rutaArchivo);
   }
 
+  // Diálogo con título y tipo del documento; copia el archivo a almacenamiento persistente.
   Future<void> _abrirDialogoDatosDocumento(
     String filePath, {
     DocumentoModel? existente,
@@ -547,6 +555,7 @@ class _FormularioAgendaEventoScreenState
     });
   }
 
+  // Valida el formulario y delega el guardado real a _guardarInterno.
   Future<void> _guardar() async {
     if (!_formKey.currentState!.validate()) {
       return;
@@ -575,6 +584,7 @@ class _FormularioAgendaEventoScreenState
     }
   }
 
+  // Guarda el evento, sincroniza medicamentos/documentos (altas, ediciones, bajas) y crea el seguimiento si corresponde.
   Future<void> _guardarInterno(AppLocalizations l10n) async {
     final evento = AgendaEventoModel(
       id: _eventoId,

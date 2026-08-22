@@ -35,6 +35,7 @@ class _CambiarContrasenaScreenState
     super.dispose();
   }
 
+  // Valida el formulario y llama a Supabase Auth para cambiar la contraseña.
   Future<void> _cambiar() async {
     if (!_formKey.currentState!.validate()) {
       return;

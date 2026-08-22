@@ -28,6 +28,7 @@ class SyncService {
 
   final Ref _ref;
 
+  // Punto de entrada público: valida guardas y evita corridas superpuestas.
   Future<void> sincronizar() async {
     final usuario = _ref.read(usuarioProvider);
     if (usuario == null || usuario.esInvitado) {

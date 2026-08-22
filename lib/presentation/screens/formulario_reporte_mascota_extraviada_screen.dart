@@ -16,6 +16,7 @@ import 'package:patas_al_dia/presentation/screens/formulario_mascota_screen.dart
 import 'package:patas_al_dia/presentation/utils/etiquetas_localizadas.dart';
 import 'package:patas_al_dia/providers/mascota_extraviada_provider.dart';
 
+// Formulario para publicar un reporte de mascota perdida o encontrada.
 class FormularioReporteMascotaExtraviadaScreen extends ConsumerStatefulWidget {
   // Si viene una mascota registrada, su nombre/especie quedan fijos (no
   // editables) — cubre el flujo "mascota mía, ya cargada en la app". Si
@@ -92,6 +93,7 @@ class _FormularioReporteMascotaExtraviadaScreenState
     super.dispose();
   }
 
+  // Abre la hoja inferior para elegir la foto del reporte.
   Future<void> _elegirFoto() async {
     final l10n = AppLocalizations.of(context);
     final opcion = await showModalBottomSheet<String>(
@@ -137,6 +139,7 @@ class _FormularioReporteMascotaExtraviadaScreenState
     setState(() => _fotoPath = imagen.path);
   }
 
+  // Pide permiso de GPS y guarda la ubicación actual del dispositivo.
   Future<void> _obtenerUbicacion() async {
     final l10n = AppLocalizations.of(context);
     setState(() => _obteniendoUbicacion = true);
@@ -230,6 +233,7 @@ class _FormularioReporteMascotaExtraviadaScreenState
     }
   }
 
+  // Valida el formulario, sube la foto y guarda el reporte en Supabase.
   Future<void> _publicarReporte() async {
     if (!_formKey.currentState!.validate()) {
       return;
