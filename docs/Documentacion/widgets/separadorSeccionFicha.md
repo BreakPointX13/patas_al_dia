@@ -48,3 +48,13 @@ Primer uso del widget fuera de sus tres factory constructors: `DocumentosScreen`
 ### 5. Segundo uso fuera de los factory constructors — `AjustesScreen` (2026-08-21)
 
 Mismo patrón exacto que `DocumentosScreen` (ícono + texto en un `Row`, con una copia local de la función de color con variante oscura) — a pedido explícito del usuario, que quería las nueve opciones de Ajustes agrupadas "de un estilo parecido" al de Documentos. Acá las secciones son fijas (Apoyo/Apariencia/Cuenta/Sesión), no dinámicas como en Documentos, pero se usó el mismo patrón de todos modos por consistencia visual entre pantallas. Ver `ajustesScreen.md`, punto 11.
+
+### 6. Tercer patrón — solo ícono, sin texto, en `FormularioDocumentoScreen`/`FormularioAgendaEventoScreen` (2026-08-22)
+
+```dart
+SeparadorSeccionFicha(
+  icono: const Icon(Icons.attach_file, color: Color(0xFFD06D1F), size: 26),
+),
+```
+
+A diferencia de los puntos 4 y 5 (ícono + texto, para secciones con contenido dinámico), estos dos formularios usan el constructor base pasándole solo un `Icon` de Material — mismo criterio visual que los tres factory constructors originales (Mascota/Identificación/Datos), pero con íconos genéricos en vez de los fijos de la ficha, porque estos formularios no son de mascota. Se prefirió esto (icono solo) por sobre sumarles texto: en un formulario de campos fijos, las etiquetas de cada `TextFormField`/`DropdownButtonFormField` ya identifican de qué trata cada grupo, a diferencia de `DocumentosScreen`/`AjustesScreen`, donde el contenido bajo cada separador es una lista variable y el texto ayuda a saber qué se está por ver. Ver `formularioDocumentoScreen.md`, punto 7, y `formularioAgendaEventoScreen.md`, punto 8.

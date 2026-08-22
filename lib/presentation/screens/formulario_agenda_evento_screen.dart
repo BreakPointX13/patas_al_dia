@@ -8,6 +8,7 @@ import 'package:patas_al_dia/data/models/documento_model.dart';
 import 'package:patas_al_dia/data/models/medicamento_evento_model.dart';
 import 'package:patas_al_dia/l10n/app_localizations.dart';
 import 'package:patas_al_dia/presentation/utils/etiquetas_localizadas.dart';
+import 'package:patas_al_dia/presentation/widgets/separador_seccion_ficha.dart';
 import 'package:patas_al_dia/providers/agenda_evento_provider.dart';
 import 'package:patas_al_dia/providers/documento_provider.dart';
 import 'package:patas_al_dia/providers/mascota_provider.dart';
@@ -682,6 +683,13 @@ class _FormularioAgendaEventoScreenState
         child: ListView(
           padding: const EdgeInsets.all(16),
           children: [
+            SeparadorSeccionFicha(
+              icono: const Icon(
+                Icons.event_note_outlined,
+                color: Color(0xFFD06D1F),
+                size: 26,
+              ),
+            ),
             DropdownButtonFormField<String>(
               initialValue: _mascotaId,
               decoration: InputDecoration(labelText: l10n.campoMascotaObligatorio),
@@ -774,7 +782,13 @@ class _FormularioAgendaEventoScreenState
               ],
             ],
             if (_segundaMitadVisible) ...[
-              const Divider(height: 32),
+              SeparadorSeccionFicha(
+                icono: const Icon(
+                  Icons.list_alt_outlined,
+                  color: Color(0xFFD06D1F),
+                  size: 26,
+                ),
+              ),
               TextFormField(
                 controller: _observacionesController,
                 decoration: InputDecoration(labelText: l10n.campoObservaciones),

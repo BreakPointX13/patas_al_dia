@@ -6,6 +6,7 @@ import 'package:uuid/uuid.dart';
 import 'package:patas_al_dia/data/models/documento_model.dart';
 import 'package:patas_al_dia/l10n/app_localizations.dart';
 import 'package:patas_al_dia/presentation/utils/etiquetas_localizadas.dart';
+import 'package:patas_al_dia/presentation/widgets/separador_seccion_ficha.dart';
 import 'package:patas_al_dia/providers/documento_provider.dart';
 import 'package:patas_al_dia/services/almacenamiento_local_service.dart';
 
@@ -263,6 +264,13 @@ class _FormularioDocumentoScreenState
         child: ListView(
           padding: const EdgeInsets.all(16),
           children: [
+            SeparadorSeccionFicha(
+              icono: const Icon(
+                Icons.attach_file,
+                color: Color(0xFFD06D1F),
+                size: 26,
+              ),
+            ),
             ListTile(
               contentPadding: EdgeInsets.zero,
               leading: Icon(
@@ -276,7 +284,13 @@ class _FormularioDocumentoScreenState
                 child: Text(_filePath == null ? l10n.accionElegir : l10n.accionCambiar),
               ),
             ),
-            const SizedBox(height: 16),
+            SeparadorSeccionFicha(
+              icono: const Icon(
+                Icons.article_outlined,
+                color: Color(0xFFD06D1F),
+                size: 26,
+              ),
+            ),
             TextFormField(
               controller: _tituloController,
               decoration: InputDecoration(labelText: l10n.campoTituloObligatorio),
@@ -311,7 +325,13 @@ class _FormularioDocumentoScreenState
                 ),
               ),
             ],
-            const SizedBox(height: 16),
+            SeparadorSeccionFicha(
+              icono: const Icon(
+                Icons.event_outlined,
+                color: Color(0xFFD06D1F),
+                size: 26,
+              ),
+            ),
             ListTile(
               contentPadding: EdgeInsets.zero,
               title: Text(
