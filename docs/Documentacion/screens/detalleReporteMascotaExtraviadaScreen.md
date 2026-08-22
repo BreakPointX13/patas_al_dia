@@ -33,7 +33,7 @@ A diferencia de `denunciarReporte`/`crearReporte` (que sí crean una sesión an�
 
 ### 2. Acciones condicionadas a `esMio`
 
-"Marcar como resuelto" y "Eliminar" (con el mismo patrón visual rojo que `DetalleMascotaScreen`/`DetalleDocumentoScreen` — confirmación con `showDialog<bool>`, botón `ElevatedButton` rojo para eliminar) solo aparecen si `esMio` es `true`. "Denunciar este aviso" (`OutlinedButton.icon`, para diferenciarlo visualmente de las acciones destructivas) está siempre visible — cualquiera puede denunciar, incluido el propio dueño en teoría (no se bloquea, no vale la pena la complejidad de impedirlo).
+"Marcar como resuelto" y "Eliminar" (con el mismo patrón visual rojo que `DetalleMascotaScreen`/`DetalleDocumentoScreen` — confirmación con `confirmarAccion`, ver `dialogoConfirmacion.md`, botón rojo solo para eliminar) solo aparecen si `esMio` es `true`. "Denunciar este aviso" (`OutlinedButton.icon`, para diferenciarlo visualmente de las acciones destructivas) está siempre visible — cualquiera puede denunciar, incluido el propio dueño en teoría (no se bloquea, no vale la pena la complejidad de impedirlo).
 
 ### 3. Mini-mapa opcional dentro del detalle
 

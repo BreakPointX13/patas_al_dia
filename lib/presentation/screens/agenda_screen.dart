@@ -66,13 +66,6 @@ String _localeIntl(BuildContext context) =>
       _ => 'es_ES',
     };
 
-String _tipoEventoTexto(AppLocalizations l10n, AgendaEventoModel evento) {
-  if (evento.tipoEvento == 'Otro' && evento.tipoEventoPersonalizado != null) {
-    return evento.tipoEventoPersonalizado!;
-  }
-  return tipoEventoMostrar(l10n, evento.tipoEvento);
-}
-
 String _capitalizar(String texto) =>
     texto.isEmpty ? texto : texto[0].toUpperCase() + texto.substring(1);
 
@@ -311,10 +304,15 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
       'd MMM y',
       _localeIntl(context),
     ).format(evento.fechaProgramada);
+    final tipoEventoTexto = tipoEventoMostrar(
+      l10n,
+      evento.tipoEvento,
+      evento.tipoEventoPersonalizado,
+    );
     final subtitulo = mostrarNombreMascota
         ? '${_nombreMascota(l10n, mascotas, evento.mascotaId)} · '
-              '${_tipoEventoTexto(l10n, evento)}'
-        : _tipoEventoTexto(l10n, evento);
+              '$tipoEventoTexto'
+        : tipoEventoTexto;
 
     return Material(
       color: Colors.transparent,
@@ -422,7 +420,11 @@ class _AgendaScreenState extends ConsumerState<AgendaScreen> {
       'd MMM y',
       _localeIntl(context),
     ).format(evento.fechaProgramada);
-    final tipoTexto = _tipoEventoTexto(l10n, evento);
+    final tipoTexto = tipoEventoMostrar(
+      l10n,
+      evento.tipoEvento,
+      evento.tipoEventoPersonalizado,
+    );
     final detalle = evento.observaciones?.trim().isNotEmpty == true
         ? evento.observaciones!.trim()
         : tipoTexto;

@@ -4,6 +4,7 @@ import 'package:patas_al_dia/l10n/app_localizations.dart';
 import 'package:patas_al_dia/presentation/screens/cambiar_contrasena_screen.dart';
 import 'package:patas_al_dia/presentation/screens/login_screen.dart';
 import 'package:patas_al_dia/presentation/screens/registro_screen.dart';
+import 'package:patas_al_dia/presentation/widgets/dialogo_confirmacion.dart';
 import 'package:patas_al_dia/presentation/widgets/separador_seccion_ficha.dart';
 import 'package:patas_al_dia/providers/agenda_evento_provider.dart';
 import 'package:patas_al_dia/providers/documento_provider.dart';
@@ -109,26 +110,13 @@ class AjustesScreen extends ConsumerWidget {
     bool esInvitado,
   ) async {
     final l10n = AppLocalizations.of(context);
-    final confirmar = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(l10n.cerrarSesionLabel),
-        content: Text(
-          esInvitado
-              ? l10n.cerrarSesionContenido
-              : l10n.cerrarSesionContenidoRegistrado,
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: Text(l10n.accionCancelar),
-          ),
-          ElevatedButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            child: Text(l10n.cerrarSesionLabel),
-          ),
-        ],
-      ),
+    final confirmar = await confirmarAccion(
+      context,
+      titulo: l10n.cerrarSesionLabel,
+      contenido: esInvitado
+          ? l10n.cerrarSesionContenido
+          : l10n.cerrarSesionContenidoRegistrado,
+      textoConfirmar: l10n.cerrarSesionLabel,
     );
 
     if (confirmar != true || !context.mounted) {
@@ -166,27 +154,14 @@ class AjustesScreen extends ConsumerWidget {
     bool esInvitado,
   ) async {
     final l10n = AppLocalizations.of(context);
-    final confirmar = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(l10n.eliminarCuentaLabel),
-        content: Text(
-          esInvitado
-              ? l10n.eliminarCuentaContenido
-              : l10n.eliminarCuentaContenidoRegistrado,
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: Text(l10n.accionCancelar),
-          ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-            onPressed: () => Navigator.of(context).pop(true),
-            child: Text(l10n.accionEliminar),
-          ),
-        ],
-      ),
+    final confirmar = await confirmarAccion(
+      context,
+      titulo: l10n.eliminarCuentaLabel,
+      contenido: esInvitado
+          ? l10n.eliminarCuentaContenido
+          : l10n.eliminarCuentaContenidoRegistrado,
+      textoConfirmar: l10n.accionEliminar,
+      destructivo: true,
     );
 
     if (confirmar != true || !context.mounted) {

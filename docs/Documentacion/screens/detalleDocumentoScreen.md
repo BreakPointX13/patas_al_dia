@@ -39,4 +39,6 @@ Mismo patrón que `DetalleAgendaEventoScreen`/`DetalleMascotaScreen` (ver `decis
 
 ### 3. Traducido (2026-08-18, pasada de Documentos)
 
-Todo el texto pasa a `AppLocalizations`, incluido el tipo de documento (vía `tipoDocumentoMostrar`). El botón de eliminar sigue en el `AppBar` (tooltip + diálogo de confirmación traducidos) — no se movió al patrón de `ListTile` rojo que ya usan `DetalleAgendaEventoScreen`/`DetalleMascotaScreen`, por quedar fuera del alcance de esta pasada (era una traducción, no un rediseño).
+Todo el texto pasa a `AppLocalizations`, incluido el tipo de documento (vía `tipoDocumentoMostrar`).
+
+**El botón de eliminar se movió del `AppBar` a un `ListTile` rojo al final del cuerpo (2026-08-22)** — a pedido explícito del usuario, para que quedara igual al patrón que ya usan `DetalleAgendaEventoScreen`/`DetalleMascotaScreen`/`DetalleReporteMascotaExtraviadaScreen` (esta pantalla era la única que todavía tenía el botón arriba, con un `IconButton` sin color propio, desde la pasada de traducción — ver la nota anterior). Ver `decisiones_arquitectura.md`.

@@ -616,6 +616,22 @@ Pedido explícito del usuario: una revisión completa de todo el código (no sol
 
 ---
 
+## 2026-08-22 — Duplicación pendiente resuelta, más consistencia visual en Documentos
+
+Retomando la duplicación que había quedado pendiente de la revisión total del código (entrada anterior) — el usuario pidió seguir con eso.
+
+**Lógica de "Otro" en tipo de evento.** `tipoEventoMostrar` (ver `etiquetasLocalizadas.md`, punto 4) ganó un parámetro opcional `tipoEventoPersonalizado`, mismo patrón que ya tenía `especieValorMostrar`. Se borraron las dos copias manuales de esa rama (`AgendaScreen._tipoEventoTexto`, y el ternario inline en `DetalleAgendaEventoScreen`).
+
+**Formateo de fecha+hora.** Nueva función `fechaHoraCorta(DateTime)` en el mismo archivo (ver `etiquetasLocalizadas.md`, punto 5), reemplazando el `d/M/y H:mm` armado a mano con `padLeft` en `DetalleAgendaEventoScreen` y `FormularioAgendaEventoScreen`.
+
+**Diálogo de confirmación compartido.** Nueva función `confirmarAccion` (`lib/presentation/widgets/dialogo_confirmacion.dart`, ver `dialogoConfirmacion.md`), reemplazando 7 `AlertDialog` construidos a mano en `DetalleMascotaScreen`, `DetalleDocumentoScreen`, `DetalleAgendaEventoScreen`, `DetalleReporteMascotaExtraviadaScreen` (x3) y `AjustesScreen` (x2). Acepta `destructivo: bool` para el botón rojo, en vez de repetir el `ElevatedButton.styleFrom(backgroundColor: Colors.red)` en cada llamador.
+
+**De paso, un pedido de consistencia visual del usuario** (no parte de la revisión de duplicación en sí, pero relacionado): `DetalleDocumentoScreen` era la única pantalla de detalle con el botón de eliminar en el `AppBar` en vez del patrón `ListTile` rojo al final del cuerpo que ya usan las demás (`DetalleMascotaScreen`, `DetalleAgendaEventoScreen`, `DetalleReporteMascotaExtraviadaScreen`) — quedó así desde la pasada de traducción de Documentos, documentado en su momento como fuera de alcance (ver `detalleDocumentoScreen.md`). Se corrigió para que las cuatro pantallas de detalle sean visualmente consistentes.
+
+Los 4 hallazgos de duplicación de la revisión total quedaron así completos — el quinto punto pendiente de esa entrada (el patrón subir/bajar archivo duplicado dentro de `sync_service.dart`) y los dos de eficiencia siguen pospuestos a propósito, por tocar el motor de sync.
+
+---
+
 ## De aquí en adelante
 
 Cada vez que se tome una decisión de arquitectura nueva (enfoque, tecnología, estructura — no un simple fix o ajuste de código), se agrega una entrada acá con: fecha, la decisión, el porqué, y alternativas consideradas si las hubo.

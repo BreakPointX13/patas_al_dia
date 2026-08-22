@@ -45,17 +45,31 @@ A diferencia de `especieTexto` (que sí vivía como getter en el modelo antes de
 ### 4. `tipoEventoMostrar`/`tipoDocumentoMostrar`/`tipoPresentacionMostrar` (2026-08-18, pasada de Agenda)
 
 ```dart
-String tipoEventoMostrar(AppLocalizations l10n, String? tipoEvento) { ... }
+String tipoEventoMostrar(AppLocalizations l10n, String? tipoEvento, [String? tipoEventoPersonalizado]) { ... }
 String tipoDocumentoMostrar(AppLocalizations l10n, String? tipoDocumento) { ... }
 String tipoPresentacionMostrar(AppLocalizations l10n, String tipoPresentacion) { ... }
 ```
 
 Mismo patrón exacto que `especieMostrar`/`sexoMostrar`, para los otros tres valores guardados fijos en español que aparecen en el módulo Agenda. Una diferencia de firma: estas tres reciben `AppLocalizations l10n` ya resuelto en vez de `BuildContext context` — a diferencia de `especieMostrar`/`sexoMostrar` (que se llaman una sola vez por pantalla, directo con el `context` a mano), estas se usan varias veces dentro del mismo `build()` (una por cada medicamento/documento de una lista), así que conviene resolver `AppLocalizations.of(context)` una sola vez arriba y pasarlo, en vez de repetir la búsqueda en cada llamada.
 
+**`tipoEventoMostrar` ganó el parámetro opcional `tipoEventoPersonalizado` (2026-08-22)** — mismo patrón que `especieValorMostrar` (punto 1): si `tipoEvento == 'Otro'` y hay texto personalizado, se muestra ese texto tal cual. Antes de este cambio, `AgendaScreen` (con su propio helper privado `_tipoEventoTexto`) y `DetalleAgendaEventoScreen` (con la misma rama inline) reimplementaban ese chequeo cada una por su lado — encontrado en una revisión completa del código pedida por el usuario (ver `decisiones_arquitectura.md`). Se sumó el parámetro a la función compartida y se borraron las dos copias.
+
 `tipoDocumentoMostrar` es compartida entre los documentos adjuntos a un evento de agenda (`FormularioAgendaEventoScreen`/`DetalleAgendaEventoScreen`) y la pantalla general de Documentos (`DocumentosScreen`/`FormularioDocumentoScreen`/`DetalleDocumentoScreen`, traducida en la pasada del 2026-08-18) — mismo tipo de dato, mismo criterio de traducción, sin importar desde qué pantalla se llama.
 
 **`'Carnet de vacunación': l10n.tipoDocumentoCarnetVacunacion`** — única entrada del mapa que solo existe en la lista `_tiposDocumento` de `FormularioDocumentoScreen` (no en la versión reducida de Agenda). Vive en el mismo mapa igual que las demás porque `tipoDocumentoMostrar` es compartida entre ambos contextos — no hay problema en que el mapa tenga una clave que un solo llamador use.
 
-### 5. `especieValorMostrar` sin `MascotaModel` — el caso que la destapó (2026-08-19)
+### 5. `fechaHoraCorta(DateTime fecha)` (2026-08-22)
+
+```dart
+String fechaHoraCorta(DateTime fecha) {
+  final hora = fecha.hour.toString().padLeft(2, '0');
+  final minuto = fecha.minute.toString().padLeft(2, '0');
+  return '${fecha.day}/${fecha.month}/${fecha.year} $hora:$minuto';
+}
+```
+
+No traduce nada (a diferencia del resto de las funciones de este archivo) — vive acá igual porque es del mismo tipo de duplicación que ya resuelven las demás: `DetalleAgendaEventoScreen` y `FormularioAgendaEventoScreen` armaban el mismo string `d/M/y H:mm` con `padLeft` a mano, cada una por su lado, encontrado en la misma revisión de código que el punto 4. Sin `intl`/`DateFormat` a propósito: no hay nombres de mes ni nada que dependa del idioma, un string numérico se lee igual en los tres idiomas de la app — a diferencia de `_localeIntl`/`DateFormat` en `AgendaScreen`, que sí hace falta cuando se muestran nombres de mes.
+
+### 6. `especieValorMostrar` sin `MascotaModel` — el caso que la destapó (2026-08-19)
 
 `FormularioReporteMascotaExtraviadaScreen` y `DetalleReporteMascotaExtraviadaScreen` (módulo Mapa) trabajan con `MascotaExtraviadaModel`, que **no** tiene el par `especie`/`especiePersonalizada` de `MascotaModel` — solo un `mascotaEspecie` único (denormalizado, ver `mascotaExtraviada.model.md`). Cuando alguien reporta una mascota sin registrarla y elige "Otro" con un texto libre (ej. "Iguana"), ese texto se guarda directo en `mascotaEspecie`, sin ningún flag "Otro" aparte. Antes del fix del punto 1, mostrar ese reporte habría dicho "No especificada" en vez del texto real — se detectó al construir estas pantallas, antes de publicarse. La función pública `especieValorMostrar(l10n, especie)` (sin `especiePersonalizada`, ya que no existe acá) resuelve el mismo problema: cualquier texto no reconocido se muestra tal cual, en vez de perderse.

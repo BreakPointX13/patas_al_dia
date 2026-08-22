@@ -724,12 +724,7 @@ class _FormularioAgendaEventoScreenState
               title: Text(
                 _fechaProgramada == null
                     ? l10n.fechaHoraNoSeleccionadas
-                    : l10n.fechaConValor(
-                        '${_fechaProgramada!.day}/'
-                        '${_fechaProgramada!.month}/${_fechaProgramada!.year} '
-                        '${_fechaProgramada!.hour.toString().padLeft(2, '0')}:'
-                        '${_fechaProgramada!.minute.toString().padLeft(2, '0')}',
-                      ),
+                    : l10n.fechaConValor(fechaHoraCorta(_fechaProgramada!)),
               ),
               trailing: TextButton(
                 onPressed: _seleccionarFechaHora,

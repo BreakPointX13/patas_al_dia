@@ -45,6 +45,16 @@ String especieValorMostrar(
   return etiquetas[especie] ?? especie;
 }
 
+/// Fecha y hora corta, en formato `d/M/y H:mm` con hora y minuto rellenados
+/// a dos dígitos (ej. "5/3/2026 09:07"). No usa `intl`/`DateFormat` a
+/// propósito — no hay nombres de mes ni nada que traducir, un simple string
+/// numérico es igual de claro en los tres idiomas de la app.
+String fechaHoraCorta(DateTime fecha) {
+  final hora = fecha.hour.toString().padLeft(2, '0');
+  final minuto = fecha.minute.toString().padLeft(2, '0');
+  return '${fecha.day}/${fecha.month}/${fecha.year} $hora:$minuto';
+}
+
 String especieMostrar(BuildContext context, MascotaModel mascota) {
   return especieValorMostrar(
     AppLocalizations.of(context),
@@ -67,8 +77,18 @@ String sexoMostrar(BuildContext context, String? sexo) {
 }
 
 /// Mismo criterio, para el tipo de evento de agenda (guardado fijo en
-/// español; el texto libre de "Otro" nunca se traduce).
-String tipoEventoMostrar(AppLocalizations l10n, String? tipoEvento) {
+/// español; el texto libre de "Otro" nunca se traduce). Mismo patrón que
+/// `especieValorMostrar`: si `tipoEvento == 'Otro'` y hay un
+/// `tipoEventoPersonalizado`, se muestra ese texto libre tal cual, en vez de
+/// la etiqueta genérica "Otro".
+String tipoEventoMostrar(
+  AppLocalizations l10n,
+  String? tipoEvento, [
+  String? tipoEventoPersonalizado,
+]) {
+  if (tipoEvento == 'Otro' && tipoEventoPersonalizado != null) {
+    return tipoEventoPersonalizado;
+  }
   final etiquetas = {
     'Vacuna': l10n.tipoEventoVacuna,
     'Desparasitación': l10n.tipoEventoDesparasitacion,

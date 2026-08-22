@@ -9,6 +9,7 @@ import 'package:patas_al_dia/l10n/app_localizations.dart';
 import 'package:patas_al_dia/presentation/screens/formulario_agenda_evento_screen.dart';
 import 'package:patas_al_dia/presentation/screens/visor_imagen_screen.dart';
 import 'package:patas_al_dia/presentation/utils/etiquetas_localizadas.dart';
+import 'package:patas_al_dia/presentation/widgets/dialogo_confirmacion.dart';
 import 'package:patas_al_dia/providers/agenda_evento_provider.dart';
 import 'package:patas_al_dia/providers/documento_provider.dart';
 import 'package:patas_al_dia/providers/mascota_provider.dart';
@@ -81,23 +82,12 @@ class _DetalleAgendaEventoScreenState
 
   Future<void> _eliminarEvento(AgendaEventoModel evento) async {
     final l10n = AppLocalizations.of(context);
-    final confirmar = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(l10n.eliminarEventoTitulo),
-        content: Text(l10n.eliminarEventoContenido(evento.titulo)),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: Text(l10n.accionCancelar),
-          ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-            onPressed: () => Navigator.of(context).pop(true),
-            child: Text(l10n.accionEliminar),
-          ),
-        ],
-      ),
+    final confirmar = await confirmarAccion(
+      context,
+      titulo: l10n.eliminarEventoTitulo,
+      contenido: l10n.eliminarEventoContenido(evento.titulo),
+      textoConfirmar: l10n.accionEliminar,
+      destructivo: true,
     );
 
     if (confirmar != true || !mounted) {
@@ -153,20 +143,16 @@ class _DetalleAgendaEventoScreenState
           ListTile(
             title: Text(l10n.campoTipoEvento),
             subtitle: Text(
-              evento.tipoEvento == 'Otro' &&
-                      evento.tipoEventoPersonalizado != null
-                  ? evento.tipoEventoPersonalizado!
-                  : tipoEventoMostrar(l10n, evento.tipoEvento),
+              tipoEventoMostrar(
+                l10n,
+                evento.tipoEvento,
+                evento.tipoEventoPersonalizado,
+              ),
             ),
           ),
           ListTile(
             title: Text(l10n.campoFechaProgramada),
-            subtitle: Text(
-              '${evento.fechaProgramada.day}/'
-              '${evento.fechaProgramada.month}/${evento.fechaProgramada.year} '
-              '${evento.fechaProgramada.hour.toString().padLeft(2, '0')}:'
-              '${evento.fechaProgramada.minute.toString().padLeft(2, '0')}',
-            ),
+            subtitle: Text(fechaHoraCorta(evento.fechaProgramada)),
           ),
           ListTile(
             title: Text(l10n.campoObservaciones),

@@ -7,6 +7,7 @@ import 'package:patas_al_dia/l10n/app_localizations.dart';
 import 'package:patas_al_dia/presentation/screens/formulario_documento_screen.dart';
 import 'package:patas_al_dia/presentation/screens/visor_imagen_screen.dart';
 import 'package:patas_al_dia/presentation/utils/etiquetas_localizadas.dart';
+import 'package:patas_al_dia/presentation/widgets/dialogo_confirmacion.dart';
 import 'package:patas_al_dia/providers/agenda_evento_provider.dart';
 import 'package:patas_al_dia/providers/documento_provider.dart';
 
@@ -76,22 +77,11 @@ class _DetalleDocumentoScreenState
 
   Future<void> _eliminarDocumento(DocumentoModel documento) async {
     final l10n = AppLocalizations.of(context);
-    final confirmar = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(l10n.eliminarDocumentoTitulo),
-        content: Text(l10n.eliminarDocumentoContenido(documento.titulo)),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: Text(l10n.accionCancelar),
-          ),
-          ElevatedButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            child: Text(l10n.accionEliminar),
-          ),
-        ],
-      ),
+    final confirmar = await confirmarAccion(
+      context,
+      titulo: l10n.eliminarDocumentoTitulo,
+      contenido: l10n.eliminarDocumentoContenido(documento.titulo),
+      textoConfirmar: l10n.accionEliminar,
     );
 
     if (confirmar != true || !mounted) {
@@ -126,16 +116,7 @@ class _DetalleDocumentoScreenState
     final l10n = AppLocalizations.of(context);
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(documento.titulo),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.delete_outline),
-            tooltip: l10n.eliminarDocumentoTitulo,
-            onPressed: () => _eliminarDocumento(documento),
-          ),
-        ],
-      ),
+      appBar: AppBar(title: Text(documento.titulo)),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
@@ -233,6 +214,15 @@ class _DetalleDocumentoScreenState
                 ),
               );
             },
+          ),
+          const SizedBox(height: 16),
+          ListTile(
+            leading: const Icon(Icons.delete_outline, color: Colors.red),
+            title: Text(
+              l10n.eliminarDocumentoTitulo,
+              style: const TextStyle(color: Colors.red),
+            ),
+            onTap: () => _eliminarDocumento(documento),
           ),
         ],
       ),

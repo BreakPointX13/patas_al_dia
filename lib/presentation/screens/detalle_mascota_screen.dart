@@ -8,6 +8,7 @@ import 'package:patas_al_dia/presentation/screens/documentos_screen.dart';
 import 'package:patas_al_dia/presentation/screens/formulario_mascota_screen.dart';
 import 'package:patas_al_dia/presentation/screens/formulario_reporte_mascota_extraviada_screen.dart';
 import 'package:patas_al_dia/presentation/utils/etiquetas_localizadas.dart';
+import 'package:patas_al_dia/presentation/widgets/dialogo_confirmacion.dart';
 import 'package:patas_al_dia/presentation/widgets/separador_seccion_ficha.dart';
 import 'package:patas_al_dia/presentation/widgets/tarjeta_clara.dart';
 import 'package:patas_al_dia/providers/mascota_provider.dart';
@@ -18,23 +19,12 @@ Future<void> _eliminarMascota(
   MascotaModel mascota,
 ) async {
   final l10n = AppLocalizations.of(context);
-  final confirmar = await showDialog<bool>(
-    context: context,
-    builder: (context) => AlertDialog(
-      title: Text(l10n.eliminarMascotaTitulo),
-      content: Text(l10n.eliminarMascotaContenido(mascota.nombre)),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.of(context).pop(false),
-          child: Text(l10n.accionCancelar),
-        ),
-        ElevatedButton(
-          style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-          onPressed: () => Navigator.of(context).pop(true),
-          child: Text(l10n.accionEliminar),
-        ),
-      ],
-    ),
+  final confirmar = await confirmarAccion(
+    context,
+    titulo: l10n.eliminarMascotaTitulo,
+    contenido: l10n.eliminarMascotaContenido(mascota.nombre),
+    textoConfirmar: l10n.accionEliminar,
+    destructivo: true,
   );
 
   if (confirmar != true || !context.mounted) {

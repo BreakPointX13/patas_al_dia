@@ -7,6 +7,7 @@ import 'package:patas_al_dia/data/models/mascota_extraviada_model.dart';
 import 'package:patas_al_dia/l10n/app_localizations.dart';
 import 'package:patas_al_dia/presentation/utils/etiquetas_localizadas.dart';
 import 'package:patas_al_dia/presentation/utils/mapa_tiles.dart';
+import 'package:patas_al_dia/presentation/widgets/dialogo_confirmacion.dart';
 import 'package:patas_al_dia/presentation/widgets/icono_tipo_reporte.dart';
 import 'package:patas_al_dia/providers/mascota_extraviada_provider.dart';
 
@@ -27,22 +28,11 @@ class _DetalleReporteMascotaExtraviadaScreenState
     extends ConsumerState<DetalleReporteMascotaExtraviadaScreen> {
   Future<void> _denunciar(MascotaExtraviadaModel reporte) async {
     final l10n = AppLocalizations.of(context);
-    final confirmar = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(l10n.confirmarDenunciaTitulo),
-        content: Text(l10n.confirmarDenunciaContenido),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: Text(l10n.accionCancelar),
-          ),
-          ElevatedButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            child: Text(l10n.denunciarReporteLabel),
-          ),
-        ],
-      ),
+    final confirmar = await confirmarAccion(
+      context,
+      titulo: l10n.confirmarDenunciaTitulo,
+      contenido: l10n.confirmarDenunciaContenido,
+      textoConfirmar: l10n.denunciarReporteLabel,
     );
     if (confirmar != true || !mounted) {
       return;
@@ -60,22 +50,11 @@ class _DetalleReporteMascotaExtraviadaScreenState
 
   Future<void> _marcarComoResuelto(MascotaExtraviadaModel reporte) async {
     final l10n = AppLocalizations.of(context);
-    final confirmar = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(l10n.confirmarResueltoTitulo),
-        content: Text(l10n.confirmarResueltoContenido),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: Text(l10n.accionCancelar),
-          ),
-          ElevatedButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            child: Text(l10n.marcarComoResueltoLabel),
-          ),
-        ],
-      ),
+    final confirmar = await confirmarAccion(
+      context,
+      titulo: l10n.confirmarResueltoTitulo,
+      contenido: l10n.confirmarResueltoContenido,
+      textoConfirmar: l10n.marcarComoResueltoLabel,
     );
     if (confirmar != true || !mounted) {
       return;
@@ -90,23 +69,12 @@ class _DetalleReporteMascotaExtraviadaScreenState
 
   Future<void> _eliminar(MascotaExtraviadaModel reporte) async {
     final l10n = AppLocalizations.of(context);
-    final confirmar = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(l10n.eliminarReporteTitulo),
-        content: Text(l10n.eliminarReporteContenido),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: Text(l10n.accionCancelar),
-          ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-            onPressed: () => Navigator.of(context).pop(true),
-            child: Text(l10n.accionEliminar),
-          ),
-        ],
-      ),
+    final confirmar = await confirmarAccion(
+      context,
+      titulo: l10n.eliminarReporteTitulo,
+      contenido: l10n.eliminarReporteContenido,
+      textoConfirmar: l10n.accionEliminar,
+      destructivo: true,
     );
     if (confirmar != true || !mounted) {
       return;

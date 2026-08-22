@@ -24,7 +24,7 @@ Pantalla de ajustes de la app. Tiene nueve opciones, agrupadas en cuatro seccion
 
 ### 1. `_confirmarCerrarSesion` (2026-08-15, mensaje condicional desde 2026-08-19)
 
-Antes de llamar a `_cerrarSesion`, pide confirmación con un `AlertDialog`. Se agregó porque, como invitado, no existe forma de "volver a entrar" a la misma sesión después de cerrarla (no hay credencial que recordar) — cerrar sesión es, en la práctica, irreversible desde la UI, aunque los datos no se borren literalmente de SQLite (ver el punto 3). El texto del diálogo se lo dice explícitamente al usuario antes de que lo haga sin querer.
+Antes de llamar a `_cerrarSesion`, pide confirmación con `confirmarAccion` (ver `dialogoConfirmacion.md` — un `AlertDialog` manual hasta el 2026-08-22, extraído a función compartida al encontrarse la misma construcción repetida en 7 lugares del proyecto). Se agregó porque, como invitado, no existe forma de "volver a entrar" a la misma sesión después de cerrarla (no hay credencial que recordar) — cerrar sesión es, en la práctica, irreversible desde la UI, aunque los datos no se borren literalmente de SQLite (ver el punto 3). El texto del diálogo se lo dice explícitamente al usuario antes de que lo haga sin querer.
 
 **Con Login real (2026-08-19), ese texto dejó de ser cierto para un usuario registrado** — al tener email y contraseña, sí puede volver a entrar a la misma sesión (ver `iniciarSesionScreen.md`), con todos sus datos intactos si es el mismo dispositivo. `_confirmarCerrarSesion` ahora recibe un tercer parámetro `esInvitado` (`usuario?.esInvitado ?? true`) y elige entre `cerrarSesionContenido` (advertencia de "esto es irreversible", solo para invitados) y `cerrarSesionContenidoRegistrado` (mensaje neutro, sin advertencia) según corresponda.
 

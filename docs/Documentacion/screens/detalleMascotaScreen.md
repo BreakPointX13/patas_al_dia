@@ -104,20 +104,13 @@ Cuando la mascota se registró con el switch "No sé la fecha exacta de nacimien
 
 ```dart
 Future<void> _eliminarMascota(BuildContext context, WidgetRef ref, MascotaModel mascota) async {
-  final confirmar = await showDialog<bool>(
-    context: context,
-    builder: (context) => AlertDialog(
-      title: const Text('Eliminar mascota'),
-      content: Text('¿Eliminar a ${mascota.nombre}? Se van a borrar también su agenda y sus documentos. Esta acción no se puede deshacer.'),
-      actions: [
-        TextButton(onPressed: () => Navigator.of(context).pop(false), child: const Text('Cancelar')),
-        ElevatedButton(
-          style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-          onPressed: () => Navigator.of(context).pop(true),
-          child: const Text('Eliminar'),
-        ),
-      ],
-    ),
+  final l10n = AppLocalizations.of(context);
+  final confirmar = await confirmarAccion(
+    context,
+    titulo: l10n.eliminarMascotaTitulo,
+    contenido: l10n.eliminarMascotaContenido(mascota.nombre),
+    textoConfirmar: l10n.accionEliminar,
+    destructivo: true,
   );
   if (confirmar != true || !context.mounted) return;
   await ref.read(mascotasProvider.notifier).eliminarMascota(mascota.id);
@@ -127,9 +120,9 @@ Future<void> _eliminarMascota(BuildContext context, WidgetRef ref, MascotaModel 
 
 Hasta esta versión, el proyecto no tenía ninguna función de "eliminar" expuesta en la UI — `MascotaRepository.eliminarMascota` y `MascotasNotifier.eliminarMascota` ya existían desde que se construyó la capa de datos/providers (CRUD completo desde el inicio, ver `mascota.repository.md`), pero nada en `presentation/` los llamaba todavía.
 
-- **Confirmación con `showDialog<bool>`:** mismo patrón ya usado en `AjustesScreen._cerrarSesion` — un `AlertDialog` que devuelve `true`/`false`/`null` (si se descarta tocando afuera) según el botón tocado, y el código que sigue solo continúa si el resultado fue exactamente `true`.
+- **Confirmación con `confirmarAccion`** (`lib/presentation/widgets/dialogo_confirmacion.dart`, ver `dialogoConfirmacion.md`) — hasta el 2026-08-22 este `AlertDialog` se armaba a mano acá mismo (título/contenido en español fijo, sin `l10n`, en esta primera versión); se extrajo a una función compartida al encontrarse la misma construcción repetida en 7 lugares del proyecto, ver `decisiones_arquitectura.md`. Sigue devolviendo `true`/`false`/`null` (si se descarta tocando afuera), y el código que sigue solo continúa si el resultado fue exactamente `true`.
 - **El aviso menciona la cascada:** el mensaje del diálogo advierte explícitamente que se borran también la agenda y los documentos de la mascota — es cierto a nivel de esquema (`ON DELETE CASCADE` en `agenda_eventos`, `documentos` y `mascotas_extraviadas`, todas con `mascota_id` como *foreign key* hacia `mascotas`, ver `database.helper.md`), así que ocultar esa consecuencia sería engañoso para una acción irreversible.
-- **Botón "Eliminar" en rojo** (`ElevatedButton.styleFrom(backgroundColor: Colors.red)`), distinto del resto de los `ElevatedButton` de la app (que usan el `ElevatedButtonTheme` por defecto) — es la primera acción destructiva de la app con esta señal visual explícita; "Cerrar sesión" no la tiene porque, a diferencia de borrar una mascota, no destruye datos (ver `decisiones_arquitectura.md`, entrada del 2026-08-06).
+- **Botón "Eliminar" en rojo** (`destructivo: true`, ver `dialogoConfirmacion.md`), distinto del resto de los `ElevatedButton` de la app (que usan el `ElevatedButtonTheme` por defecto) — es la primera acción destructiva de la app con esta señal visual explícita; "Cerrar sesión" no la tiene porque, a diferencia de borrar una mascota, no destruye datos (ver `decisiones_arquitectura.md`, entrada del 2026-08-06).
 - **`Navigator.of(context).pop()` al final, no `pushReplacement` ni nada más elaborado:** como `DetalleMascotaScreen` siempre se llega empujándola sobre `HomeScreen` (ver la nota sobre `mascotaId` más arriba), un simple `pop()` alcanza para volver a la lista — que ya no va a mostrar la mascota eliminada porque `eliminarMascota` del notifier actualiza el `state` en memoria antes de que se ejecute el `pop()`.
 
 ### 7. `Card` → `TarjetaClara` (2026-08-18)
