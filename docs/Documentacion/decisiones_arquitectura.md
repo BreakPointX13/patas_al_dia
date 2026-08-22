@@ -644,6 +644,20 @@ Pedido explícito del usuario: revisar todas las pantallas/formularios buscando 
 
 ---
 
+## 2026-08-22 (continuación) — "Reportar un bug", pendiente desde el 2026-08-18
+
+Con Sync (y con él, toda la infraestructura de Supabase) ya en pie, se retomó este pedido — pospuesto en su momento explícitamente hasta tener un backend (ver memoria de sesión `project_reportar_bug_pendiente`, ya resuelta y borrada).
+
+**Decisión del usuario, consultada antes de programar:** envío automático, sin que el usuario tenga que hacer nada más — se evaluaron dos caminos, uno automático (Edge Function + servicio de correo transaccional) y otro más simple pero manual (`mailto:` con `url_launcher`, abriendo la app de correo del usuario con el texto precargado). Se descartó el segundo por dos motivos: no puede adjuntar la imagen automáticamente, y no llega nada si el usuario cancela o no tiene una app de correo configurada.
+
+**Tercera función server-side del proyecto** (después de `eliminar-cuenta` y la CORS que se le sumó para el borrado desde la web) — `supabase/functions/reportar-bug`, ver `reportarBugFunction.md`. Usa [Resend](https://resend.com) como servicio de envío, con `RESEND_API_KEY` guardada como secreto de Supabase (`supabase secrets set`, nunca en el código ni en el repo). A diferencia de `eliminar-cuenta`, esta función **no exige sesión** — un invitado también tiene que poder reportar un bug, coherente con la regla 2 de `CLAUDE.md`.
+
+**Límite del nivel gratis de Resend, resuelto sin fricción:** sin verificar un dominio propio, solo se puede enviar desde `onboarding@resend.dev` y, en modo sandbox, únicamente hacia el correo con el que se creó la cuenta de Resend. Como la cuenta se creó justo con `breakpointx.dev@gmail.com` (el destinatario real que se necesitaba), esta restricción no bloqueó nada — quedó anotado en `reportarBugFunction.md` por si en el futuro hiciera falta mandar a otro correo o usar un remitente de marca propia.
+
+Verificado de punta a punta antes de que el usuario probara desde la app: dos llamadas de prueba directas a la función (una sin imagen, una con una imagen de prueba en base64), confirmando que los dos correos llegaron de verdad a la bandeja de entrada.
+
+---
+
 ## De aquí en adelante
 
 Cada vez que se tome una decisión de arquitectura nueva (enfoque, tecnología, estructura — no un simple fix o ajuste de código), se agrega una entrada acá con: fecha, la decisión, el porqué, y alternativas consideradas si las hubo.

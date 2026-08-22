@@ -4,6 +4,7 @@ import 'package:patas_al_dia/l10n/app_localizations.dart';
 import 'package:patas_al_dia/presentation/screens/cambiar_contrasena_screen.dart';
 import 'package:patas_al_dia/presentation/screens/login_screen.dart';
 import 'package:patas_al_dia/presentation/screens/registro_screen.dart';
+import 'package:patas_al_dia/presentation/screens/reportar_bug_screen.dart';
 import 'package:patas_al_dia/presentation/widgets/dialogo_confirmacion.dart';
 import 'package:patas_al_dia/presentation/widgets/separador_seccion_ficha.dart';
 import 'package:patas_al_dia/providers/agenda_evento_provider.dart';
@@ -368,6 +369,20 @@ class AjustesScreen extends ConsumerWidget {
                   ? null
                   : () => ref.read(syncServiceProvider).sincronizar(),
             ),
+          _encabezadoSeccion(
+            context,
+            Icons.help_outline,
+            l10n.seccionAyudaLabel,
+          ),
+          ListTile(
+            leading: const Icon(Icons.bug_report_outlined),
+            title: Text(l10n.reportarBugTitulo),
+            subtitle: Text(l10n.reportarBugSubtitulo),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => Navigator.of(context).push(
+              MaterialPageRoute(builder: (context) => const ReportarBugScreen()),
+            ),
+          ),
           _encabezadoSeccion(
             context,
             Icons.shield_outlined,

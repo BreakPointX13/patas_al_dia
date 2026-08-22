@@ -184,7 +184,33 @@ class AppLocalizationsEn extends AppLocalizations {
   String get seccionCuentaLabel => 'Account';
 
   @override
+  String get seccionAyudaLabel => 'Help';
+
+  @override
   String get seccionSesionLabel => 'Session';
+
+  @override
+  String get reportarBugTitulo => 'Report a bug';
+
+  @override
+  String get reportarBugSubtitulo => 'Let us know if something isn\'t working';
+
+  @override
+  String get reportarBugIntro =>
+      'Tell us what happened — you can attach a screenshot if it helps explain it.';
+
+  @override
+  String get campoDescripcionBug => 'What happened?';
+
+  @override
+  String get errorDescripcionBugObligatoria =>
+      'Describe the problem before sending';
+
+  @override
+  String get botonEnviarReporte => 'Send report';
+
+  @override
+  String get avisoReporteEnviado => 'Thanks! Your report was sent';
 
   @override
   String get homeTitulo => 'My Pets';

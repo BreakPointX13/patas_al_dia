@@ -185,7 +185,33 @@ class AppLocalizationsEs extends AppLocalizations {
   String get seccionCuentaLabel => 'Cuenta';
 
   @override
+  String get seccionAyudaLabel => 'Ayuda';
+
+  @override
   String get seccionSesionLabel => 'Sesión';
+
+  @override
+  String get reportarBugTitulo => 'Reportar un bug';
+
+  @override
+  String get reportarBugSubtitulo => 'Avísanos si algo no funciona bien';
+
+  @override
+  String get reportarBugIntro =>
+      'Cuéntanos qué pasó — puedes adjuntar una captura de pantalla si ayuda a explicarlo.';
+
+  @override
+  String get campoDescripcionBug => '¿Qué pasó?';
+
+  @override
+  String get errorDescripcionBugObligatoria =>
+      'Describe el problema antes de enviar';
+
+  @override
+  String get botonEnviarReporte => 'Enviar reporte';
+
+  @override
+  String get avisoReporteEnviado => '¡Gracias! Tu reporte fue enviado';
 
   @override
   String get homeTitulo => 'Mis Mascotas';

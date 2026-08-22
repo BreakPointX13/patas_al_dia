@@ -430,11 +430,59 @@ abstract class AppLocalizations {
   /// **'Cuenta'**
   String get seccionCuentaLabel;
 
+  /// No description provided for @seccionAyudaLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Ayuda'**
+  String get seccionAyudaLabel;
+
   /// No description provided for @seccionSesionLabel.
   ///
   /// In es, this message translates to:
   /// **'Sesión'**
   String get seccionSesionLabel;
+
+  /// No description provided for @reportarBugTitulo.
+  ///
+  /// In es, this message translates to:
+  /// **'Reportar un bug'**
+  String get reportarBugTitulo;
+
+  /// No description provided for @reportarBugSubtitulo.
+  ///
+  /// In es, this message translates to:
+  /// **'Avísanos si algo no funciona bien'**
+  String get reportarBugSubtitulo;
+
+  /// No description provided for @reportarBugIntro.
+  ///
+  /// In es, this message translates to:
+  /// **'Cuéntanos qué pasó — puedes adjuntar una captura de pantalla si ayuda a explicarlo.'**
+  String get reportarBugIntro;
+
+  /// No description provided for @campoDescripcionBug.
+  ///
+  /// In es, this message translates to:
+  /// **'¿Qué pasó?'**
+  String get campoDescripcionBug;
+
+  /// No description provided for @errorDescripcionBugObligatoria.
+  ///
+  /// In es, this message translates to:
+  /// **'Describe el problema antes de enviar'**
+  String get errorDescripcionBugObligatoria;
+
+  /// No description provided for @botonEnviarReporte.
+  ///
+  /// In es, this message translates to:
+  /// **'Enviar reporte'**
+  String get botonEnviarReporte;
+
+  /// No description provided for @avisoReporteEnviado.
+  ///
+  /// In es, this message translates to:
+  /// **'¡Gracias! Tu reporte fue enviado'**
+  String get avisoReporteEnviado;
 
   /// No description provided for @homeTitulo.
   ///

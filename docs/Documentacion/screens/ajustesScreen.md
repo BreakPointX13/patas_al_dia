@@ -8,7 +8,7 @@ Se accede desde `MenuUsuarioAvatar` (ver `menuUsuarioAvatar.md`), presente en el
 
 ## 🎯 Propósito del Archivo
 
-Pantalla de ajustes de la app. Tiene nueve opciones, agrupadas en cuatro secciones desde el 2026-08-21 (ver punto 11): **Apoyo** ("Aportes voluntarios", 2026-08-17, punto 3), **Apariencia** ("Tema", punto 5; "Tamaño de letra", punto 4; "Idioma", punto 6 — las tres del 2026-08-18), **Cuenta** ("Cuenta", 2026-08-19, punto 7 — solo para invitados, es el punto de entrada para registrarse; "Cambiar contraseña", 2026-08-21, punto 10; "Sincronizar ahora", 2026-08-21, punto 9 — las dos últimas solo para usuarios registrados) y **Sesión** ("Cerrar sesión" y "Eliminar cuenta", 2026-08-19, punto 8). Desde esta pasada, todos sus textos salen de `AppLocalizations` (ver `sistemaIdiomas.md`) en vez de estar escritos fijo en español.
+Pantalla de ajustes de la app. Tiene diez opciones, agrupadas en cinco secciones desde el 2026-08-22 (ver punto 11): **Apoyo** ("Aportes voluntarios", 2026-08-17, punto 3), **Apariencia** ("Tema", punto 5; "Tamaño de letra", punto 4; "Idioma", punto 6 — las tres del 2026-08-18), **Cuenta** ("Cuenta", 2026-08-19, punto 7 — solo para invitados, es el punto de entrada para registrarse; "Cambiar contraseña", 2026-08-21, punto 10; "Sincronizar ahora", 2026-08-21, punto 9 — las dos últimas solo para usuarios registrados), **Ayuda** ("Reportar un bug", 2026-08-22, punto 12) y **Sesión** ("Cerrar sesión" y "Eliminar cuenta", 2026-08-19, punto 8). Desde esta pasada, todos sus textos salen de `AppLocalizations` (ver `sistemaIdiomas.md`) en vez de estar escritos fijo en español.
 
 ---
 
@@ -245,5 +245,21 @@ Widget _encabezadoSeccion(BuildContext context, IconData icono, String texto) {
 
 - **A pedido explícito del usuario**, que pidió reorganizar las nueve opciones "de un estilo parecido a la separación con logos que implementamos en el orden de los documentos" — reutiliza el mismo widget `SeparadorSeccionFicha` (ver `separadorSeccionFicha.md`) con el mismo patrón ícono+texto que ya usa `DocumentosScreen` para agrupar por tipo (ver `documentosScreen.md`, punto 4), en vez de los tres factory constructors originales del widget (pensados para grupos fijos de campos de un formulario, no para secciones de una pantalla de ajustes).
 - **`_colorTextoSeparador`** es una copia local de la función homónima de `documentos_screen.dart` — mismo criterio de duplicar en vez de compartir ya usado en el resto del proyecto (repositories, por ejemplo) cuando una función es chica y no vale la pena una nueva capa de abstracción compartida para dos usos.
-- **Cuatro secciones, con "Apoyo" primero** (decisión explícita del usuario — no es el orden en el que se fueron agregando las opciones históricamente): "Apoyo" (Aportes voluntarios), "Apariencia" (Tema, Tamaño de letra, Idioma), "Cuenta" (Cuenta/Cambiar contraseña/Sincronizar ahora) y "Sesión" (Cerrar sesión, Eliminar cuenta) — las dos últimas separadas a propósito, ya que agrupar una acción destructiva ("Eliminar cuenta") junto a acciones rutinarias de cuenta diluye la separación visual que ya tenía (ícono/texto en rojo).
+- **Cinco secciones desde el 2026-08-22 (originalmente cuatro), con "Apoyo" primero** (decisión explícita del usuario — no es el orden en el que se fueron agregando las opciones históricamente): "Apoyo" (Aportes voluntarios), "Apariencia" (Tema, Tamaño de letra, Idioma), "Cuenta" (Cuenta/Cambiar contraseña/Sincronizar ahora), "Ayuda" (Reportar un bug, ver punto 12) y "Sesión" (Cerrar sesión, Eliminar cuenta) — estas dos últimas separadas a propósito, ya que agrupar una acción destructiva ("Eliminar cuenta") junto a acciones rutinarias de cuenta diluye la separación visual que ya tenía (ícono/texto en rojo).
 - **Los encabezados de sección son fijos, no condicionales** — aparecen siempre, aunque algún `ListTile` de esa sección esté oculto (ej. "Cuenta" solo con el ítem de invitado/email, sin "Cambiar contraseña" ni "Sincronizar ahora", para un usuario invitado). Mantiene la estructura visual predecible en vez de hacer que la pantalla "salte" secciones según el tipo de usuario.
+
+### 12. "Reportar un bug" — sección "Ayuda" nueva (2026-08-22)
+
+```dart
+ListTile(
+  leading: const Icon(Icons.bug_report_outlined),
+  title: Text(l10n.reportarBugTitulo),
+  subtitle: Text(l10n.reportarBugSubtitulo),
+  trailing: const Icon(Icons.chevron_right),
+  onTap: () => Navigator.of(context).push(
+    MaterialPageRoute(builder: (context) => const ReportarBugScreen()),
+  ),
+),
+```
+
+Pedido pendiente desde el 2026-08-18 (ver memoria de sesión `project_reportar_bug_pendiente`, ya resuelta), pospuesto explícitamente hasta tener Sync/Supabase en pie — ver `decisiones_arquitectura.md` y `reportarBugScreen.md`. Visible para **cualquier** usuario, invitado o registrado (a diferencia de "Cambiar contraseña"/"Sincronizar ahora", que son solo para registrados) — no hay ningún `if` de por medio antes de este `ListTile`, es la primera opción de la pantalla que no depende en absoluto de `usuario`.
