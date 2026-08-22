@@ -632,6 +632,18 @@ Los 4 hallazgos de duplicación de la revisión total quedaron así completos �
 
 ---
 
+## 2026-08-22 (continuación) — Revisión de consistencia visual entre pantallas
+
+Pedido explícito del usuario: revisar todas las pantallas/formularios buscando cualquiera que no calzara con el resto en decoración, logos o formato ("que no hayan puntos en blanco"). Se lanzó una revisión completa (fork, con todo el contexto de patrones ya establecidos en la sesión) sobre las ~30 pantallas de `lib/presentation/screens/`. Dos hallazgos concretos, resueltos:
+
+**Referencia vieja al `applicationId`.** `mapa_screen.dart` seguía con `userAgentPackageName: 'com.example.patas_al_dia'` en la configuración del `TileLayer` — un string de Dart, no un archivo de proyecto Android/iOS/macOS, así que se pasó por alto en el cambio de `applicationId` de esa misma sesión (ver la entrada correspondiente, arriba). Corregido a `dev.breakpointx.patasaldia`.
+
+**Tres formularios sin indicador de carga.** `FormularioMascotaScreen`, `FormularioDocumentoScreen` y `FormularioAgendaEventoScreen` eran los únicos formularios de la app sin la bandera `_guardando` que sí tienen `RegistroScreen`, `CambiarContrasenaScreen`, `NuevaContrasenaScreen`, `RecuperarContrasenaScreen`, `IniciarSesionScreen` y `FormularioReporteMascotaExtraviadaScreen` — el botón "Guardar" quedaba tocable durante todo el trabajo asíncrono de guardar (copiar archivos a un directorio persistente, escrituras en la base), sin aviso visual ni protección contra doble toque. Se sumó el mismo patrón a los tres (`bool _guardando`, `try/finally` alrededor del cuerpo real de `_guardar()`, botón con `CircularProgressIndicator` mientras dura). Ver `formularioMascotaScreen.md` (punto 14), `formularioDocumentoScreen.md` (punto 6) y `formularioAgendaEventoScreen.md` (punto 7, donde además se dividió `_guardar()` en dos métodos por el tamaño del cuerpo).
+
+**Un tercer punto quedó señalado pero sin resolver, a propósito:** solo `FormularioMascotaScreen` usa `SeparadorSeccionFicha` para agrupar visualmente sus campos; `FormularioAgendaEventoScreen`/`FormularioDocumentoScreen` son listas planas. Marcado como opinión de diseño, no como defecto — el usuario no pidió tocarlo.
+
+---
+
 ## De aquí en adelante
 
 Cada vez que se tome una decisión de arquitectura nueva (enfoque, tecnología, estructura — no un simple fix o ajuste de código), se agrega una entrada acá con: fecha, la decisión, el porqué, y alternativas consideradas si las hubo.

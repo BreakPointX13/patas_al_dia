@@ -120,3 +120,7 @@ if (_proximaConsultaActiva && _proximaConsultaFecha != null) {
 ```
 
 No es un campo del evento actual — es un **evento nuevo e independiente**, con el mismo título y mascota, en el día que el usuario elige (reutilizando la misma hora del evento original, sin pedir una hora nueva), con recordatorio fijo de 24 horas antes. No queda ningún vínculo guardado entre el evento original y este de seguimiento — si más adelante hiciera falta rastrear esa relación, habría que agregar un campo nuevo (ej. `eventoOrigenId`), pero no se justificó para el alcance actual.
+
+### 7. `_guardando` — indicador de carga en el botón, y `_guardar()` dividido en dos (2026-08-22)
+
+Mismo hallazgo que en `FormularioMascotaScreen`/`FormularioDocumentoScreen` (ver `formularioMascotaScreen.md`, punto 14) — encontrado en una revisión de consistencia visual pedida por el usuario. Acá el arreglo se hizo un poco distinto por el tamaño del método: `_guardar()` (validaciones + los tres `return` tempranos) quedó corto, y todo el trabajo real (armar el `AgendaEventoModel`, guardar medicamentos/documentos con diff, programar notificaciones, el evento de seguimiento del punto 6) se movió a un método nuevo, `_guardarInterno(AppLocalizations l10n)`, envuelto en el `try/finally` que prende/apaga `_guardando`. Se dividió en dos en vez de indentar el cuerpo completo dentro de un solo `try` — ese cuerpo ya pasaba las 100 líneas, y reindentar todo de una vez a mano era mucho más riesgoso que separar la responsabilidad en un método aparte.

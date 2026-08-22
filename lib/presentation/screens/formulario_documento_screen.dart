@@ -36,6 +36,7 @@ class FormularioDocumentoScreen extends ConsumerStatefulWidget {
 class _FormularioDocumentoScreenState
     extends ConsumerState<FormularioDocumentoScreen> {
   final _formKey = GlobalKey<FormState>();
+  bool _guardando = false;
   final _tituloController = TextEditingController();
   final _tipoPersonalizadoController = TextEditingController();
   final _notasController = TextEditingController();
@@ -175,66 +176,75 @@ class _FormularioDocumentoScreenState
       return;
     }
 
-    final documentoId = widget.documentoExistente?.id ?? const Uuid().v4();
+    setState(() => _guardando = true);
+    try {
+      final documentoId = widget.documentoExistente?.id ?? const Uuid().v4();
 
-    // Copia el archivo elegido a un directorio persistente (2026-08-20,
-    // Sync) — mismo motivo que en formulario_mascota_screen.dart. Solo si
-    // el archivo realmente cambió respecto al que ya tenía al editar.
-    final archivoCambio = _filePath != widget.documentoExistente?.filePath;
-    var filePathFinal = _filePath!;
-    if (archivoCambio) {
-      final nombre = AlmacenamientoLocalService.nombreArchivo(
-        entidadId: documentoId,
-        ext: _fileExtension ?? _filePath!.split('.').last,
+      // Copia el archivo elegido a un directorio persistente (2026-08-20,
+      // Sync) — mismo motivo que en formulario_mascota_screen.dart. Solo si
+      // el archivo realmente cambió respecto al que ya tenía al editar.
+      final archivoCambio = _filePath != widget.documentoExistente?.filePath;
+      var filePathFinal = _filePath!;
+      if (archivoCambio) {
+        final nombre = AlmacenamientoLocalService.nombreArchivo(
+          entidadId: documentoId,
+          ext: _fileExtension ?? _filePath!.split('.').last,
+        );
+        final rutaPersistente =
+            await AlmacenamientoLocalService.rutaArchivosDocumentos(nombre);
+        filePathFinal = await AlmacenamientoLocalService.copiarAPersistente(
+          rutaOrigen: _filePath!,
+          rutaDestino: rutaPersistente,
+        );
+      }
+
+      final documento = DocumentoModel(
+        id: documentoId,
+        mascotaId: widget.mascotaId,
+        eventoId: widget.documentoExistente?.eventoId,
+        titulo: _tituloController.text.trim(),
+        tipoDocumento: _tipoDocumento,
+        tipoDocumentoPersonalizado: _tipoDocumento == 'Otro'
+            ? (_tipoPersonalizadoController.text.trim().isEmpty
+                  ? null
+                  : _tipoPersonalizadoController.text.trim())
+            : null,
+        filePath: filePathFinal,
+        fileExtension: _fileExtension,
+        // Si el archivo cambió, se resetea a null a propósito — le indica al
+        // motor de sync que tiene que volver a subirlo (ver
+        // sync_service.dart). Si no cambió, se preserva el ya subido.
+        archivoRutaNube: archivoCambio
+            ? null
+            : widget.documentoExistente?.archivoRutaNube,
+        fechaEmision: _fechaEmision,
+        fechaVencimiento: _fechaVencimiento,
+        recordatorioVencimiento: _recordatorioVencimiento,
+        fechaSubida: widget.documentoExistente?.fechaSubida ?? DateTime.now(),
+        notasAsociadas: _notasController.text.trim().isEmpty
+            ? null
+            : _notasController.text.trim(),
       );
-      final rutaPersistente =
-          await AlmacenamientoLocalService.rutaArchivosDocumentos(nombre);
-      filePathFinal = await AlmacenamientoLocalService.copiarAPersistente(
-        rutaOrigen: _filePath!,
-        rutaDestino: rutaPersistente,
-      );
-    }
 
-    final documento = DocumentoModel(
-      id: documentoId,
-      mascotaId: widget.mascotaId,
-      eventoId: widget.documentoExistente?.eventoId,
-      titulo: _tituloController.text.trim(),
-      tipoDocumento: _tipoDocumento,
-      tipoDocumentoPersonalizado: _tipoDocumento == 'Otro'
-          ? (_tipoPersonalizadoController.text.trim().isEmpty
-                ? null
-                : _tipoPersonalizadoController.text.trim())
-          : null,
-      filePath: filePathFinal,
-      fileExtension: _fileExtension,
-      // Si el archivo cambió, se resetea a null a propósito — le indica al
-      // motor de sync que tiene que volver a subirlo (ver
-      // sync_service.dart). Si no cambió, se preserva el ya subido.
-      archivoRutaNube: archivoCambio
-          ? null
-          : widget.documentoExistente?.archivoRutaNube,
-      fechaEmision: _fechaEmision,
-      fechaVencimiento: _fechaVencimiento,
-      recordatorioVencimiento: _recordatorioVencimiento,
-      fechaSubida: widget.documentoExistente?.fechaSubida ?? DateTime.now(),
-      notasAsociadas: _notasController.text.trim().isEmpty
-          ? null
-          : _notasController.text.trim(),
-    );
+      if (widget.documentoExistente == null) {
+        await ref
+            .read(documentosProvider.notifier)
+            .agregarDocumento(documento);
+      } else {
+        await ref
+            .read(documentosProvider.notifier)
+            .actualizarDocumento(documento);
+      }
 
-    if (widget.documentoExistente == null) {
-      await ref.read(documentosProvider.notifier).agregarDocumento(documento);
-    } else {
-      await ref
-          .read(documentosProvider.notifier)
-          .actualizarDocumento(documento);
+      if (!mounted) {
+        return;
+      }
+      Navigator.of(context).pop();
+    } finally {
+      if (mounted) {
+        setState(() => _guardando = false);
+      }
     }
-
-    if (!mounted) {
-      return;
-    }
-    Navigator.of(context).pop();
   }
 
   @override
@@ -348,7 +358,16 @@ class _FormularioDocumentoScreenState
               maxLines: 3,
             ),
             const SizedBox(height: 32),
-            ElevatedButton(onPressed: _guardar, child: Text(l10n.accionGuardar)),
+            ElevatedButton(
+              onPressed: _guardando ? null : _guardar,
+              child: _guardando
+                  ? const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : Text(l10n.accionGuardar),
+            ),
           ],
         ),
       ),

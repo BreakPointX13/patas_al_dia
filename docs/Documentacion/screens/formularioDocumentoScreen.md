@@ -62,3 +62,7 @@ const tiposDocumentoDisponibles = ['Carnet de vacunación', 'Receta', 'Examen', 
 ```
 
 Antes `_tiposDocumento`, privada de este archivo. Al agrupar `DocumentosScreen` por tipo (ver `documentosScreen.md`, punto 4), se necesitaba el mismo orden fijo en dos pantallas — se sacó el guion bajo para que `DocumentosScreen` la importe y la reuse tal cual, en vez de duplicar la lista o crear un archivo de constantes nuevo solo para esto.
+
+### 6. `_guardando` — indicador de carga en el botón (2026-08-22)
+
+Mismo hallazgo y mismo arreglo que en `FormularioMascotaScreen` (ver `formularioMascotaScreen.md`, punto 14) — este formulario tampoco tenía la bandera de carga, a pesar de que `_guardar()` hace trabajo asíncrono real (copiar el archivo elegido a un directorio persistente). Encontrado en una revisión de consistencia visual pedida por el usuario. Los dos `return` tempranos por validación (formulario inválido, ningún archivo elegido) quedan **antes** de `setState(() => _guardando = true)` — el botón nunca muestra el spinner por un error de validación, solo mientras hay trabajo real en curso.

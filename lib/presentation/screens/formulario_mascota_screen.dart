@@ -39,6 +39,7 @@ class FormularioMascotaScreen extends ConsumerStatefulWidget {
 class _FormularioMascotaScreenState
     extends ConsumerState<FormularioMascotaScreen> {
   final _formKey = GlobalKey<FormState>();
+  bool _guardando = false;
 
   final _nombreController = TextEditingController();
   final _especiePersonalizadaController = TextEditingController();
@@ -138,90 +139,97 @@ class _FormularioMascotaScreenState
     if (!_formKey.currentState!.validate()) {
       return;
     }
+    setState(() => _guardando = true);
+    try {
+      final usuarioId = ref.read(usuarioProvider)!.id;
+      final peso = double.tryParse(_pesoController.text.trim());
+      final fechaNacimientoFinal = _fechaEstimada
+          ? DateTime(
+              DateTime.now().year -
+                  (int.tryParse(_edadEstimadaController.text.trim()) ?? 0),
+              DateTime.now().month,
+              DateTime.now().day,
+            )
+          : _fechaNacimiento;
+      final mascotaId = widget.mascotaExistente?.id ?? const Uuid().v4();
 
-    final usuarioId = ref.read(usuarioProvider)!.id;
-    final peso = double.tryParse(_pesoController.text.trim());
-    final fechaNacimientoFinal = _fechaEstimada
-        ? DateTime(
-            DateTime.now().year -
-                (int.tryParse(_edadEstimadaController.text.trim()) ?? 0),
-            DateTime.now().month,
-            DateTime.now().day,
-          )
-        : _fechaNacimiento;
-    final mascotaId = widget.mascotaExistente?.id ?? const Uuid().v4();
+      // Copia la foto elegida a un directorio persistente (2026-08-20, Sync)
+      // — image_picker devuelve una ruta de caché que en iOS el sistema
+      // puede limpiar sola (ver pendientes_ios.md, punto 1), y Sync necesita
+      // un archivo estable para poder subirlo. Solo si la foto realmente
+      // cambió (comparado contra la que ya tenía al editar) — si no, ya está
+      // en el directorio persistente de una vez anterior.
+      final fotoCambio =
+          _fotoPath != null && _fotoPath != widget.mascotaExistente?.fotoUrl;
+      var fotoPathFinal = _fotoPath;
+      if (fotoCambio) {
+        final ext = _fotoPath!.split('.').last;
+        final nombre = AlmacenamientoLocalService.nombreArchivo(
+          entidadId: mascotaId,
+          ext: ext,
+        );
+        final rutaPersistente =
+            await AlmacenamientoLocalService.rutaFotosMascotas(nombre);
+        fotoPathFinal = await AlmacenamientoLocalService.copiarAPersistente(
+          rutaOrigen: _fotoPath!,
+          rutaDestino: rutaPersistente,
+        );
+      }
 
-    // Copia la foto elegida a un directorio persistente (2026-08-20, Sync)
-    // — image_picker devuelve una ruta de caché que en iOS el sistema
-    // puede limpiar sola (ver pendientes_ios.md, punto 1), y Sync necesita
-    // un archivo estable para poder subirlo. Solo si la foto realmente
-    // cambió (comparado contra la que ya tenía al editar) — si no, ya está
-    // en el directorio persistente de una vez anterior.
-    final fotoCambio =
-        _fotoPath != null && _fotoPath != widget.mascotaExistente?.fotoUrl;
-    var fotoPathFinal = _fotoPath;
-    if (fotoCambio) {
-      final ext = _fotoPath!.split('.').last;
-      final nombre = AlmacenamientoLocalService.nombreArchivo(
-        entidadId: mascotaId,
-        ext: ext,
+      final mascota = MascotaModel(
+        id: mascotaId,
+        usuarioId: usuarioId,
+        nombre: _nombreController.text.trim(),
+        especie: _especie,
+        especiePersonalizada:
+            _especie == 'Otro' &&
+                _especiePersonalizadaController.text.trim().isNotEmpty
+            ? _especiePersonalizadaController.text.trim()
+            : null,
+        raza: _razaController.text.trim().isEmpty
+            ? null
+            : _razaController.text.trim(),
+        rutMascota: _rutController.text.trim().isEmpty
+            ? null
+            : _rutController.text.trim(),
+        colores: _coloresController.text.trim().isEmpty
+            ? null
+            : _coloresController.text.trim(),
+        numeroChip: _numeroChipController.text.trim().isEmpty
+            ? null
+            : _numeroChipController.text.trim(),
+        sexo: _sexo,
+        esterilizado: _esterilizado,
+        fechaNacimiento: fechaNacimientoFinal,
+        fechaEstimada: _fechaEstimada,
+        pesoActual: peso,
+        fotoUrl: fotoPathFinal,
+        // Si la foto cambió, se resetea a null a propósito — le indica al
+        // motor de sync que tiene que volver a subirla (ver sync_service.dart,
+        // que solo sube "una vez", si fotoRutaNube todavía es null). Si no
+        // cambió, se preserva la ya subida para no forzar una re-subida
+        // innecesaria en cada edición del resto de los campos.
+        fotoRutaNube: fotoCambio
+            ? null
+            : widget.mascotaExistente?.fotoRutaNube,
       );
-      final rutaPersistente = await AlmacenamientoLocalService.rutaFotosMascotas(
-        nombre,
-      );
-      fotoPathFinal = await AlmacenamientoLocalService.copiarAPersistente(
-        rutaOrigen: _fotoPath!,
-        rutaDestino: rutaPersistente,
-      );
+
+      if (widget.mascotaExistente == null) {
+        await ref.read(mascotasProvider.notifier).agregarMascota(mascota);
+      } else {
+        await ref.read(mascotasProvider.notifier).actualizarMascota(mascota);
+      }
+
+      if (!mounted) {
+        return;
+      }
+
+      Navigator.of(context).pop();
+    } finally {
+      if (mounted) {
+        setState(() => _guardando = false);
+      }
     }
-
-    final mascota = MascotaModel(
-      id: mascotaId,
-      usuarioId: usuarioId,
-      nombre: _nombreController.text.trim(),
-      especie: _especie,
-      especiePersonalizada:
-          _especie == 'Otro' &&
-              _especiePersonalizadaController.text.trim().isNotEmpty
-          ? _especiePersonalizadaController.text.trim()
-          : null,
-      raza: _razaController.text.trim().isEmpty
-          ? null
-          : _razaController.text.trim(),
-      rutMascota: _rutController.text.trim().isEmpty
-          ? null
-          : _rutController.text.trim(),
-      colores: _coloresController.text.trim().isEmpty
-          ? null
-          : _coloresController.text.trim(),
-      numeroChip: _numeroChipController.text.trim().isEmpty
-          ? null
-          : _numeroChipController.text.trim(),
-      sexo: _sexo,
-      esterilizado: _esterilizado,
-      fechaNacimiento: fechaNacimientoFinal,
-      fechaEstimada: _fechaEstimada,
-      pesoActual: peso,
-      fotoUrl: fotoPathFinal,
-      // Si la foto cambió, se resetea a null a propósito — le indica al
-      // motor de sync que tiene que volver a subirla (ver sync_service.dart,
-      // que solo sube "una vez", si fotoRutaNube todavía es null). Si no
-      // cambió, se preserva la ya subida para no forzar una re-subida
-      // innecesaria en cada edición del resto de los campos.
-      fotoRutaNube: fotoCambio ? null : widget.mascotaExistente?.fotoRutaNube,
-    );
-
-    if (widget.mascotaExistente == null) {
-      await ref.read(mascotasProvider.notifier).agregarMascota(mascota);
-    } else {
-      await ref.read(mascotasProvider.notifier).actualizarMascota(mascota);
-    }
-
-    if (!mounted) {
-      return;
-    }
-
-    Navigator.of(context).pop();
   }
 
   static final Map<String, String Function(AppLocalizations)>
@@ -417,7 +425,16 @@ class _FormularioMascotaScreenState
                 ),
               ),
             const SizedBox(height: 32),
-            ElevatedButton(onPressed: _guardar, child: Text(l10n.accionGuardar)),
+            ElevatedButton(
+              onPressed: _guardando ? null : _guardar,
+              child: _guardando
+                  ? const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : Text(l10n.accionGuardar),
+            ),
           ],
         ),
       ),

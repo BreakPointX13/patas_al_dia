@@ -66,6 +66,7 @@ class FormularioAgendaEventoScreen extends ConsumerStatefulWidget {
 class _FormularioAgendaEventoScreenState
     extends ConsumerState<FormularioAgendaEventoScreen> {
   final _formKey = GlobalKey<FormState>();
+  bool _guardando = false;
 
   final _tituloController = TextEditingController();
   final _tipoEventoPersonalizadoController = TextEditingController();
@@ -563,6 +564,17 @@ class _FormularioAgendaEventoScreenState
       return;
     }
 
+    setState(() => _guardando = true);
+    try {
+      await _guardarInterno(l10n);
+    } finally {
+      if (mounted) {
+        setState(() => _guardando = false);
+      }
+    }
+  }
+
+  Future<void> _guardarInterno(AppLocalizations l10n) async {
     final evento = AgendaEventoModel(
       id: _eventoId,
       mascotaId: _mascotaId!,
@@ -881,7 +893,16 @@ class _FormularioAgendaEventoScreenState
                 ),
               ),
             const SizedBox(height: 32),
-            ElevatedButton(onPressed: _guardar, child: Text(l10n.accionGuardar)),
+            ElevatedButton(
+              onPressed: _guardando ? null : _guardar,
+              child: _guardando
+                  ? const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : Text(l10n.accionGuardar),
+            ),
           ],
         ),
       ),
