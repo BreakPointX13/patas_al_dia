@@ -8,7 +8,7 @@ Se accede desde `MenuUsuarioAvatar` (ver `menuUsuarioAvatar.md`), presente en el
 
 ## 🎯 Propósito del Archivo
 
-Pantalla de ajustes de la app. Tiene nueve opciones: "Tema" (2026-08-18, ver punto 5), "Tamaño de letra" (2026-08-18, ver punto 4), "Idioma" (2026-08-18, ver punto 6), "Aportes voluntarios" (2026-08-17, ver punto 3), "Cuenta" (2026-08-19, ver punto 7 — solo para invitados, es el punto de entrada para registrarse), "Cambiar contraseña" (2026-08-21, ver punto 10 — solo para usuarios registrados), "Sincronizar ahora" (2026-08-21, ver punto 9 — solo para usuarios registrados), "Cerrar sesión" y "Eliminar cuenta" (2026-08-19, ver punto 8). Desde esta pasada, todos sus textos salen de `AppLocalizations` (ver `sistemaIdiomas.md`) en vez de estar escritos fijo en español.
+Pantalla de ajustes de la app. Tiene nueve opciones, agrupadas en cuatro secciones desde el 2026-08-21 (ver punto 11): **Apoyo** ("Aportes voluntarios", 2026-08-17, punto 3), **Apariencia** ("Tema", punto 5; "Tamaño de letra", punto 4; "Idioma", punto 6 — las tres del 2026-08-18), **Cuenta** ("Cuenta", 2026-08-19, punto 7 — solo para invitados, es el punto de entrada para registrarse; "Cambiar contraseña", 2026-08-21, punto 10; "Sincronizar ahora", 2026-08-21, punto 9 — las dos últimas solo para usuarios registrados) y **Sesión** ("Cerrar sesión" y "Eliminar cuenta", 2026-08-19, punto 8). Desde esta pasada, todos sus textos salen de `AppLocalizations` (ver `sistemaIdiomas.md`) en vez de estar escritos fijo en español.
 
 ---
 
@@ -222,3 +222,28 @@ if (usuario != null && !usuario.esInvitado)
 ```
 
 Retoque post-Sync (ver `decisiones_arquitectura.md`) — abre `CambiarContrasenaScreen` (ver `cambiarContrasenaScreen.md`), un formulario nuevo que pide la contraseña actual además de la nueva. Ubicado justo después del `ListTile` de "Cuenta" (email en texto plano) — mismo criterio de visibilidad "solo para registrados" que ese ítem y que "Sincronizar ahora" (punto 9), sin sentido para un invitado (no tiene contraseña que cambiar).
+
+### 11. Agrupación en secciones con `SeparadorSeccionFicha` (2026-08-21)
+
+```dart
+Widget _encabezadoSeccion(BuildContext context, IconData icono, String texto) {
+  return Padding(
+    padding: const EdgeInsets.symmetric(horizontal: 12),
+    child: SeparadorSeccionFicha(
+      icono: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icono, color: const Color(0xFFD06D1F), size: 24),
+          const SizedBox(width: 8),
+          Text(texto, style: TextStyle(color: _colorTextoSeparador(context), fontWeight: FontWeight.w600)),
+        ],
+      ),
+    ),
+  );
+}
+```
+
+- **A pedido explícito del usuario**, que pidió reorganizar las nueve opciones "de un estilo parecido a la separación con logos que implementamos en el orden de los documentos" — reutiliza el mismo widget `SeparadorSeccionFicha` (ver `separadorSeccionFicha.md`) con el mismo patrón ícono+texto que ya usa `DocumentosScreen` para agrupar por tipo (ver `documentosScreen.md`, punto 4), en vez de los tres factory constructors originales del widget (pensados para grupos fijos de campos de un formulario, no para secciones de una pantalla de ajustes).
+- **`_colorTextoSeparador`** es una copia local de la función homónima de `documentos_screen.dart` — mismo criterio de duplicar en vez de compartir ya usado en el resto del proyecto (repositories, por ejemplo) cuando una función es chica y no vale la pena una nueva capa de abstracción compartida para dos usos.
+- **Cuatro secciones, con "Apoyo" primero** (decisión explícita del usuario — no es el orden en el que se fueron agregando las opciones históricamente): "Apoyo" (Aportes voluntarios), "Apariencia" (Tema, Tamaño de letra, Idioma), "Cuenta" (Cuenta/Cambiar contraseña/Sincronizar ahora) y "Sesión" (Cerrar sesión, Eliminar cuenta) — las dos últimas separadas a propósito, ya que agrupar una acción destructiva ("Eliminar cuenta") junto a acciones rutinarias de cuenta diluye la separación visual que ya tenía (ícono/texto en rojo).
+- **Los encabezados de sección son fijos, no condicionales** — aparecen siempre, aunque algún `ListTile` de esa sección esté oculto (ej. "Cuenta" solo con el ítem de invitado/email, sin "Cambiar contraseña" ni "Sincronizar ahora", para un usuario invitado). Mantiene la estructura visual predecible en vez de hacer que la pantalla "salte" secciones según el tipo de usuario.

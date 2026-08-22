@@ -176,6 +176,18 @@ class AppLocalizationsEs extends AppLocalizations {
   String get ajustesTitulo => 'Ajustes';
 
   @override
+  String get seccionApoyoLabel => 'Apoyo';
+
+  @override
+  String get seccionAparienciaLabel => 'Apariencia';
+
+  @override
+  String get seccionCuentaLabel => 'Cuenta';
+
+  @override
+  String get seccionSesionLabel => 'Sesión';
+
+  @override
   String get homeTitulo => 'Mis Mascotas';
 
   @override

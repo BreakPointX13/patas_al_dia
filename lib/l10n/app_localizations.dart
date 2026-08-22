@@ -412,6 +412,30 @@ abstract class AppLocalizations {
   /// **'Ajustes'**
   String get ajustesTitulo;
 
+  /// No description provided for @seccionApoyoLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Apoyo'**
+  String get seccionApoyoLabel;
+
+  /// No description provided for @seccionAparienciaLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Apariencia'**
+  String get seccionAparienciaLabel;
+
+  /// No description provided for @seccionCuentaLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Cuenta'**
+  String get seccionCuentaLabel;
+
+  /// No description provided for @seccionSesionLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Sesión'**
+  String get seccionSesionLabel;
+
   /// No description provided for @homeTitulo.
   ///
   /// In es, this message translates to:

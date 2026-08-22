@@ -58,6 +58,10 @@
 
   "cuentaTooltip": "Account",
   "ajustesTitulo": "Settings",
+  "seccionApoyoLabel": "Support",
+  "seccionAparienciaLabel": "Appearance",
+  "seccionCuentaLabel": "Account",
+  "seccionSesionLabel": "Session",
 
   "homeTitulo": "My Pets",
   "homeVacio": "You don't have any pets registered yet",

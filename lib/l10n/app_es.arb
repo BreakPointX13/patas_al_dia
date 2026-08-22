@@ -61,6 +61,10 @@
 
   "cuentaTooltip": "Cuenta",
   "ajustesTitulo": "Ajustes",
+  "seccionApoyoLabel": "Apoyo",
+  "seccionAparienciaLabel": "Apariencia",
+  "seccionCuentaLabel": "Cuenta",
+  "seccionSesionLabel": "Sesión",
 
   "homeTitulo": "Mis Mascotas",
   "homeVacio": "Aún no tienes mascotas registradas",

@@ -4,6 +4,7 @@ import 'package:patas_al_dia/l10n/app_localizations.dart';
 import 'package:patas_al_dia/presentation/screens/cambiar_contrasena_screen.dart';
 import 'package:patas_al_dia/presentation/screens/login_screen.dart';
 import 'package:patas_al_dia/presentation/screens/registro_screen.dart';
+import 'package:patas_al_dia/presentation/widgets/separador_seccion_ficha.dart';
 import 'package:patas_al_dia/providers/agenda_evento_provider.dart';
 import 'package:patas_al_dia/providers/documento_provider.dart';
 import 'package:patas_al_dia/providers/mascota_provider.dart';
@@ -13,6 +14,36 @@ import 'package:patas_al_dia/providers/usuario_provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 final _urlKoFi = Uri.parse('https://ko-fi.com/breakpointx');
+
+// Mismo criterio que en documentos_screen.dart (ver separadorSeccionFicha.md,
+// punto 4): el ícono del separador queda fijo, el texto que lo acompaña
+// necesita variante oscura porque va directo sobre el fondo de la pantalla.
+Color _colorTextoSeparador(BuildContext context) =>
+    Theme.of(context).brightness == Brightness.dark
+    ? const Color(0xFFFFF7EC)
+    : const Color(0xFF7A4A22);
+
+Widget _encabezadoSeccion(BuildContext context, IconData icono, String texto) {
+  return Padding(
+    padding: const EdgeInsets.symmetric(horizontal: 12),
+    child: SeparadorSeccionFicha(
+      icono: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icono, color: const Color(0xFFD06D1F), size: 24),
+          const SizedBox(width: 8),
+          Text(
+            texto,
+            style: TextStyle(
+              color: _colorTextoSeparador(context),
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
+      ),
+    ),
+  );
+}
 
 // Sin paquete nuevo — intl no trae un helper de tiempo relativo, se calcula
 // a mano. Solo necesita cuatro escalones (nunca, minutos, horas, días), no
@@ -230,6 +261,18 @@ class AjustesScreen extends ConsumerWidget {
       appBar: AppBar(title: Text(l10n.ajustesTitulo)),
       body: ListView(
         children: [
+          _encabezadoSeccion(context, Icons.favorite, l10n.seccionApoyoLabel),
+          ListTile(
+            leading: const Icon(Icons.favorite_border),
+            title: Text(l10n.aportesVoluntariosLabel),
+            subtitle: Text(l10n.aportesVoluntariosSubtitulo),
+            onTap: () => _abrirKoFi(context),
+          ),
+          _encabezadoSeccion(
+            context,
+            Icons.palette_outlined,
+            l10n.seccionAparienciaLabel,
+          ),
           ListTile(
             leading: const Icon(Icons.dark_mode_outlined),
             title: Text(l10n.temaLabel),
@@ -296,11 +339,10 @@ class AjustesScreen extends ConsumerWidget {
               },
             ),
           ),
-          ListTile(
-            leading: const Icon(Icons.favorite_border),
-            title: Text(l10n.aportesVoluntariosLabel),
-            subtitle: Text(l10n.aportesVoluntariosSubtitulo),
-            onTap: () => _abrirKoFi(context),
+          _encabezadoSeccion(
+            context,
+            Icons.account_circle_outlined,
+            l10n.seccionCuentaLabel,
           ),
           if (usuario != null && usuario.esInvitado)
             ListTile(
@@ -351,6 +393,11 @@ class AjustesScreen extends ConsumerWidget {
                   ? null
                   : () => ref.read(syncServiceProvider).sincronizar(),
             ),
+          _encabezadoSeccion(
+            context,
+            Icons.shield_outlined,
+            l10n.seccionSesionLabel,
+          ),
           ListTile(
             leading: const Icon(Icons.logout),
             title: Text(l10n.cerrarSesionLabel),

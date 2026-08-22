@@ -58,6 +58,10 @@
 
   "cuentaTooltip": "Conta",
   "ajustesTitulo": "Configurações",
+  "seccionApoyoLabel": "Apoio",
+  "seccionAparienciaLabel": "Aparência",
+  "seccionCuentaLabel": "Conta",
+  "seccionSesionLabel": "Sessão",
 
   "homeTitulo": "Meus Pets",
   "homeVacio": "Você ainda não tem pets cadastrados",

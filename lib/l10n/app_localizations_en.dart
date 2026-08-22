@@ -175,6 +175,18 @@ class AppLocalizationsEn extends AppLocalizations {
   String get ajustesTitulo => 'Settings';
 
   @override
+  String get seccionApoyoLabel => 'Support';
+
+  @override
+  String get seccionAparienciaLabel => 'Appearance';
+
+  @override
+  String get seccionCuentaLabel => 'Account';
+
+  @override
+  String get seccionSesionLabel => 'Session';
+
+  @override
   String get homeTitulo => 'My Pets';
 
   @override

@@ -44,3 +44,7 @@ SeparadorSeccionFicha(
 ```
 
 Primer uso del widget fuera de sus tres factory constructors: `DocumentosScreen` llama al constructor base directo, pasando como `icono` un `Row` con ícono + texto (nombre del tipo de documento), en vez de solo un ícono — el parámetro siempre aceptó cualquier `Widget`, así que no hizo falta tocar `SeparadorSeccionFicha` en sí. La diferencia con Mascota/Identificación/Datos: acá las secciones son dinámicas (dependen de qué documentos existan), así que llevan texto además del ícono, decisión consultada con el usuario — ver `documentosScreen.md`, punto 4, para el detalle completo (íconos por tipo, color de texto con variante oscura).
+
+### 5. Segundo uso fuera de los factory constructors — `AjustesScreen` (2026-08-21)
+
+Mismo patrón exacto que `DocumentosScreen` (ícono + texto en un `Row`, con una copia local de la función de color con variante oscura) — a pedido explícito del usuario, que quería las nueve opciones de Ajustes agrupadas "de un estilo parecido" al de Documentos. Acá las secciones son fijas (Apoyo/Apariencia/Cuenta/Sesión), no dinámicas como en Documentos, pero se usó el mismo patrón de todos modos por consistencia visual entre pantallas. Ver `ajustesScreen.md`, punto 11.

@@ -174,6 +174,18 @@ class AppLocalizationsPt extends AppLocalizations {
   String get ajustesTitulo => 'Configurações';
 
   @override
+  String get seccionApoyoLabel => 'Apoio';
+
+  @override
+  String get seccionAparienciaLabel => 'Aparência';
+
+  @override
+  String get seccionCuentaLabel => 'Conta';
+
+  @override
+  String get seccionSesionLabel => 'Sessão';
+
+  @override
   String get homeTitulo => 'Meus Pets';
 
   @override
