@@ -52,7 +52,83 @@ Disponible en español, inglés y portugués.
 Patas al Día es gratuita. Si te resulta útil y quieres apoyar el desarrollo, hay una opción de aportes voluntarios dentro de la app — nunca es obligatorio.
 ```
 
-*(Pendiente: la misma ficha en inglés y portugués, si se quiere publicar en esos idiomas también — Play Console permite una ficha por idioma.)*
+## Ficha de la app — texto (inglés)
+
+**Title** (24/30 characters):
+```
+Patas al Día: Pet Health
+```
+
+**Short description** (58/80 characters):
+```
+Vet schedule, documents, and lost pets — all in one place.
+```
+
+**Full description** (1551/4000 characters):
+```
+Patas al Día is the app to keep everything about your pet's health and care organized, in one place, without the hassle.
+
+🐾 PETS
+Register each of your pets with their details: species, breed, weight, microchip number, spay/neuter status, and a photo. All the information stays organized and within reach whenever you need it.
+
+📅 VET SCHEDULE
+Keep track of vaccines, check-ups, deworming, and any veterinary event. Add the medications prescribed at each visit and turn on reminders so you never miss the next dose or check-up.
+
+📄 DOCUMENTS
+Store vaccination records, test results, prescriptions, and certificates directly in the app, along with the expiration date when it applies. Never dig through papers again at the last minute.
+
+🗺️ LOST PETS
+If your pet goes missing, post a report with a photo and location so the community can help you find it. You can also check the map to see if there are reports near you.
+
+NO ACCOUNT REQUIRED
+You can use Patas al Día as a guest, without creating any account: all your data stays only on your device. If later you want to back it up and see it from another phone, you can create an account whenever you want, without losing anything you already added.
+
+PRIVACY FIRST
+No ads, no third-party tracking. Your data is yours: you can delete it completely whenever you want, from the app or from the web.
+
+Available in Spanish, English, and Portuguese.
+
+Patas al Día is free. If you find it useful and want to support development, there's an optional voluntary contributions option inside the app — never required.
+```
+
+## Ficha de la app — texto (portugués)
+
+**Título** (26/30 caracteres):
+```
+Patas al Día: Saúde do Pet
+```
+
+**Descrição curta** (68/80 caracteres):
+```
+Agenda veterinária, documentos e pets perdidos, tudo em um só lugar.
+```
+
+**Descrição longa** (1608/4000 caracteres):
+```
+O Patas al Día é o app para organizar tudo o que é importante sobre a saúde e os cuidados do seu pet, em um só lugar e sem complicação.
+
+🐾 PETS
+Cadastre cada um dos seus pets com seus dados: espécie, raça, peso, número do microchip, castração e uma foto. Todas as informações ficam organizadas e à mão sempre que precisar.
+
+📅 AGENDA VETERINÁRIA
+Mantenha o controle de vacinas, consultas, vermifugação e qualquer evento veterinário. Adicione os medicamentos receitados em cada consulta e ative lembretes para nunca esquecer a próxima dose ou consulta.
+
+📄 DOCUMENTOS
+Guarde a carteira de vacinação, exames, receitas e certificados direto no app, junto com a data de validade quando for o caso. Nunca mais procurar um papel de última hora.
+
+🗺️ PETS PERDIDOS
+Se o seu pet se perder, publique um relato com foto e localização para que a comunidade ajude a encontrá-lo. Você também pode conferir o mapa para ver se há relatos perto de você.
+
+SEM CADASTRO OBRIGATÓRIO
+Você pode usar o Patas al Día como convidado, sem criar nenhuma conta: todos os seus dados ficam salvos apenas no seu dispositivo. Se mais adiante quiser fazer backup e ver os dados em outro celular, pode criar uma conta quando quiser, sem perder nada do que já cadastrou.
+
+PRIVACIDADE EM PRIMEIRO LUGAR
+Sem anúncios nem rastreamento de terceiros. Seus dados são seus: você pode excluí-los completamente quando quiser, pelo app ou pela web.
+
+Disponível em espanhol, inglês e português.
+
+O Patas al Día é gratuito. Se for útil para você e quiser apoiar o desenvolvimento, há uma opção de contribuições voluntárias dentro do app — nunca obrigatória.
+```
 
 ## Testing cerrado obligatorio (cuenta nueva)
 
