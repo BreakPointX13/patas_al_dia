@@ -230,7 +230,6 @@
   "sinMedicamentosRegistrados": "No medications recorded",
   "documentosAdjuntosLabel": "Attached documents",
   "sinDocumentosAdjuntos": "No attached documents",
-  "editarEventoLabel": "Edit event",
 
   "formEventoTituloEditar": "Edit event",
   "formEventoTituloAgregarPasado": "Add past event",

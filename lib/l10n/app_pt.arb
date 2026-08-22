@@ -230,7 +230,6 @@
   "sinMedicamentosRegistrados": "Nenhum medicamento registrado",
   "documentosAdjuntosLabel": "Documentos anexados",
   "sinDocumentosAdjuntos": "Nenhum documento anexado",
-  "editarEventoLabel": "Editar evento",
 
   "formEventoTituloEditar": "Editar evento",
   "formEventoTituloAgregarPasado": "Adicionar evento passado",

@@ -42,7 +42,7 @@ UsuarioModel? build() {
 
 El estado inicial es "todavía no hay usuario cargado" — a diferencia de los Notifiers de lista, donde el estado inicial vacío es `[]` (una lista sin elementos, pero una lista al fin).
 
-### 2. `cargarUsuario(String id)`, `crearUsuario(UsuarioModel usuario)`, `actualizarUsuario(UsuarioModel usuario)`
+### 2. `crearUsuario(UsuarioModel usuario)`, `actualizarUsuario(UsuarioModel usuario)`
 
 ```dart
 Future<void> crearUsuario(UsuarioModel usuario) async {
@@ -52,7 +52,9 @@ Future<void> crearUsuario(UsuarioModel usuario) async {
 }
 ```
 
-Los tres siguen la misma estructura de tres pasos que ya conocemos (pedir repository → operar contra la base → actualizar `state`), pero el último paso es siempre un reemplazo directo (`state = usuario` o `state = await repo.obtenerUsuarioPorId(id)`), nunca una reconstrucción de lista.
+Los dos siguen la misma estructura de tres pasos que ya conocemos (pedir repository → operar contra la base → actualizar `state`), pero el último paso es siempre un reemplazo directo (`state = usuario`), nunca una reconstrucción de lista.
+
+`cargarUsuario(String id)` (`state = await repo.obtenerUsuarioPorId(id)`) existía acá también, pero se borró el 2026-08-21 por código muerto — nunca tuvo ningún llamador; el arranque de sesión siempre pasa por `cargarSesionActiva()` (punto 3) o por `_activarSesionLocal()` (login/registro/recuperación). El método del repository que usaba, `obtenerUsuarioPorId`, sigue en uso desde otro lado (`convertirAInvitadoRegistrado`), así que no se tocó. Ver `decisiones_arquitectura.md`.
 
 ### 3. `cargarSesionActiva()` y `cerrarSesion()`
 

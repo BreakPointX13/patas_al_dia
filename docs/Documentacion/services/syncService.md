@@ -99,6 +99,7 @@ bool _ganaElLocal(DateTime? localEn, DateTime? remotoEn) {
 - Se evalúa fila por fila, para cada resultado de `pull`: si el local es igual o más nuevo que el remoto, no hay nada que pisar (`continue`, se salta esa fila). Si el remoto es estrictamente más nuevo, gana — se aplica con `guardarDesdeSync`.
 - **`localEn == null` (fila nunca vista en este dispositivo) siempre pierde** frente a cualquier remoto — no hay nada local que "defender" todavía.
 - Esta comparación es sobre objetos `DateTime` de Dart, no sobre texto — a diferencia del filtro SQL de `pendiente_push`/`obtenerPendientesDePush` (que si comparara fechas como texto sería vulnerable al mismo bug de zona horaria del punto 5), `DateTime.isAfter()` compara correctamente sin importar si un valor es UTC y el otro no (ambos se resuelven a microsegundos desde época internamente). Aun así, **todos** los `actualizadoEn` se guardan en UTC de forma consistente (ver `mascota.model.md`, punto 7) — no por esta comparación puntual, sino por el filtro SQL de `push`, que si comparara fechas mezcladas sí daría resultados incorrectos.
+- **Aplicada a las 4 entidades por igual desde el 2026-08-21** (ver punto 11) — hasta esa fecha, `MedicamentoEvento` era la única excepción, sin comparar conflictos en absoluto.
 
 ### 7. Subida de archivos — "una sola vez", y por qué no usa `guardarDesdeSync`
 
@@ -112,18 +113,6 @@ if (m.fotoUrl != null && m.fotoRutaNube == null) {
 
 - **Condición `fotoRutaNube == null`:** la foto se sube una sola vez, no en cada sync — editar cualquier otro campo de la mascota no dispara una re-subida del mismo archivo. Limitación conocida y aceptada por simplicidad: reemplazar la foto más tarde no se detecta automáticamente (quedaría igual en Storage) — no había forma barata de detectar "el archivo cambió" sin comparar bytes o guardar un hash aparte, y no se justificó la complejidad para este caso.
 - **`repo.actualizarFotoRutaNube`, no `repo.guardarDesdeSync`, para guardar la ruta subida** (2026-08-21, corrige un riesgo introducido por el propio fix del punto 5): `guardarDesdeSync` fija `pendiente_push = 0` explícitamente (ver `mascota.repository.md`, punto 8). Si se usara acá, apagaría `pendiente_push` a mitad de camino, **antes** de que el `upsert` de la fila completa a Supabase termine. Si ese `upsert` fallara justo después de subir la foto (ej. se cortó la red), la fila quedaría marcada como sincronizada sin que sus datos (nombre, especie, etc.) hubieran llegado nunca a la tabla `mascotas` de Supabase, y no se reintentaría en la corrida siguiente. `actualizarFotoRutaNube` hace un `UPDATE` puntual sobre una sola columna (`foto_ruta_nube`), sin tocar `pendiente_push`, evitando ese riesgo. Mismo patrón para `archivoRutaNube` en documentos (`actualizarArchivoRutaNube`).
-
-### 10. `guardarDesdeSync` — de `INSERT OR REPLACE` a un upsert manual (2026-08-21, bug real de pérdida de datos)
-
-Encontrado en la prueba final combinada del plan de Sync, probando varias entidades a la vez: editar una mascota desde "otro dispositivo" (simulado vía API) hacía que, al traerla por pull, sus eventos de agenda y documentos **locales** desaparecieran de verdad — no soft-delete, filas genuinamente borradas de SQLite, sin que el pull las hubiera tocado.
-
-**Causa:** los 4 `guardarDesdeSync` (uno por repository) usaban `db.insert(tabla, mapa, conflictAlgorithm: ConflictAlgorithm.replace)`. En SQLite, `INSERT OR REPLACE` ante un conflicto de `PRIMARY KEY` no es un `UPDATE` disfrazado: primero **borra** la fila conflictiva y recién ahí inserta la nueva. Con `PRAGMA foreign_keys = ON` activo (ver `database.helper.md`, punto 8b), ese borrado oculto **sí** dispara las acciones de foreign key declaradas en el schema (`ON DELETE CASCADE` en `agenda_eventos`/`documentos` hacia `mascotas`, y en `medicamentos_evento` hacia `agenda_eventos`) — exactamente como si se hubiera hecho un `DELETE` explícito. Traer por pull la actualización de una mascota que ya tenía hijos locales los arrastraba a todos en una cascada real, sin que el código de sync lo hubiera pedido ni supiera que estaba pasando.
-
-**Por qué no se detectó antes:** en las Fases 1 y 2, casi todas las filas traídas por pull eran **nuevas** para el dispositivo (primera vez que se veía ese `id`) — `REPLACE` solo borra cuando hay un conflicto real de PK, así que insertar una fila nunca vista antes nunca disparó la rama de borrado. Recién en la prueba final, al traer la actualización de una mascota que **ya tenía** agenda/documentos locales, se dio la condición exacta para activar el bug.
-
-**Riesgo real, no solo cosmético:** si el dispositivo hubiera tenido una edición local de un hijo (un evento, un documento) todavía sin subir (`pendiente_push = 1`) en el momento exacto de un pull sobre su mascota padre, esa edición se habría perdido para siempre — nunca llegó a Supabase, y el borrado-cascada la eliminó localmente antes de que pudiera subirse.
-
-**La solución:** los 4 `guardarDesdeSync` arman un upsert manual con SQL crudo — `INSERT INTO tabla (columnas...) VALUES (...) ON CONFLICT(id) DO UPDATE SET columna = excluded.columna, ...`. Ante una fila existente, esto ejecuta un `UPDATE` real (no un `DELETE` + `INSERT`), así que no dispara ninguna acción de foreign key. `pendiente_push` se fija en `0` de forma explícita en el mapa antes de armar la consulta (no se deja como columna omitida) — ver `mascota.repository.md`, punto 8, para el detalle completo y el porqué de ese seteo explícito.
 
 ### 8. Descarga de archivos — cuándo se dispara, y `fotoUrl`/`filePath` como campos local-only
 
@@ -150,3 +139,33 @@ await _ref.read(agendaEventosProvider.notifier).cargarAgendaEventosDeMascotas(ma
 ```
 
 `HomeScreen`/`AgendaScreen` viven en un `IndexedStack` (se construyen una sola vez en toda la vida de la app, ver `navegacionPrincipalScreen.md`) — sin esta recarga explícita, un cambio traído por sync quedaría invisible hasta reiniciar la app. `DocumentosScreen`/`DetalleAgendaEventoScreen` no lo necesitan: se instancian de nuevo cada vez que se navega a ellas, así que ya leen datos frescos solas.
+
+### 10. `guardarDesdeSync` — de `INSERT OR REPLACE` a un upsert manual (2026-08-21, bug real de pérdida de datos)
+
+Encontrado en la prueba final combinada del plan de Sync, probando varias entidades a la vez: editar una mascota desde "otro dispositivo" (simulado vía API) hacía que, al traerla por pull, sus eventos de agenda y documentos **locales** desaparecieran de verdad — no soft-delete, filas genuinamente borradas de SQLite, sin que el pull las hubiera tocado.
+
+**Causa:** los 4 `guardarDesdeSync` (uno por repository) usaban `db.insert(tabla, mapa, conflictAlgorithm: ConflictAlgorithm.replace)`. En SQLite, `INSERT OR REPLACE` ante un conflicto de `PRIMARY KEY` no es un `UPDATE` disfrazado: primero **borra** la fila conflictiva y recién ahí inserta la nueva. Con `PRAGMA foreign_keys = ON` activo (ver `database.helper.md`, punto 8b), ese borrado oculto **sí** dispara las acciones de foreign key declaradas en el schema (`ON DELETE CASCADE` en `agenda_eventos`/`documentos` hacia `mascotas`, y en `medicamentos_evento` hacia `agenda_eventos`) — exactamente como si se hubiera hecho un `DELETE` explícito. Traer por pull la actualización de una mascota que ya tenía hijos locales los arrastraba a todos en una cascada real, sin que el código de sync lo hubiera pedido ni supiera que estaba pasando.
+
+**Por qué no se detectó antes:** en las Fases 1 y 2, casi todas las filas traídas por pull eran **nuevas** para el dispositivo (primera vez que se veía ese `id`) — `REPLACE` solo borra cuando hay un conflicto real de PK, así que insertar una fila nunca vista antes nunca disparó la rama de borrado. Recién en la prueba final, al traer la actualización de una mascota que **ya tenía** agenda/documentos locales, se dio la condición exacta para activar el bug.
+
+**Riesgo real, no solo cosmético:** si el dispositivo hubiera tenido una edición local de un hijo (un evento, un documento) todavía sin subir (`pendiente_push = 1`) en el momento exacto de un pull sobre su mascota padre, esa edición se habría perdido para siempre — nunca llegó a Supabase, y el borrado-cascada la eliminó localmente antes de que pudiera subirse.
+
+**La solución:** los 4 `guardarDesdeSync` arman un upsert manual con SQL crudo — `INSERT INTO tabla (columnas...) VALUES (...) ON CONFLICT(id) DO UPDATE SET columna = excluded.columna, ...`. Ante una fila existente, esto ejecuta un `UPDATE` real (no un `DELETE` + `INSERT`), así que no dispara ninguna acción de foreign key. `pendiente_push` se fija en `0` de forma explícita en el mapa antes de armar la consulta (no se deja como columna omitida) — ver `mascota.repository.md`, punto 8, para el detalle completo y el porqué de ese seteo explícito.
+
+### 11. `_sincronizarMedicamentosEvento` gana resolución de conflictos (2026-08-21, hallazgo de una revisión de código completa)
+
+```dart
+final local = await repo.obtenerMedicamentoEventoPorId(remoto.id);
+if (_ganaElLocal(local?.actualizadoEn, remoto.actualizadoEn)) {
+  continue;
+}
+await repo.guardarDesdeSync(remoto);
+```
+
+**No fue una prueba puntual la que lo encontró, sino una revisión de todo el código del proyecto**, pedida explícitamente para buscar duplicación/eficiencia/profundidad de los arreglos — el ángulo de "profundidad" (¿el fix generaliza, o es un parche que solo cubre el caso ya probado?) marcó esto como sospechoso al comparar las 4 entidades entre sí.
+
+**Causa:** hasta esta fecha, `_sincronizarMedicamentosEvento` era la única de las 4 entidades que guardaba directo con `guardarDesdeSync` en el *pull*, sin pasar antes por `_ganaElLocal` (punto 6) — mascotas, agenda_eventos y documentos sí lo hacían. El comentario original justificaba esto con "un medicamento no se edita campo a campo desde dos dispositivos en la práctica" — una suposición sobre el uso, no una garantía real: nada en el schema ni en la UI lo impide.
+
+**Riesgo real:** exactamente el mismo patrón del punto 10 y del "Bug real 2" de `decisiones_arquitectura.md`, pero para medicamentos — una edición local de un medicamento todavía sin subir (`pendiente_push = 1`) se perdía sin aviso ante un pull que trajera una versión más vieja, y `guardarDesdeSync` apaga `pendiente_push` sin condición, así que tampoco había reintento en la corrida siguiente.
+
+**La solución:** se agregó `MedicamentoEventoRepository.obtenerMedicamentoEventoPorId(id)` (mismo patrón que `obtenerMascotaPorId`/`obtenerAgendaEventoPorId`/`obtenerDocumentoPorId` — sin filtrar `eliminado`, el motor de sync necesita comparar también filas borradas localmente) y se sumó la misma comparación `_ganaElLocal` que ya usan las otras 3 entidades. Verificado con una prueba real de conflicto en las dos direcciones (local gana con fecha más nueva; remoto gana con fecha más nueva), editando directo en Supabase y confirmando el resultado en la base local y remota después de sincronizar.

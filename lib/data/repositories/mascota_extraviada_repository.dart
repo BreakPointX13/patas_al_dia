@@ -64,20 +64,6 @@ class MascotaExtraviadaRepository {
     return maps.map(MascotaExtraviadaModel.fromMap).toList();
   }
 
-  Future<MascotaExtraviadaModel?> obtenerReportePorId(String id) async {
-    final client = Supabase.instance.client;
-    final map = await client
-        .from('mascotas_extraviadas')
-        .select()
-        .eq('id', id)
-        .maybeSingle();
-
-    if (map == null) {
-      return null;
-    }
-    return MascotaExtraviadaModel.fromMap(map);
-  }
-
   Future<int> actualizarReporte(MascotaExtraviadaModel reporte) async {
     final client = Supabase.instance.client;
 

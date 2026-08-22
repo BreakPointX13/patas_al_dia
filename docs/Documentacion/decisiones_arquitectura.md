@@ -597,6 +597,25 @@ Tres páginas nuevas (`eliminar-cuenta-es/en/pt.html`, mismo repo `PatasAlDiaWeb
 
 ---
 
+## 2026-08-21/22 — Revisión total del código: bug real de sync, código muerto
+
+Pedido explícito del usuario: una revisión completa de todo el código (no solo lo último tocado) buscando optimización y código de más. Se lanzaron 4 revisiones en paralelo, una por ángulo — reutilización, simplificación, eficiencia y profundidad de los arreglos ya hechos —, cada una cubriendo todo `lib/`, no un diff puntual.
+
+**Bug real 4 (encontrado por la revisión de "profundidad", no por una prueba puntual) — medicamentos sin resolución de conflictos.** `_sincronizarMedicamentosEvento` era la única de las 4 entidades sincronizadas que guardaba una fila traída por pull directo, sin comparar contra la versión local primero (`_ganaElLocal`, ver `syncService.md`, punto 6) — las otras 3 sí lo hacían desde el diseño original. La justificación original era que "un medicamento no se edita campo a campo desde dos dispositivos en la práctica", una suposición de uso, no una garantía real del schema ni de la UI. Sin esa comparación, una edición local de un medicamento todavía sin subir se podía perder ante un pull con una versión más vieja, y sin ningún reintento después (`guardarDesdeSync` apaga `pendiente_push` sin condición) — la misma clase de bug que el "Bug real 2" de la entrada de Sync, arriba, pero para la única entidad que había quedado afuera de esa corrección. Arreglado agregando `MedicamentoEventoRepository.obtenerMedicamentoEventoPorId` (mismo patrón que las otras 3) y sumando la comparación de conflicto en `sync_service.dart`. Verificado con una prueba real de conflicto en las dos direcciones (local gana, remoto gana) contra Supabase. Ver `syncService.md`, punto 11, y `medicamentoEvento.repository.md`.
+
+**Código muerto encontrado y borrado**, todo verificado con grep (cero llamadores en `lib/`) antes de sacarlo:
+- `AgendaEventoNotifier.cargarAgendaEventos` (nunca se usaba, todo pasaba por la versión plural `cargarAgendaEventosDeMascotas`).
+- `UsuarioNotifier.cargarUsuario` (nunca se usaba).
+- `MascotaExtraviadaRepository.obtenerReportePorId` (nunca se usaba, `DetalleReporteMascotaExtraviadaScreen` lee del provider ya cargado, no vuelve a pedir el reporte).
+- Clave de idioma huérfana `editarEventoLabel`, en los tres `.arb`.
+- Provider entero sin usar: `lib/providers/supabase_provider.dart` (`supabaseClientProvider`) — todos los repositories que hablan con Supabase llaman `Supabase.instance.client` directo, nunca pasaron por este provider.
+
+**Quedó pendiente, a propósito, para más adelante** (decisión explícita del usuario — no bloquea nada, y tocar el motor de sync ahora que recién quedó estable implicaría volver a probar todo el ciclo):
+- Duplicación real encontrada por la revisión de "reutilización": la lógica de "Otro" en tipo de evento repetida en dos pantallas de agenda, el formateo de fecha+hora duplicado en las mismas dos pantallas, el diálogo de "¿confirmar esta acción?" reconstruido a mano en 6+ pantallas, y el patrón subir/bajar archivo duplicado entre mascota y documento dentro de `sync_service.dart`.
+- Eficiencia encontrada por esa misma revisión, dentro de `sync_service.dart`: cada `pull` hace una consulta SQLite por fila en vez de una sola con `IN (...)` (N+1), y las subidas/bajadas de archivos corren de a una en vez de en paralelo con `Future.wait`. Impacto real mínimo con el volumen de datos actual — quedaría pendiente si en algún momento hay cuentas con muchos datos/archivos sincronizando a la vez.
+
+---
+
 ## De aquí en adelante
 
 Cada vez que se tome una decisión de arquitectura nueva (enfoque, tecnología, estructura — no un simple fix o ajuste de código), se agrega una entrada acá con: fecha, la decisión, el porqué, y alternativas consideradas si las hubo.

@@ -1300,12 +1300,6 @@ abstract class AppLocalizations {
   /// **'Sin documentos adjuntos'**
   String get sinDocumentosAdjuntos;
 
-  /// No description provided for @editarEventoLabel.
-  ///
-  /// In es, this message translates to:
-  /// **'Editar evento'**
-  String get editarEventoLabel;
-
   /// No description provided for @formEventoTituloEditar.
   ///
   /// In es, this message translates to:

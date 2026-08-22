@@ -277,11 +277,14 @@ class SyncService {
 
     for (final fila in remotas) {
       final remoto = MedicamentoEventoModel.fromMap(fila);
-      // Sin obtenerPorId en este repository (nunca hizo falta antes) —
-      // basta con guardarDesdeSync directo (INSERT OR REPLACE), la
-      // comparación de conflicto se salta acá porque un medicamento no se
-      // edita campo a campo desde dos lados en la práctica (siempre se
-      // reemplaza entero desde el formulario del evento).
+      // Mismo criterio que las otras 3 entidades (2026-08-21, corrige un
+      // hallazgo real — ver decisiones_arquitectura.md): sin esta
+      // comparación, un medicamento editado localmente y todavía sin subir
+      // se perdía sin aviso ante un pull, sin ninguna forma de reintentar.
+      final local = await repo.obtenerMedicamentoEventoPorId(remoto.id);
+      if (_ganaElLocal(local?.actualizadoEn, remoto.actualizadoEn)) {
+        continue;
+      }
       await repo.guardarDesdeSync(remoto);
     }
   }

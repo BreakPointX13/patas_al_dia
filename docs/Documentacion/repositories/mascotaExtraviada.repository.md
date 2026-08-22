@@ -8,7 +8,7 @@ Primer repository del proyecto que no habla con `DatabaseHelper` (SQLite local),
 
 ## 🎯 Propósito del Archivo
 
-CRUD sobre la tabla `mascotas_extraviadas` de Supabase, más `obtenerReportesActivos()` (la consulta que alimenta el mapa: solo reportes con `resuelto = false`) y `denunciarReporte()` (moderación manual, ver punto 6).
+CRUD sobre la tabla `mascotas_extraviadas` de Supabase, más `obtenerReportesActivos()` (la consulta que alimenta el mapa: solo reportes con `resuelto = false`) y `denunciarReporte()` (moderación manual, ver punto 5).
 
 ---
 
@@ -38,11 +38,9 @@ client.from('mascotas_extraviadas').select().eq('resuelto', false).order('fecha_
 
 La consulta principal del módulo: trae todos los reportes activos (`resuelto = false`), sin importar su `tipo` — un reporte "encontré una mascota" (`tipo = 'encontrado'`) es tan activo como uno "perdí mi mascota" hasta que alguien lo cierre, ver `mascotaExtraviada.model.md`, punto 4, para el porqué de este campo separado. Más recientes primero. Como la política de lectura es pública (`mascotas_extraviadas_lectura_publica`, `using (true)`), esta consulta funciona sin sesión — cualquiera puede ver el mapa, esté o no logueado.
 
-### 3. `obtenerReportePorId(String id)`
+Este repository también tenía `obtenerReportePorId(String id)` (con `.maybeSingle()`), pero se borró el 2026-08-21 por código muerto — nunca tuvo ningún llamador; `DetalleReporteMascotaExtraviadaScreen` obtiene el reporte del `mascotaExtraviadaProvider` ya cargado por este mismo método, no vuelve a pedirlo individualmente. Ver `decisiones_arquitectura.md`.
 
-Usa `.maybeSingle()` (de `supabase_flutter`) en vez de traer una lista y quedarse con el primero — devuelve directamente `Map<String, dynamic>?`, `null` si no existe. Mismo criterio de retorno nullable que `obtenerDocumentoPorId`.
-
-### 4. `actualizarReporte(MascotaExtraviadaModel reporte)`
+### 3. `actualizarReporte(MascotaExtraviadaModel reporte)`
 
 ```dart
 client.from('mascotas_extraviadas').update(reporte.toMap()).eq('id', reporte.id).select();
@@ -50,7 +48,7 @@ client.from('mascotas_extraviadas').update(reporte.toMap()).eq('id', reporte.id)
 
 El `.select()` al final no es para leer datos — en `supabase_flutter`/PostgREST, un `update()` sin `.select()` no devuelve las filas afectadas, así que no hay forma de saber cuántas se actualizaron sin pedirlo explícitamente. Se usa acá solo para poder devolver `filasActualizadas.length`, mismo tipo de retorno (`Future<int>`) que `actualizarDocumento`/`actualizarMascota`. Sirve, por ejemplo, para marcar un reporte como resuelto: se llama con el mismo objeto pero `resuelto: true`.
 
-### 5. `eliminarReporte(MascotaExtraviadaModel reporte)` — también borra la foto del bucket (2026-08-20)
+### 4. `eliminarReporte(MascotaExtraviadaModel reporte)` — también borra la foto del bucket (2026-08-20)
 
 ```dart
 Future<void> eliminarReporte(MascotaExtraviadaModel reporte) async {
@@ -69,13 +67,13 @@ Future<void> eliminarReporte(MascotaExtraviadaModel reporte) async {
 
 **Antes recibía solo el `id`** y hacía un único `delete()` sobre la fila — sin relaciones que dependan de ella (a diferencia de `mascotas`/`agenda_eventos`, acá no hay `ON DELETE CASCADE` de ninguna tabla hija), era una operación de un solo nivel, igual que `eliminarDocumento`.
 
-**Hallazgo del 2026-08-20:** borrar la fila nunca tocaba la foto en Supabase Storage — la foto quedaba huérfana en el bucket `fotos_reportes` para siempre, ocupando espacio sin que nada la use (ver `decisiones_arquitectura.md`). Se corrigió recibiendo el `MascotaExtraviadaModel` completo (no solo el `id`) para poder reconstruir la ruta del archivo en el bucket (`usuarioId/reporteId.ext`, mismo patrón que arma `subirFoto`, ver punto 5b) y borrarlo antes de borrar la fila.
+**Hallazgo del 2026-08-20:** borrar la fila nunca tocaba la foto en Supabase Storage — la foto quedaba huérfana en el bucket `fotos_reportes` para siempre, ocupando espacio sin que nada la use (ver `decisiones_arquitectura.md`). Se corrigió recibiendo el `MascotaExtraviadaModel` completo (no solo el `id`) para poder reconstruir la ruta del archivo en el bucket (`usuarioId/reporteId.ext`, mismo patrón que arma `subirFoto`, ver punto 4b) y borrarlo antes de borrar la fila.
 
 **El borrado de la foto es "best effort"** — envuelto en `try/catch` que solo hace `debugPrint` si falla, sin relanzar la excepción. Si el borrado de la foto fallara (sin conexión, política de RLS faltante, etc.), no debe bloquear el borrado del reporte en sí, que es la acción principal que pidió el usuario.
 
 **Requiere una política de `delete` en `storage.objects`** que no existía hasta esta fecha — el bucket solo tenía políticas de lectura e inserción (ver `TablaMaestraAppVetMovil1.sql`, sección 7). Sin la política `fotos_reportes_borrar_dueno`, Supabase rechazaba el `remove(...)` por RLS, y como el error caía en el `catch` silencioso de arriba, el bug pasó desapercibido hasta probarlo a mano. La política nueva restringe el borrado al dueño de la foto: `(storage.foldername(name))[1] = auth.uid()::text` compara el primer segmento de la ruta (el `usuarioId`) contra la sesión actual.
 
-### 5b. `subirFoto({usuarioId, reporteId, rutaLocal})` (2026-08-19)
+### 4b. `subirFoto({usuarioId, reporteId, rutaLocal})` (2026-08-19)
 
 ```dart
 Future<String> subirFoto({required String usuarioId, required String reporteId, required String rutaLocal}) async {
@@ -92,7 +90,7 @@ Primer método del proyecto que habla con Supabase **Storage** en vez de la base
 
 **Se llama antes de `crearReporte()`, no después:** `FormularioReporteMascotaExtraviadaScreen._publicarReporte()` sube la foto primero y recién arma el `MascotaExtraviadaModel` con la URL resultante en `mascotaFotoUrl` — necesita que la subida ya haya terminado (y no haya fallado) antes de insertar la fila.
 
-### 6. `denunciarReporte(String reporteId)` (2026-08-19)
+### 5. `denunciarReporte(String reporteId)` (2026-08-19)
 
 ```dart
 Future<void> denunciarReporte(String reporteId) async {

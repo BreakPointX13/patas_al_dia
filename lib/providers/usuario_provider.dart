@@ -13,11 +13,6 @@ class UsuarioNotifier extends Notifier<UsuarioModel?> {
     return null;
   }
 
-  Future<void> cargarUsuario(String id) async {
-    final repo = ref.read(usuarioRepositoryProvider);
-    state = await repo.obtenerUsuarioPorId(id);
-  }
-
   Future<bool> cargarSesionActiva() async {
     final repo = ref.read(usuarioRepositoryProvider);
     state = await repo.obtenerUsuarioConSesionActiva();

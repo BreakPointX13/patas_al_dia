@@ -647,9 +647,6 @@ class AppLocalizationsPt extends AppLocalizations {
   String get sinDocumentosAdjuntos => 'Nenhum documento anexado';
 
   @override
-  String get editarEventoLabel => 'Editar evento';
-
-  @override
   String get formEventoTituloEditar => 'Editar evento';
 
   @override

@@ -53,6 +53,28 @@ class MedicamentoEventoRepository {
     );
   }
 
+  // Sin filtrar por `eliminado` a propósito — ver mascota_repository.dart,
+  // mismo criterio (lo necesita el motor de sync para resolver conflictos).
+  // Agregado 2026-08-21 — corrige un hallazgo real: sin este método, el pull
+  // de medicamentos guardaba directo con `guardarDesdeSync` sin comparar
+  // contra la fila local, así que una edición local todavía sin subir podía
+  // perderse sin aviso (y sin reintento, porque `guardarDesdeSync` apaga
+  // `pendiente_push` igual). Ver decisiones_arquitectura.md.
+  Future<MedicamentoEventoModel?> obtenerMedicamentoEventoPorId(
+    String id,
+  ) async {
+    final db = await DatabaseHelper.instance.database;
+    final List<Map<String, dynamic>> maps = await db.query(
+      'medicamentos_evento',
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+    if (maps.isEmpty) {
+      return null;
+    }
+    return MedicamentoEventoModel.fromMap(maps.first);
+  }
+
   Future<MedicamentoEventoModel> crearMedicamentoEvento(
     MedicamentoEventoModel medicamento,
   ) async {
