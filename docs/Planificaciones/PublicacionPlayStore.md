@@ -13,6 +13,47 @@ Referencia rápida con lo que hace falta al completar la ficha de la app y el fo
 
 - **Correo de contacto/soporte**: `breakpointx.dev@gmail.com`
 
+## Ficha de la app — texto (español)
+
+**Título** (27/30 caracteres):
+```
+Patas al Día: Salud Mascota
+```
+
+**Descripción corta** (74/80 caracteres):
+```
+Agenda veterinaria, documentos y mascotas perdidas, todo en un solo lugar.
+```
+
+**Descripción larga** (1643/4000 caracteres):
+```
+Patas al Día es la app para organizar todo lo importante sobre la salud y los cuidados de tu mascota, en un solo lugar y sin complicaciones.
+
+🐾 MASCOTAS
+Registra a cada una de tus mascotas con sus datos: especie, raza, peso, número de chip, esterilización y una foto. Toda la información queda ordenada y a mano cuando la necesites.
+
+📅 AGENDA VETERINARIA
+Lleva el control de vacunas, controles, desparasitaciones y cualquier evento veterinario. Agrega los medicamentos recetados en cada consulta y activa recordatorios para no olvidar la próxima dosis o el próximo control.
+
+📄 DOCUMENTOS
+Guarda el carnet de vacunación, exámenes, recetas y certificados directamente en la app, junto con la fecha de vencimiento cuando corresponda. Nunca más buscar un papel en el último momento.
+
+🗺️ MASCOTAS PERDIDAS
+Si tu mascota se pierde, publica un reporte con foto y ubicación para que la comunidad te ayude a encontrarla. También puedes revisar el mapa para ver si hay reportes cerca de ti.
+
+SIN REGISTRO OBLIGATORIO
+Puedes usar Patas al Día como invitado, sin crear ninguna cuenta: todos tus datos quedan guardados únicamente en tu dispositivo. Si más adelante quieres respaldarlos y verlos desde otro teléfono, puedes crear una cuenta cuando quieras, sin perder nada de lo que ya cargaste.
+
+PRIVACIDAD PRIMERO
+No hay publicidad ni rastreo de terceros. Tus datos son tuyos: puedes eliminarlos por completo cuando quieras, desde la app o desde la web.
+
+Disponible en español, inglés y portugués.
+
+Patas al Día es gratuita. Si te resulta útil y quieres apoyar el desarrollo, hay una opción de aportes voluntarios dentro de la app — nunca es obligatorio.
+```
+
+*(Pendiente: la misma ficha en inglés y portugués, si se quiere publicar en esos idiomas también — Play Console permite una ficha por idioma.)*
+
 ## Testing cerrado obligatorio (cuenta nueva)
 
 Las cuentas de desarrollador **personales** creadas después de noviembre de 2023 (aplica a esta cuenta, al ser nueva) no pueden publicar directo a producción — Google exige primero un test cerrado con **al menos 12 testers**, opt-in continuo durante **14 días seguidos**, antes de habilitar el pase a producción. No aplica a cuentas de organización ni a cuentas personales más viejas. Conviene ir consiguiendo los 12 testers (amigos, familia) apenas esté creada la cuenta, para no perder tiempo al final — ver [App testing requirements for new personal developer accounts](https://support.google.com/googleplay/android-developer/answer/14151465?hl=en).
