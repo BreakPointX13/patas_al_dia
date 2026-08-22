@@ -13,6 +13,10 @@ Referencia rápida con lo que hace falta al completar la ficha de la app y el fo
 
 - **Correo de contacto/soporte**: `breakpointx.dev@gmail.com`
 
+## Testing cerrado obligatorio (cuenta nueva)
+
+Las cuentas de desarrollador **personales** creadas después de noviembre de 2023 (aplica a esta cuenta, al ser nueva) no pueden publicar directo a producción — Google exige primero un test cerrado con **al menos 12 testers**, opt-in continuo durante **14 días seguidos**, antes de habilitar el pase a producción. No aplica a cuentas de organización ni a cuentas personales más viejas. Conviene ir consiguiendo los 12 testers (amigos, familia) apenas esté creada la cuenta, para no perder tiempo al final — ver [App testing requirements for new personal developer accounts](https://support.google.com/googleplay/android-developer/answer/14151465?hl=en).
+
 ## Formulario "Seguridad de los datos" (Data safety)
 
 Datos que la app recopila (usuarios registrados) y por qué:
