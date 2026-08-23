@@ -1,0 +1,476 @@
+<title>Mapa de Patas al Día</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Public+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  /*
+    Elección deliberada de un solo mundo visual: un mapa de campo dibujado
+    sobre papel crema, con la paleta real de la app (tema_app.dart —
+    Crema/Naranja/Durazno/Café). No responde a modo claro/oscuro del
+    visor a propósito, igual que un mapa impreso no cambia de tinta según
+    la luz del cuarto: fondo y colores quedan fijos, siempre explícitos.
+  */
+  :root {
+    --papel: #FFF7EC;
+    --papel-panel: #FDF3E3;
+    --papel-borde: #E6C79B;
+    --tinta: #7A4A22;
+    --tinta-suave: #9C6B3E;
+    --sello: #E0812F;
+    --sello-texto: #FFF7EC;
+    --resalte: #D06D1F;
+    --parada: #F3C98F;
+    --sombra: rgba(122, 74, 34, 0.18);
+
+    --fuente-display: "Fredoka", "Trebuchet MS", sans-serif;
+    --fuente-cuerpo: "Public Sans", -apple-system, "Segoe UI", sans-serif;
+    --fuente-mono: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    height: 100%;
+    margin: 0;
+  }
+
+  body {
+    background: var(--papel);
+    color: var(--tinta);
+    font-family: var(--fuente-cuerpo);
+    display: flex;
+    flex-direction: column;
+    height: 100dvh;
+    overflow: hidden;
+  }
+
+  header {
+    padding: 20px clamp(16px, 4vw, 40px) 8px;
+    flex: 0 0 auto;
+  }
+
+  .titulo-fila {
+    display: flex;
+    align-items: baseline;
+    gap: 14px;
+    flex-wrap: wrap;
+  }
+
+  h1 {
+    font-family: var(--fuente-display);
+    font-weight: 600;
+    font-size: clamp(22px, 3vw, 30px);
+    margin: 0;
+    color: var(--resalte);
+    text-wrap: balance;
+    letter-spacing: 0.2px;
+  }
+
+  .brujula {
+    flex: 0 0 auto;
+    opacity: 0.85;
+  }
+
+  .stat {
+    font-family: var(--fuente-mono);
+    font-variant-numeric: tabular-nums;
+    font-size: 13px;
+    color: var(--tinta-suave);
+    letter-spacing: 0.3px;
+  }
+
+  p.intro {
+    max-width: 62ch;
+    margin: 8px 0 0;
+    font-size: 14.5px;
+    line-height: 1.55;
+    color: var(--tinta);
+  }
+
+  .franja {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 18px 28px;
+    padding: 10px clamp(16px, 4vw, 40px);
+    flex: 0 0 auto;
+    border-top: 1px solid var(--papel-borde);
+    border-bottom: 1px solid var(--papel-borde);
+    background: var(--papel-panel);
+    font-size: 13px;
+  }
+
+  .clave-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .muestra-nodo {
+    width: 22px;
+    height: 14px;
+    border-radius: 999px;
+    border: 1.5px solid var(--tinta);
+    flex: 0 0 auto;
+  }
+
+  .muestra-nodo.sello { background: var(--sello); border-color: var(--tinta); }
+  .muestra-nodo.parada { background: var(--parada); }
+
+  .muestra-linea {
+    width: 26px;
+    height: 0;
+    border-top: 2px solid var(--tinta);
+    flex: 0 0 auto;
+  }
+  .muestra-linea.punteada { border-top-style: dashed; border-top-color: var(--resalte); }
+
+  .instrucciones {
+    margin-left: auto;
+    color: var(--tinta-suave);
+    font-size: 12.5px;
+  }
+  .instrucciones kbd {
+    font-family: var(--fuente-mono);
+    background: var(--papel);
+    border: 1px solid var(--papel-borde);
+    border-radius: 4px;
+    padding: 1px 5px;
+    font-size: 11px;
+  }
+
+  main {
+    flex: 1 1 auto;
+    min-height: 0;
+    padding: 16px clamp(16px, 4vw, 40px) clamp(16px, 4vw, 40px);
+    display: flex;
+  }
+
+  #viewport {
+    position: relative;
+    flex: 1 1 auto;
+    background:
+      radial-gradient(circle at 1px 1px, var(--papel-borde) 1px, transparent 0) 0 0 / 22px 22px,
+      var(--papel-panel);
+    border: 1px solid var(--papel-borde);
+    border-radius: 18px;
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,0.4), 0 8px 24px var(--sombra);
+    overflow: hidden;
+    cursor: grab;
+    touch-action: none;
+  }
+  #viewport.grabbing { cursor: grabbing; }
+
+  #content {
+    position: absolute;
+    top: 0;
+    left: 0;
+    transform-origin: 0 0;
+    will-change: transform;
+  }
+
+  #content pre.mermaid {
+    margin: 0;
+    background: transparent;
+  }
+
+  #estado-carga {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--fuente-mono);
+    font-size: 13px;
+    color: var(--tinta-suave);
+    pointer-events: none;
+  }
+
+  .controles {
+    position: absolute;
+    right: 16px;
+    bottom: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    z-index: 5;
+  }
+
+  .controles button {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    border: 1px solid var(--papel-borde);
+    background: var(--papel);
+    color: var(--tinta);
+    font-family: var(--fuente-display);
+    font-size: 18px;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 2px 6px var(--sombra);
+  }
+  .controles button:hover { background: var(--parada); }
+  .controles button:focus-visible {
+    outline: 2px solid var(--resalte);
+    outline-offset: 2px;
+  }
+  .controles button#centrar { font-size: 14px; }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { transition: none !important; }
+  }
+</style>
+
+<header>
+  <div class="titulo-fila">
+    <svg class="brujula" width="26" height="26" viewBox="0 0 26 26" aria-hidden="true">
+      <circle cx="13" cy="13" r="11.5" fill="none" stroke="#7A4A22" stroke-width="1.3"/>
+      <path d="M13 4 L15.4 12 L13 22 L10.6 12 Z" fill="#D06D1F"/>
+      <circle cx="13" cy="13" r="1.6" fill="#7A4A22"/>
+    </svg>
+    <h1>Mapa de navegación — Patas al Día</h1>
+    <span class="stat">24 pantallas · 34 conexiones</span>
+  </div>
+  <p class="intro">
+    Cómo se llega de una pantalla a otra en la app, leído directamente de los
+    <code style="font-family:var(--fuente-mono); font-size:0.92em;">Navigator.push</code>
+    de cada archivo — no es un diseño a priori, así que si la navegación
+    cambia en el código, este mapa hay que actualizarlo a mano.
+  </p>
+</header>
+
+<div class="franja">
+  <div class="clave-item"><span class="muestra-nodo sello"></span> pantalla de entrada / pestaña</div>
+  <div class="clave-item"><span class="muestra-nodo parada"></span> pantalla intermedia</div>
+  <div class="clave-item"><span class="muestra-linea"></span> navegación directa</div>
+  <div class="clave-item"><span class="muestra-linea punteada"></span> enlace por correo (deep link)</div>
+  <div class="instrucciones">
+    <kbd>arrastra</kbd> para mover · <kbd>rueda</kbd> / <kbd>pellizco</kbd> para zoom · <kbd>doble clic</kbd> para acercar
+  </div>
+</div>
+
+<main>
+  <div id="viewport" aria-label="Diagrama de navegación, desplazable con zoom">
+    <div id="content">
+      <pre class="mermaid">
+%%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#F3C98F','primaryTextColor':'#7A4A22','primaryBorderColor':'#7A4A22','lineColor':'#7A4A22','tertiaryColor':'#FDF3E3','fontFamily':'JetBrains Mono, monospace','fontSize':'13px','edgeLabelBackground':'#FDF3E3'}, 'flowchart': {'curve':'basis','nodeSpacing':55,'rankSpacing':75}}}%%
+flowchart TD
+    SesionInicial(["SesionInicialScreen"])
+    Login(["LoginScreen"])
+    IniciarSesion(["IniciarSesionScreen"])
+    Registro(["RegistroScreen"])
+    RecuperarContrasena(["RecuperarContrasenaScreen"])
+    NuevaContrasena(["NuevaContrasenaScreen"])
+
+    Home(["HomeScreen · pestaña Mascotas"])
+    Agenda(["AgendaScreen · pestaña Agenda"])
+    Mapa(["MapaScreen · pestaña Mapa"])
+
+    FormularioMascota(["FormularioMascotaScreen"])
+    DetalleMascota(["DetalleMascotaScreen"])
+    CredencialMascota(["CredencialMascotaScreen"])
+
+    Documentos(["DocumentosScreen"])
+    FormularioDocumento(["FormularioDocumentoScreen"])
+    DetalleDocumento(["DetalleDocumentoScreen"])
+    VisorImagen(["VisorImagenScreen"])
+
+    FormularioAgendaEvento(["FormularioAgendaEventoScreen"])
+    DetalleAgendaEvento(["DetalleAgendaEventoScreen"])
+
+    FormularioReporte(["FormularioReporteMascotaExtraviadaScreen"])
+    DetalleReporte(["DetalleReporteMascotaExtraviadaScreen"])
+
+    Ajustes(["AjustesScreen"])
+    CambiarContrasena(["CambiarContrasenaScreen"])
+    ReportarBug(["ReportarBugScreen"])
+
+    SesionInicial -->|"con sesión activa"| Home
+    SesionInicial -->|"sin sesión"| Login
+
+    Login -->|"continuar como invitado"| Home
+    Login -->|"iniciar sesión"| IniciarSesion
+
+    IniciarSesion --> Home
+    IniciarSesion --> RecuperarContrasena
+    IniciarSesion --> Registro
+
+    Registro --> Home
+
+    RecuperarContrasena -.->|"enlace por correo"| NuevaContrasena
+    NuevaContrasena --> Home
+
+    Home -->|"+ nueva mascota"| FormularioMascota
+    Home -->|"tocar mascota"| DetalleMascota
+    Home -->|"ver credencial"| CredencialMascota
+
+    DetalleMascota -->|"editar"| FormularioMascota
+    DetalleMascota -->|"agenda de esta mascota"| Agenda
+    DetalleMascota -->|"documentos"| Documentos
+    DetalleMascota -->|"reportar perdida"| FormularioReporte
+
+    Documentos -->|"+ nuevo documento"| FormularioDocumento
+    Documentos -->|"tocar documento"| DetalleDocumento
+    DetalleDocumento -->|"editar"| FormularioDocumento
+    DetalleDocumento -->|"ver imagen"| VisorImagen
+
+    Agenda -->|"+ nuevo evento"| FormularioAgendaEvento
+    Agenda -->|"tocar evento"| DetalleAgendaEvento
+    DetalleAgendaEvento -->|"editar"| FormularioAgendaEvento
+    DetalleAgendaEvento -->|"ver imagen adjunta"| VisorImagen
+
+    Mapa -->|"tocar reporte"| DetalleReporte
+    Mapa -->|"+ nuevo reporte"| FormularioReporte
+
+    Home -->|"ícono de usuario"| Ajustes
+    Agenda -->|"ícono de usuario"| Ajustes
+    Mapa -->|"ícono de usuario"| Ajustes
+
+    Ajustes -->|"cerrar sesión / eliminar cuenta"| Login
+    Ajustes -->|"invitado que se registra"| Registro
+    Ajustes -->|"cambiar contraseña"| CambiarContrasena
+    Ajustes -->|"reportar un bug"| ReportarBug
+
+    classDef sello fill:#E0812F,stroke:#7A4A22,stroke-width:2px,color:#FFF7EC,font-weight:600;
+    classDef parada fill:#F3C98F,stroke:#7A4A22,stroke-width:1.4px,color:#7A4A22;
+    class SesionInicial,Home,Agenda,Mapa,Ajustes sello;
+    class Login,IniciarSesion,Registro,RecuperarContrasena,NuevaContrasena,FormularioMascota,DetalleMascota,CredencialMascota,Documentos,FormularioDocumento,DetalleDocumento,VisorImagen,FormularioAgendaEvento,DetalleAgendaEvento,FormularioReporte,DetalleReporte,CambiarContrasena,ReportarBug parada;
+      </pre>
+      <div id="estado-carga">dibujando el mapa…</div>
+    </div>
+    <div class="controles">
+      <button id="mas" aria-label="Acercar">+</button>
+      <button id="menos" aria-label="Alejar">−</button>
+      <button id="centrar" aria-label="Centrar mapa">⤢</button>
+    </div>
+  </div>
+</main>
+
+<script>
+  const viewport = document.getElementById('viewport');
+  const content = document.getElementById('content');
+  const estadoCarga = document.getElementById('estado-carga');
+  const pre = content.querySelector('pre.mermaid');
+
+  let scale = 1, originX = 0, originY = 0;
+  const MIN_SCALE = 0.2, MAX_SCALE = 4;
+
+  function aplicarTransformacion() {
+    content.style.transform = `translate(${originX}px, ${originY}px) scale(${scale})`;
+  }
+
+  function obtenerSvg() {
+    return content.querySelector('svg');
+  }
+
+  function centrarEnPantalla() {
+    const svg = obtenerSvg();
+    if (!svg) return;
+    const vb = svg.viewBox && svg.viewBox.baseVal;
+    const w = (vb && vb.width) || svg.getBoundingClientRect().width / scale;
+    const h = (vb && vb.height) || svg.getBoundingClientRect().height / scale;
+    const rect = viewport.getBoundingClientRect();
+    const pad = 40;
+    const s = Math.min((rect.width - pad * 2) / w, (rect.height - pad * 2) / h);
+    scale = Math.max(MIN_SCALE, Math.min(MAX_SCALE, s));
+    originX = (rect.width - w * scale) / 2;
+    originY = (rect.height - h * scale) / 2;
+    aplicarTransformacion();
+  }
+
+  function zoomEn(factor, cx, cy) {
+    const rect = viewport.getBoundingClientRect();
+    const mx = cx !== undefined ? cx - rect.left : rect.width / 2;
+    const my = cy !== undefined ? cy - rect.top : rect.height / 2;
+    const nuevaEscala = Math.max(MIN_SCALE, Math.min(MAX_SCALE, scale * factor));
+    originX = mx - (mx - originX) * (nuevaEscala / scale);
+    originY = my - (my - originY) * (nuevaEscala / scale);
+    scale = nuevaEscala;
+    aplicarTransformacion();
+  }
+
+  // El host de Artifacts renderiza el <pre class="mermaid"> a <svg> de forma
+  // asíncrona — se observa el DOM para saber cuándo terminó y recién ahí
+  // calcular el zoom inicial que hace caber todo el mapa.
+  const observador = new MutationObserver(() => {
+    if (obtenerSvg()) {
+      estadoCarga.style.display = 'none';
+      centrarEnPantalla();
+      observador.disconnect();
+    }
+  });
+  observador.observe(content, { childList: true, subtree: true });
+  setTimeout(() => { if (obtenerSvg()) { estadoCarga.style.display = 'none'; centrarEnPantalla(); observador.disconnect(); } }, 4000);
+
+  viewport.addEventListener('wheel', (e) => {
+    e.preventDefault();
+    const factor = e.deltaY < 0 ? 1.12 : 1 / 1.12;
+    zoomEn(factor, e.clientX, e.clientY);
+  }, { passive: false });
+
+  viewport.addEventListener('dblclick', (e) => {
+    zoomEn(1.5, e.clientX, e.clientY);
+  });
+
+  document.getElementById('mas').addEventListener('click', () => zoomEn(1.25));
+  document.getElementById('menos').addEventListener('click', () => zoomEn(1 / 1.25));
+  document.getElementById('centrar').addEventListener('click', centrarEnPantalla);
+
+  // Paneo con un puntero, zoom de pellizco con dos — mismo elemento, se
+  // distingue por cuántos punteros activos hay en cada momento.
+  const punterosActivos = new Map();
+  let panActivo = false, panInicioX = 0, panInicioY = 0, originInicioX = 0, originInicioY = 0;
+  let distanciaPellizcoInicial = null, escalaPellizcoInicial = 1;
+
+  viewport.addEventListener('pointerdown', (e) => {
+    viewport.setPointerCapture(e.pointerId);
+    punterosActivos.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    if (punterosActivos.size === 1) {
+      panActivo = true;
+      viewport.classList.add('grabbing');
+      panInicioX = e.clientX; panInicioY = e.clientY;
+      originInicioX = originX; originInicioY = originY;
+    } else if (punterosActivos.size === 2) {
+      panActivo = false;
+      const pts = [...punterosActivos.values()];
+      distanciaPellizcoInicial = Math.hypot(pts[0].x - pts[1].x, pts[0].y - pts[1].y);
+      escalaPellizcoInicial = scale;
+    }
+  });
+
+  viewport.addEventListener('pointermove', (e) => {
+    if (!punterosActivos.has(e.pointerId)) return;
+    punterosActivos.set(e.pointerId, { x: e.clientX, y: e.clientY });
+
+    if (punterosActivos.size === 2 && distanciaPellizcoInicial) {
+      const pts = [...punterosActivos.values()];
+      const dist = Math.hypot(pts[0].x - pts[1].x, pts[0].y - pts[1].y);
+      const rect = viewport.getBoundingClientRect();
+      const midX = (pts[0].x + pts[1].x) / 2 - rect.left;
+      const midY = (pts[0].y + pts[1].y) / 2 - rect.top;
+      const nuevaEscala = Math.max(MIN_SCALE, Math.min(MAX_SCALE, escalaPellizcoInicial * (dist / distanciaPellizcoInicial)));
+      originX = midX - (midX - originX) * (nuevaEscala / scale);
+      originY = midY - (midY - originY) * (nuevaEscala / scale);
+      scale = nuevaEscala;
+      aplicarTransformacion();
+      return;
+    }
+
+    if (panActivo && punterosActivos.size === 1) {
+      originX = originInicioX + (e.clientX - panInicioX);
+      originY = originInicioY + (e.clientY - panInicioY);
+      aplicarTransformacion();
+    }
+  });
+
+  function soltarPuntero(e) {
+    punterosActivos.delete(e.pointerId);
+    if (punterosActivos.size < 2) distanciaPellizcoInicial = null;
+    if (punterosActivos.size === 0) {
+      panActivo = false;
+      viewport.classList.remove('grabbing');
+    }
+  }
+  viewport.addEventListener('pointerup', soltarPuntero);
+  viewport.addEventListener('pointercancel', soltarPuntero);
+</script>
