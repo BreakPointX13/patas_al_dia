@@ -41,10 +41,10 @@ Guarda el carnet de vacunación, exámenes, recetas y certificados directamente 
 🗺️ MASCOTAS PERDIDAS
 Si tu mascota se pierde, publica un reporte con foto y ubicación para que la comunidad te ayude a encontrarla. También puedes revisar el mapa para ver si hay reportes cerca de ti.
 
-SIN REGISTRO OBLIGATORIO
+✅ SIN REGISTRO OBLIGATORIO
 Puedes usar Patas al Día como invitado, sin crear ninguna cuenta: todos tus datos quedan guardados únicamente en tu dispositivo. Si más adelante quieres respaldarlos y verlos desde otro teléfono, puedes crear una cuenta cuando quieras, sin perder nada de lo que ya cargaste.
 
-PRIVACIDAD PRIMERO
+🔒 PRIVACIDAD PRIMERO
 No hay publicidad ni rastreo de terceros. Tus datos son tuyos: puedes eliminarlos por completo cuando quieras, desde la app o desde la web.
 
 Disponible en español, inglés y portugués.
