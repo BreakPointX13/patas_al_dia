@@ -201,7 +201,7 @@ class _DetalleReporteMascotaExtraviadaScreenState
                   children: [
                     TileLayer(
                       urlTemplate: urlTilesSegunTema(context),
-                      userAgentPackageName: 'dev.breakpointx.patasaldia',
+                      userAgentPackageName: 'patas_al_dia.app',
                       minZoom: 2,
                       maxZoom: 19,
                     ),

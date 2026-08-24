@@ -375,7 +375,7 @@ class _MapaScreenState extends ConsumerState<MapaScreen> {
       children: [
         TileLayer(
           urlTemplate: urlTilesSegunTema(context),
-          userAgentPackageName: 'dev.breakpointx.patasaldia',
+          userAgentPackageName: 'patas_al_dia.app',
           // El límite de zoom de MapOptions no alcanza por sí solo — el
           // cálculo de qué teselas pedir vive acá, en TileLayer, y necesita
           // su propio límite para no terminar en un rango inválido

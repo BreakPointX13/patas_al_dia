@@ -658,6 +658,16 @@ Verificado de punta a punta antes de que el usuario probara desde la app: dos ll
 
 ---
 
+## 2026-08-24 — `applicationId` de Android, corregido de nuevo: `patas_al_dia.app`
+
+Con la cuenta de developer ya verificada, al crear la app en Play Console quedó registrada con el nombre de paquete `patas_al_dia.app` — decisión del usuario al momento de crearla, no un error. El primer intento de subir el `.aab` (con `dev.breakpointx.patasaldia`, el `applicationId` vigente desde el 2026-08-21) falló con "El nombre de paquete del archivo APK o Android App Bundle debe ser patas_al_dia.app" — Play Console fija el nombre de paquete de forma permanente en el momento en que se crea la app, sin posibilidad de cambiarlo después.
+
+**Decisión:** en vez de borrar y recrear la app en Play Console, se adoptó `patas_al_dia.app` como `applicationId` real de Android (`android/app/build.gradle.kts`), confirmado con el usuario antes de dejarlo como definitivo (se probó primero generando un `.aab` de prueba con ese nombre, verificando en Play Console que subía sin errores, antes de tocar nada más).
+
+**Alcance: solo Android.** `namespace` en `build.gradle.kts` y el bundle identifier de iOS/macOS se dejaron en `dev.breakpointx.patasaldia` — no hay ninguna restricción de Play Console sobre ellos, y `patas_al_dia.app` no sería válido como Bundle ID de iOS de todas formas (Apple no acepta guion bajo). El `userAgentPackageName` de los dos `TileLayer` del módulo Mapa (`mapa_screen.dart`, `detalle_reporte_mascota_extraviada_screen.dart`) se actualizó a `patas_al_dia.app` para no repetir el mismo desfasaje que ya pasó una vez con el cambio de `applicationId` anterior (ver entrada del 2026-08-22, "Revisión de consistencia visual").
+
+---
+
 ## De aquí en adelante
 
 Cada vez que se tome una decisión de arquitectura nueva (enfoque, tecnología, estructura — no un simple fix o ajuste de código), se agrega una entrada acá con: fecha, la decisión, el porqué, y alternativas consideradas si las hubo.
