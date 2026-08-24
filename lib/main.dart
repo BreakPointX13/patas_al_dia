@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -53,6 +54,24 @@ void main() async {
   await initializeDateFormatting('en_US');
   await initializeDateFormatting('pt_BR');
   await NotificacionService.instance.inicializar();
+
+  // Bug conocido de flutter_map (2026-08-24, ver decisiones_arquitectura.md):
+  // usa un tamaño de cámara "imposible" (literalmente Infinity) como valor
+  // de arranque mientras el mapa recién se está armando en pantalla. Si un
+  // gesto (toque, pellizco) llega justo en esa ventana, dispara un cálculo
+  // roto que se repite en cadena por cada evento pendiente de la misma
+  // racha — decenas de excepciones por milisegundo, cada una imprimiendo un
+  // stack trace completo, hasta agotar la memoria y congelar la app. No se
+  // puede parchar la librería directo; acá se ignora puntualmente esta
+  // excepción conocida (nunca otras) para que la racha se vacíe rápido y en
+  // silencio, en vez de con el costo de imprimir cada una.
+  PlatformDispatcher.instance.onError = (error, stack) {
+    if (error is UnsupportedError && error.message == 'Infinity or NaN toInt') {
+      return true;
+    }
+    return false;
+  };
+
   runApp(const ProviderScope(child: MyApp()));
 }
 

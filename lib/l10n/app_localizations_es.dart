@@ -848,7 +848,11 @@ class AppLocalizationsEs extends AppLocalizations {
   String get ubicacionObtenidaLabel => 'Ubicación obtenida';
 
   @override
-  String get sinUbicacionLabel => 'Sin ubicación (opcional)';
+  String get sinUbicacionLabel => 'Sin ubicación';
+
+  @override
+  String get ayudaDireccionEstimada =>
+      'Puedes ingresar una dirección aproximada — el sector alcanza. Si prefieres, agrega los detalles exactos en la descripción.';
 
   @override
   String get errorServicioUbicacionDeshabilitado =>
@@ -866,17 +870,25 @@ class AppLocalizationsEs extends AppLocalizations {
   String get errorObtenerUbicacion => 'No se pudo obtener la ubicación';
 
   @override
-  String get campoCalle => 'Calle *';
+  String get campoPais => 'País';
 
   @override
-  String get errorCalleObligatoria => 'La calle es obligatoria';
+  String get errorPaisObligatorio => 'El país es obligatorio';
 
   @override
-  String get campoNumero => 'Número';
+  String get campoCiudad => 'Ciudad';
 
   @override
-  String get campoReferenciaDireccion =>
-      'Referencia (depto, esquina, etc. — opcional)';
+  String get errorCiudadObligatoria => 'La ciudad es obligatoria';
+
+  @override
+  String get campoComunaOpcional => 'Comuna (opcional)';
+
+  @override
+  String get campoDireccion => 'Dirección';
+
+  @override
+  String get buscarDireccionBoton => 'Buscar dirección';
 
   @override
   String get errorGeocodificacion =>
@@ -1011,6 +1023,12 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get sinReportesActivos => 'No hay reportes activos por ahora';
+
+  @override
+  String get misReportesTitulo => 'Mis reportes';
+
+  @override
+  String get sinMisReportesActivos => 'No tienes reportes activos por ahora';
 
   @override
   String get errorCargarReportes =>

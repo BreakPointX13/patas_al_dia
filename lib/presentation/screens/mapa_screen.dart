@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -7,6 +9,7 @@ import 'package:patas_al_dia/data/models/mascota_model.dart';
 import 'package:patas_al_dia/l10n/app_localizations.dart';
 import 'package:patas_al_dia/presentation/screens/detalle_reporte_mascota_extraviada_screen.dart';
 import 'package:patas_al_dia/presentation/screens/formulario_reporte_mascota_extraviada_screen.dart';
+import 'package:patas_al_dia/presentation/screens/mis_reportes_screen.dart';
 import 'package:patas_al_dia/presentation/utils/etiquetas_localizadas.dart';
 import 'package:patas_al_dia/presentation/utils/mapa_tiles.dart';
 import 'package:patas_al_dia/presentation/widgets/icono_tipo_reporte.dart';
@@ -52,6 +55,39 @@ class _MapaScreenState extends ConsumerState<MapaScreen> {
   // de seguir mostrando una copia vieja para siempre.
   String? _reporteSeleccionadoId;
 
+  // Controller propio y persistente (2026-08-24) — sin esto, cada vez que
+  // cambia `reportes` (agregar/borrar un reporte) `_construirMapa` arma un
+  // `FlutterMap` nuevo sin controller explícito, y `flutter_map` recomienda
+  // justamente lo contrario cuando el árbol de widgets puede reconstruirse
+  // seguido: se sospecha que esto estaba detrás de un crash real
+  // ("Infinity or NaN toInt" + Out of Memory) al crear/borrar varios
+  // reportes seguidos durante testing — ver decisiones_arquitectura.md.
+  final _mapController = MapController();
+
+  // Bloqueo de gestos apenas se (re)dibuja el mapa (2026-08-24) — la causa
+  // real del crash de "Infinity or NaN toInt" (ver decisiones_arquitectura.md):
+  // flutter_map usa un tamaño de cámara "imposible" como valor de arranque
+  // hasta que su propio LayoutBuilder recibe las medidas reales del layout,
+  // y si un gesto llega justo en esa ventana, dispara el cálculo roto. Medio
+  // segundo de gestos bloqueados (imperceptible, nadie gesticula apenas se
+  // termina de dibujar la pantalla) es más que suficiente para que ese
+  // layout real ya esté listo, y evita el problema de raíz en vez de
+  // reaccionar después de que ya pasó.
+  bool _mapaInteractivo = false;
+  Timer? _timerMapaListo;
+
+  void _reiniciarVentanaDeLayout() {
+    _timerMapaListo?.cancel();
+    if (_mapaInteractivo) {
+      setState(() => _mapaInteractivo = false);
+    }
+    _timerMapaListo = Timer(const Duration(milliseconds: 500), () {
+      if (mounted) {
+        setState(() => _mapaInteractivo = true);
+      }
+    });
+  }
+
   @override
   void initState() {
     super.initState();
@@ -60,11 +96,14 @@ class _MapaScreenState extends ConsumerState<MapaScreen> {
     // pasa hoy — la app siempre arranca en Mascotas — pero cubre el caso).
     _alCambiarPestana();
     _cargarReportes();
+    _reiniciarVentanaDeLayout();
   }
 
   @override
   void dispose() {
     widget.indiceActualNotifier.removeListener(_alCambiarPestana);
+    _mapController.dispose();
+    _timerMapaListo?.cancel();
     super.dispose();
   }
 
@@ -245,19 +284,53 @@ class _MapaScreenState extends ConsumerState<MapaScreen> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final reportes = ref.watch(mascotaExtraviadaProvider);
+    // Crear/borrar un reporte reconstruye el mapa — reinicia la ventana de
+    // bloqueo de gestos, mismo motivo que en initState().
+    ref.listen(mascotaExtraviadaProvider, (previo, actual) {
+      if (previo?.length != actual.length) {
+        _reiniciarVentanaDeLayout();
+      }
+    });
+
+    MascotaExtraviadaModel? reporteSeleccionado;
+    if (_reporteSeleccionadoId != null) {
+      for (final r in reportes) {
+        if (r.id == _reporteSeleccionadoId) {
+          reporteSeleccionado = r;
+          break;
+        }
+      }
+    }
 
     return Scaffold(
       appBar: AppBar(
         leading: const LogoBarraSuperior(),
         title: Text(l10n.navMapa),
-        actions: const [MenuUsuarioAvatar()],
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.list_alt),
+            tooltip: l10n.misReportesTitulo,
+            onPressed: () => Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (context) => const MisReportesScreen(),
+              ),
+            ),
+          ),
+          const MenuUsuarioAvatar(),
+        ],
       ),
-      body: _construirCuerpo(l10n, reportes),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: _abrirOpcionesReportar,
-        icon: const Icon(Icons.add),
-        label: Text(l10n.accionReportarFab),
-      ),
+      body: _construirCuerpo(l10n, reportes, reporteSeleccionado),
+      // Oculto mientras hay un reporte seleccionado — la tarjeta de abajo
+      // ocupa casi todo el ancho, y el FAB centrado quedaba encima de ella
+      // sin importar cuánto margen se le diera (ver decisiones_arquitectura.md,
+      // entrada del 2026-08-24). La tarjeta ya tiene su propia "X" para cerrar.
+      floatingActionButton: reporteSeleccionado == null
+          ? FloatingActionButton.extended(
+              onPressed: _abrirOpcionesReportar,
+              icon: const Icon(Icons.add),
+              label: Text(l10n.accionReportarFab),
+            )
+          : null,
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
     );
   }
@@ -265,6 +338,7 @@ class _MapaScreenState extends ConsumerState<MapaScreen> {
   Widget _construirCuerpo(
     AppLocalizations l10n,
     List<MascotaExtraviadaModel> reportes,
+    MascotaExtraviadaModel? reporteSeleccionado,
   ) {
     if (_cargando) {
       return const Center(child: CircularProgressIndicator());
@@ -290,22 +364,28 @@ class _MapaScreenState extends ConsumerState<MapaScreen> {
     // La ubicación es obligatoria desde el 2026-08-19 (ver
     // decisiones_arquitectura.md) — este filtro es solo una salvaguarda
     // contra reportes de prueba viejos, de antes de ese cambio, que puedan
-    // haber quedado sin ubicación en la base.
-    final conUbicacion = reportes
-        .where((r) => r.ubicacionLat != null && r.ubicacionLng != null)
-        .toList();
-    MascotaExtraviadaModel? reporteSeleccionado;
-    if (_reporteSeleccionadoId != null) {
-      for (final r in reportes) {
-        if (r.id == _reporteSeleccionadoId) {
-          reporteSeleccionado = r;
-          break;
-        }
-      }
-    }
+    // haber quedado sin ubicación en la base. `isFinite` + rango real
+    // (2026-08-24): una coordenada NaN/Infinity o fuera de rango hace que
+    // flutter_map truene con "Infinity or NaN toInt" al calcular en qué
+    // tiles dibujar el marcador — mejor no llegar a pasársela nunca.
+    final conUbicacion = reportes.where((r) {
+      final lat = r.ubicacionLat;
+      final lng = r.ubicacionLng;
+      return lat != null &&
+          lng != null &&
+          lat.isFinite &&
+          lng.isFinite &&
+          lat >= -90 &&
+          lat <= 90 &&
+          lng >= -180 &&
+          lng <= 180;
+    }).toList();
     return Stack(
       children: [
-        _construirMapa(conUbicacion),
+        IgnorePointer(
+          ignoring: !_mapaInteractivo,
+          child: _construirMapa(conUbicacion),
+        ),
         if (reportes.isEmpty)
           Positioned(
             top: 12,
@@ -345,16 +425,47 @@ class _MapaScreenState extends ConsumerState<MapaScreen> {
                   onPressed: () =>
                       setState(() => _reporteSeleccionadoId = null),
                 ),
-                onTap: () => _abrirDetalle(reporteSeleccionado!.id),
+                onTap: () => _abrirDetalle(reporteSeleccionado.id),
               ),
             ),
           ),
+        // Zoom por botones, no por gesto (2026-08-24) — se sacó el pellizco
+        // y el doble-tap del mapa por el crash de flutter_map documentado
+        // en decisiones_arquitectura.md; arrastrar para moverse por el mapa
+        // sigue funcionando normal, solo el zoom pasó a ser explícito.
+        Positioned(
+          top: 12,
+          right: 12,
+          child: Column(
+            children: [
+              FloatingActionButton.small(
+                heroTag: 'mapaZoomMas',
+                onPressed: () => _acercarZoom(1),
+                child: const Icon(Icons.add),
+              ),
+              const SizedBox(height: 8),
+              FloatingActionButton.small(
+                heroTag: 'mapaZoomMenos',
+                onPressed: () => _acercarZoom(-1),
+                child: const Icon(Icons.remove),
+              ),
+            ],
+          ),
+        ),
       ],
     );
   }
 
+  // Suma o resta un nivel de zoom, sin pasarse de los límites del mapa.
+  void _acercarZoom(int delta) {
+    final camera = _mapController.camera;
+    final nuevoZoom = (camera.zoom + delta).clamp(2.0, 19.0);
+    _mapController.move(camera.center, nuevoZoom);
+  }
+
   Widget _construirMapa(List<MascotaExtraviadaModel> conUbicacion) {
     return FlutterMap(
+      mapController: _mapController,
       options: MapOptions(
         initialCenter: conUbicacion.isNotEmpty
             ? LatLng(
@@ -368,6 +479,20 @@ class _MapaScreenState extends ConsumerState<MapaScreen> {
         // toInt") si el zoom se aleja demasiado.
         minZoom: 2,
         maxZoom: 19,
+        // Todo el zoom por gesto desactivado (2026-08-24) — pellizco y
+        // doble-tap dispararon el mismo crash real de flutter_map ("Infinity
+        // or NaN toInt", ver decisiones_arquitectura.md), cada uno en una
+        // prueba distinta. Arrastrar (mover el mapa) sigue funcionando
+        // normal; el zoom pasó a los botones +/- de la esquina.
+        // flingAnimation (la inercia al soltar el dedo después de un
+        // arrastre rápido) también se sacó — un cuarto intento del mismo
+        // crash pasó justo moviéndose rápido por el mapa, y esa inercia
+        // genera muchas actualizaciones de cámara seguidas por sí sola,
+        // parecido al pellizco. El mapa ahora se frena en seco al soltar,
+        // sin inercia — arrastrar en sí sigue igual.
+        interactionOptions: const InteractionOptions(
+          flags: InteractiveFlag.drag,
+        ),
         // Tocar el mapa fuera de cualquier marcador cierra la burbuja
         // (mismo comportamiento que Google Maps/Apple Maps).
         onTap: (_, _) => setState(() => _reporteSeleccionadoId = null),

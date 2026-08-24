@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -27,6 +29,27 @@ class DetalleReporteMascotaExtraviadaScreen extends ConsumerStatefulWidget {
 
 class _DetalleReporteMascotaExtraviadaScreenState
     extends ConsumerState<DetalleReporteMascotaExtraviadaScreen> {
+  // Mismo bloqueo de gestos que MapaScreen, mismo motivo — ver
+  // decisiones_arquitectura.md, entrada del 2026-08-24.
+  bool _mapaInteractivo = false;
+  Timer? _timerMapaListo;
+
+  @override
+  void initState() {
+    super.initState();
+    _timerMapaListo = Timer(const Duration(milliseconds: 500), () {
+      if (mounted) {
+        setState(() => _mapaInteractivo = true);
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _timerMapaListo?.cancel();
+    super.dispose();
+  }
+
   // Confirma y marca el reporte como denunciado por abuso.
   Future<void> _denunciar(MascotaExtraviadaModel reporte) async {
     final l10n = AppLocalizations.of(context);
@@ -114,9 +137,20 @@ class _DetalleReporteMascotaExtraviadaScreenState
     // el reporte simplemente no puede ser suyo.
     final usuarioActualId =
         Supabase.instance.client.auth.currentSession?.user.id;
-    final esMio = usuarioActualId != null && usuarioActualId == reporte.usuarioId;
+    final esMio =
+        usuarioActualId != null && usuarioActualId == reporte.usuarioId;
+    // isFinite + rango real (2026-08-24, mismo motivo que en MapaScreen):
+    // una coordenada inválida hace que flutter_map truene con "Infinity or
+    // NaN toInt" al calcular los tiles del mini-mapa.
     final conUbicacion =
-        reporte.ubicacionLat != null && reporte.ubicacionLng != null;
+        reporte.ubicacionLat != null &&
+        reporte.ubicacionLng != null &&
+        reporte.ubicacionLat!.isFinite &&
+        reporte.ubicacionLng!.isFinite &&
+        reporte.ubicacionLat! >= -90 &&
+        reporte.ubicacionLat! <= 90 &&
+        reporte.ubicacionLng! >= -180 &&
+        reporte.ubicacionLng! <= 180;
 
     return Scaffold(
       appBar: AppBar(
@@ -181,43 +215,67 @@ class _DetalleReporteMascotaExtraviadaScreenState
               ),
             ),
           const SizedBox(height: 16),
-          Text(l10n.campoUbicacion, style: Theme.of(context).textTheme.titleMedium),
+          Text(
+            l10n.campoUbicacion,
+            style: Theme.of(context).textTheme.titleMedium,
+          ),
+          if (reporte.ciudad != null || reporte.pais != null)
+            Padding(
+              padding: const EdgeInsets.only(top: 4),
+              child: Text(
+                [
+                  reporte.comuna,
+                  reporte.ciudad,
+                  reporte.pais,
+                ].where((s) => s != null && s.isNotEmpty).join(', '),
+                style: Theme.of(context).textTheme.bodyMedium,
+              ),
+            ),
           const SizedBox(height: 8),
           if (conUbicacion)
             ClipRRect(
               borderRadius: BorderRadius.circular(12),
               child: SizedBox(
                 height: 200,
-                child: FlutterMap(
-                  options: MapOptions(
-                    initialCenter: LatLng(
-                      reporte.ubicacionLat!,
-                      reporte.ubicacionLng!,
-                    ),
-                    initialZoom: 15,
-                    minZoom: 2,
-                    maxZoom: 19,
-                  ),
-                  children: [
-                    TileLayer(
-                      urlTemplate: urlTilesSegunTema(context),
-                      userAgentPackageName: 'patas_al_dia.app',
+                child: IgnorePointer(
+                  ignoring: !_mapaInteractivo,
+                  child: FlutterMap(
+                    options: MapOptions(
+                      initialCenter: LatLng(
+                        reporte.ubicacionLat!,
+                        reporte.ubicacionLng!,
+                      ),
+                      initialZoom: 15,
                       minZoom: 2,
                       maxZoom: 19,
+                      // Sin zoom por gesto ni inercia — mismo motivo que en
+                      // MapaScreen (ver decisiones_arquitectura.md). Es solo
+                      // una vista previa chica, no necesita botones de zoom.
+                      interactionOptions: const InteractionOptions(
+                        flags: InteractiveFlag.drag,
+                      ),
                     ),
-                    atribucionMapa,
-                    MarkerLayer(
-                      markers: [
-                        Marker(
-                          point: LatLng(
-                            reporte.ubicacionLat!,
-                            reporte.ubicacionLng!,
+                    children: [
+                      TileLayer(
+                        urlTemplate: urlTilesSegunTema(context),
+                        userAgentPackageName: 'patas_al_dia.app',
+                        minZoom: 2,
+                        maxZoom: 19,
+                      ),
+                      atribucionMapa,
+                      MarkerLayer(
+                        markers: [
+                          Marker(
+                            point: LatLng(
+                              reporte.ubicacionLat!,
+                              reporte.ubicacionLng!,
+                            ),
+                            child: IconoTipoReporte(tipo: reporte.tipo),
                           ),
-                          child: IconoTipoReporte(tipo: reporte.tipo),
-                        ),
-                      ],
-                    ),
-                  ],
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
               ),
             )

@@ -668,6 +668,66 @@ Con la cuenta de developer ya verificada, al crear la app en Play Console quedó
 
 ---
 
+## 2026-08-24 — Módulo Mapa: dos bugs encontrados en testing previos al lanzamiento
+
+Testing manual del usuario, ya con la cuenta de developer verificada, encontró dos problemas reales en el módulo Mapa.
+
+**1. Tarjeta del reporte seleccionado tapada por el FAB.** `MapaScreen` dibuja la tarjeta con los datos del reporte en un `Positioned(bottom: 12, left: 12, right: 12)` (casi todo el ancho) dentro del `body`, y el `FloatingActionButton` "Reportar" (`centerFloat`) se pinta siempre por encima del `body`, centrado horizontalmente — con una captura real del usuario se confirmó que el botón queda literalmente encima del centro de la tarjeta, no debajo (dos intentos con distintos márgenes verticales fijos/dinámicos no sirvieron, porque el problema no era de altura sino de que ambos ocupan la misma franja). Se corrigió **ocultando el FAB mientras hay un reporte seleccionado** (`floatingActionButton: reporteSeleccionado == null ? ... : null` en `build()`) — la tarjeta ya tiene su propio botón de cerrar ("X"), así que no hace falta el de "Reportar" visible al mismo tiempo, y esto evita depender de calcular ningún margen exacto por dispositivo.
+
+**2. Geocodificación de direcciones fallaba o traía resultados de otro país.** El formulario original solo pedía "Calle" + "Número" + una "Referencia" opcional, sin ciudad ni país — una consulta tan pobre en contexto a Nominatim podía no encontrar nada, o peor, encontrar una calle homónima en otro país (caso real confirmado por el usuario: "Alameda 1200" resolvía a una dirección en Estados Unidos en vez de Santiago). Dos cambios:
+
+- El formulario pasó de 3 campos (Calle/Número/Referencia) a un solo campo de "Dirección" libre + **País** y **Ciudad** obligatorios + **Comuna** opcional (no todos los países usan ese concepto). Los tres se concatenan en la consulta a Nominatim.
+- La geocodificación dejó de ser automática al publicar (con el primer resultado, sin poder corregirlo) y pasó a ser una búsqueda explícita (botón/`onFieldSubmitted`, nunca por tecla — Nominatim prohíbe autocompletado en vivo contra su servicio público) que trae hasta 5 resultados; el usuario elige el correcto de una lista, así la ubicación final siempre es la que la persona confirmó, no una adivinanza de una sola consulta.
+
+País/ciudad/comuna además quedan guardados en el reporte (`mascotas_extraviadas.pais/ciudad/comuna`, columnas nuevas agregadas a la tabla en producción vía `supabase db query --linked`) y se muestran en `DetalleReporteMascotaExtraviadaScreen`, junto a la sección de Ubicación — antes el detalle de un reporte no tenía ningún texto de dirección, solo el mini-mapa.
+
+**3. "Out of Memory" al crear/borrar muchos reportes seguidos.** Con una captura real del error se alcanzó a leer, tapado detrás del aviso de memoria, "...peration: Infinity" — coincide con el mismo bug de fondo que ya motivó los límites de zoom explícitos en `TileLayer`/`MapOptions` (`.floor()`/`.toInt()` de `flutter_map` sobre un valor no finito). Se revisaron los datos reales en Supabase (`mascotas_extraviadas`) y ninguna coordenada guardada era inválida — así que la causa más probable no es un dato corrupto, sino que `_construirMapa()` armaba un `FlutterMap` nuevo, sin `MapController` propio, cada vez que la lista de reportes cambiaba (crear/borrar), y la documentación de `flutter_map` recomienda justamente lo contrario cuando el árbol puede reconstruirse seguido. Dos cambios, sin poder confirmar cuál es el responsable exacto sin un stack trace completo:
+
+- `MapaScreen` pasó a tener un `MapController` propio y persistente (`initState`/`dispose`), conectado a `FlutterMap(mapController: ...)`.
+- Segunda capa de protección en `MapaScreen` y en el mini-mapa de `DetalleReporteMascotaExtraviadaScreen`: el filtro de "tiene ubicación" ahora también exige `isFinite` y un rango real de lat/lng (-90..90 / -180..180), no solo que no sea `null` — así ninguna coordenada corrupta llega nunca a `flutter_map`, sea cual sea su origen.
+
+**Actualización — stack trace completo conseguido.** El primer intento (MapController + validación de coordenadas) no resolvió el crash — volvió a pasar. Se dejó una captura de `logcat` de varios minutos corriendo en segundo plano (sin filtro de tag esta vez) hasta que el usuario logró reproducirlo, y esta vez sí se consiguió el stack trace real:
+
+```
+E/flutter: Unhandled Exception: Unsupported operation: Infinity or NaN toInt
+#0  double.toInt
+#1  double.floor
+#2  _floor (package:flutter_map/src/layer/tile_layer/tile_range.dart:36:25)
+#3  new DiscreteTileRange.fromPixelBounds (tile_range.dart:61:9)
+#4  TileRangeCalculator.calculate (tile_range_calculator.dart:31:30)
+#5  _TileLayerState._onTileUpdateEvent (tile_layer.dart:632:51)
+...
+#11 TileUpdateTransformers.ignoreTapEvents.<anonymous closure> (tile_update_transformer.dart:54:42)
+```
+
+Lo decisivo: la **misma excepción se repite decenas de veces, con ~1 milisegundo de diferencia entre cada una** — no es una excepción aislada, es un bucle que nunca se corta, y eso es lo que agota la memoria (no un solo objeto gigante). En el log, justo antes del primer disparo, hay dos toques sobre el mapa separados por ~14ms — un doble tap.
+
+Es un bug conocido de la librería, no de nuestros datos (confirmado: ninguna coordenada real en `mascotas_extraviadas` es inválida) — hay varios issues abiertos en el repo de `flutter_map` con el mismo stack trace (`fleaflet/flutter_map#409`, `#524`, `#1370`, `#1759`), ninguno con una corrección oficial documentada. `TileUpdateTransformers.ignoreTapEvents`, presente en el stack, existe justo para el manejo de eventos de tap — el changelog del propio paquete menciona ajustes de timing en `onTap`/`MapEventTap` ligados a `InteractiveFlag.doubleTapZoom`.
+
+**Mitigación aplicada** (no una corrección confirmada al 100%, es la pista más concreta disponible): se desactivó el gesto de doble-tap-para-zoom (`InteractiveFlag.doubleTapZoom` y `doubleTapDragZoom`) en `MapaScreen` y en el mini-mapa de `DetalleReporteMascotaExtraviadaScreen`, dejando el resto de los gestos intactos (arrastrar, pellizcar para zoom).
+
+**Actualización — la causa real, encontrada en el código fuente de `flutter_map`.** El mismo crash volvió a pasar, esta vez con un pellizco (no un doble tap) — descarta que sea sobre un gesto puntual. Revisando `camera.dart`/`tile_range_calculator.dart` del paquete instalado (8.3.1):
+
+- `MapCamera.kImpossibleSize = Size(double.negativeInfinity, double.negativeInfinity)` — el propio comentario del paquete lo explica: "During Flutter startup the native platform resolution is not immediately available... we set the size to this impossible (negative) value initially and only change it once Flutter provides real constraints."
+- `TileRangeCalculator._calculatePixelBounds` calcula `camera.size / (scale * 2)` — si un gesto dispara un recálculo de tiles **antes** de que el layout real reemplace ese tamaño "imposible", la división da `Infinity` directo, y `.floor()` sobre eso es justo la excepción que se ve.
+- El motivo de que se repita decenas de veces seguidas: el stream de eventos de tiles (`_PendingEvents`/`_BufferingStreamSubscription`) procesa de un tirón todos los eventos que se hayan acumulado durante ese instante — cada uno pega contra el mismo cálculo roto y vuelve a tirar la excepción, y cada una imprime un stack trace completo a `logcat`. Ese volumen (no un solo objeto gigante) es lo que agota la memoria y congela la app.
+
+Es una carrera interna conocida de la librería (confirmada en su propio código, con un comentario que reconoce el problema), no algo parchable desde acá sin tocar el paquete.
+
+**Primer intento — manejador global en `main.dart`.** `PlatformDispatcher.instance.onError`, identificando puntualmente esta excepción para dejarla pasar en silencio. No alcanzó: el usuario lo volvió a reproducir, esta vez con un ANR real (Android ofrece "esperar" o "forzar cierre") — no era solo una racha de excepciones async, sino un fallo que se repite en cada frame que Flutter intenta dibujar. `onError` intercepta la vía async/zona, pero no esta.
+
+**Segundo intento — evitar la ventana de la carrera, no reaccionar después.** Revisando `_FlutterMapStateContainer` en `widget.dart` del paquete: el tamaño real de la cámara se corrige recién en el primer `LayoutBuilder` con constraints reales — hasta ese momento, cualquier gesto que llegue puede disparar el cálculo con el tamaño "imposible" todavía puesto. Se bloquearon los gestos del mapa (`IgnorePointer`) durante 500 ms después de cada vez que el `FlutterMap` se (re)dibuja. Tampoco alcanzó: el usuario lo volvió a reproducir, esta vez después de un buen rato de hacer zoom con el pellizco (no al toque, como en las dos veces anteriores) — y esta vez sin ninguna excepción de por medio: un ANR real de Android ("Input dispatching timed out... Waited 10000ms for MotionEvent"), el hilo principal bloqueado 10 segundos procesando un solo gesto. Tres reproducciones, tres mecanismos algo distintos (doble-tap, pellizco puntual, pellizco sostenido) — indica más de un camino roto dentro del manejo de zoom de `flutter_map`, no una sola causa parchable con un solo ajuste.
+
+**Cuarto intento — sacar todo el zoom por gesto.** `interactionOptions` pasó de `InteractiveFlag.all` (menos un par de flags) a solo `InteractiveFlag.drag | InteractiveFlag.flingAnimation` — arrastrar sigue igual, pero pellizco, doble-tap y rotación quedaron desactivados; el zoom se reemplaza por dos `FloatingActionButton.small` (+/-) en `MapaScreen`, moviendo la cámara vía `_mapController.move(camera.center, nuevoZoom.clamp(2, 19))`. Mismo cambio en el mini-mapa de `DetalleReporteMascotaExtraviadaScreen` (sin botones propios, es solo una vista previa).
+
+**Se evaluó migrar a otra librería** (Google Maps, Mapbox, MapLibre) como salida de fondo — Google Maps quedó descartado por la fricción real que causó al usuario (facturación de Google Cloud confusa, terminó con la cuenta cerrada sin querer, con el susto de haber puesto la tarjeta de por medio); Mapbox quedó descartado porque exige correo de "organización" para cuentas nuevas, y el usuario no tiene uno; MapLibre (`maplibre_gl`, publicador oficial verificado, sin cuenta ni API key) quedó como alternativa viable pero no urgente, ya que el motivo original para migrar (una librería más estable, con renderizado nativo) se puede resolver primero agotando los ajustes de `flutter_map` sin costo de migración.
+
+**Quinto intento, el que funcionó — sacar también `flingAnimation`.** El usuario reprodujo el crash una cuarta vez moviéndose rápido por el mapa (no pellizcando ni con doble-tap) — la inercia que queda después de soltar el dedo tras un arrastre rápido genera muchas actualizaciones de cámara seguidas por sí sola, con el mismo patrón que el pellizco. `interactionOptions` quedó en solo `InteractiveFlag.drag` (sin inercia: el mapa se frena en seco al soltar el dedo). Probado a fondo por el usuario (movimientos rápidos, crear/borrar reportes seguidos, entrar y salir de la pestaña varias veces) sin volver a reproducirse — **se considera resuelto**, aunque sigue siendo una mitigación de app (evitar los gestos que disparan el bug), no una corrección de la librería en sí. Si en el futuro se necesita zoom por gesto de verdad (mejor UX), ahí sí vale la pena retomar la migración a MapLibre.
+
+El resto de las mitigaciones de capas anteriores (controller persistente, validación de coordenadas, bloqueo de 500 ms tras cada redibujado, manejador global de `main.dart`) se dejaron igual — no hacen daño y quedan como red de seguridad adicional.
+
+---
+
 ## De aquí en adelante
 
 Cada vez que se tome una decisión de arquitectura nueva (enfoque, tecnología, estructura — no un simple fix o ajuste de código), se agrega una entrada acá con: fecha, la decisión, el porqué, y alternativas consideradas si las hubo.

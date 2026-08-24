@@ -14,6 +14,7 @@ import 'package:patas_al_dia/l10n/app_localizations.dart';
 import 'package:patas_al_dia/presentation/screens/formulario_mascota_screen.dart'
     show especiesDisponibles;
 import 'package:patas_al_dia/presentation/utils/etiquetas_localizadas.dart';
+import 'package:patas_al_dia/presentation/widgets/tarjeta_clara.dart';
 import 'package:patas_al_dia/providers/mascota_extraviada_provider.dart';
 
 // Formulario para publicar un reporte de mascota perdida o encontrada.
@@ -43,9 +44,10 @@ class _FormularioReporteMascotaExtraviadaScreenState
   final ImagePicker _picker = ImagePicker();
   final _nombreController = TextEditingController();
   final _especiePersonalizadaController = TextEditingController();
-  final _calleController = TextEditingController();
-  final _numeroController = TextEditingController();
-  final _referenciaController = TextEditingController();
+  final _paisController = TextEditingController();
+  final _ciudadController = TextEditingController();
+  final _comunaController = TextEditingController();
+  final _direccionController = TextEditingController();
   final _recompensaController = TextEditingController();
   final _contactoController = TextEditingController();
   final _descripcionController = TextEditingController();
@@ -64,6 +66,14 @@ class _FormularioReporteMascotaExtraviadaScreenState
   bool _tieneRecompensa = false;
   bool _guardando = false;
 
+  // Dirección manual: se busca y se elige de una lista (no autocompletado
+  // en vivo — Nominatim prohíbe una consulta por cada tecla). El texto
+  // exacto de la sugerencia elegida, para saber si lo que hay en el campo
+  // sigue siendo esa selección o si el usuario volvió a escribir encima.
+  List<Map<String, dynamic>> _sugerenciasDireccion = [];
+  bool _buscandoDireccion = false;
+  String? _direccionConfirmada;
+
   bool get _mascotaRegistrada => widget.mascota != null;
   bool get _esPerdido => widget.tipo == 'perdido';
 
@@ -78,15 +88,30 @@ class _FormularioReporteMascotaExtraviadaScreenState
     if (_usarUbicacionActual) {
       WidgetsBinding.instance.addPostFrameCallback((_) => _obtenerUbicacion());
     }
+    // Si el usuario vuelve a escribir sobre una dirección ya confirmada, esa
+    // selección queda obsoleta — se limpia para forzar una nueva búsqueda
+    // antes de poder publicar (evita guardar una ubicación que ya no
+    // corresponde al texto que se ve en el campo).
+    _direccionController.addListener(() {
+      if (_direccionConfirmada != null &&
+          _direccionController.text != _direccionConfirmada) {
+        setState(() {
+          _direccionConfirmada = null;
+          _ubicacionLat = null;
+          _ubicacionLng = null;
+        });
+      }
+    });
   }
 
   @override
   void dispose() {
     _nombreController.dispose();
     _especiePersonalizadaController.dispose();
-    _calleController.dispose();
-    _numeroController.dispose();
-    _referenciaController.dispose();
+    _paisController.dispose();
+    _ciudadController.dispose();
+    _comunaController.dispose();
+    _direccionController.dispose();
     _recompensaController.dispose();
     _contactoController.dispose();
     _descripcionController.dispose();
@@ -181,56 +206,81 @@ class _FormularioReporteMascotaExtraviadaScreenState
     }
   }
 
-  // Convierte "Calle + Número" (+ Referencia opcional) en coordenadas vía
-  // Nominatim (el servicio de geocodificación de OpenStreetMap) — gratis,
-  // sin API key, mismo ecosistema que flutter_map. No se restringe a ningún
-  // país en la consulta: mismo criterio que el resto de los campos de la
-  // app (RUT, número de chip), pensado para no cerrarle la puerta a un
-  // usuario fuera de Chile. Si no encuentra la dirección, `_ubicacionLat`
-  // queda null y `_publicarReporte()` bloquea el guardado (ubicación
-  // obligatoria, ver decisiones_arquitectura.md, entrada del 2026-08-19).
-  Future<void> _geocodificarDireccion() async {
+  // Busca la dirección tipeada en Nominatim (geocodificación de OpenStreetMap
+  // — gratis, sin API key, mismo ecosistema que flutter_map) y muestra hasta
+  // 5 resultados para que el usuario elija el correcto — una sola consulta
+  // por búsqueda explícita, nunca por tecla (Nominatim prohíbe
+  // autocompletado en vivo contra su servicio público).
+  //
+  // País/ciudad van en la consulta (2026-08-24) — sin ellos, una calle común
+  // puede resolver a otro país por error (caso real: "Alameda 1200" trajo
+  // una calle de Estados Unidos en vez de la de Santiago). Comuna es
+  // opcional, se suma si está. No se restringe la BÚSQUEDA por país vía
+  // parámetro (`countrycodes`) — el propio texto de país/ciudad ya acota lo
+  // suficiente, y así sigue funcionando para un usuario fuera de Chile.
+  Future<void> _buscarDireccion() async {
     final l10n = AppLocalizations.of(context);
-    final calle = _calleController.text.trim();
-    final numero = _numeroController.text.trim();
-    final referencia = _referenciaController.text.trim();
-    if (calle.isEmpty && numero.isEmpty) {
+    final direccionLibre = _direccionController.text.trim();
+    if (direccionLibre.isEmpty) {
       return;
     }
-    final direccion = [
-      calle,
-      numero,
-      referencia,
-    ].where((s) => s.isNotEmpty).join(' ');
+    final consulta = [
+      direccionLibre,
+      _comunaController.text.trim(),
+      _ciudadController.text.trim(),
+      _paisController.text.trim(),
+    ].where((s) => s.isNotEmpty).join(', ');
+    setState(() {
+      _buscandoDireccion = true;
+      _sugerenciasDireccion = [];
+    });
     final uri = Uri.https('nominatim.openstreetmap.org', '/search', {
-      'q': direccion,
+      'q': consulta,
       'format': 'json',
-      'limit': '1',
+      'limit': '5',
     });
     try {
       final respuesta = await http.get(
         uri,
         headers: {'User-Agent': 'PatasAlDia-App/1.0'},
       );
-      final resultados = jsonDecode(respuesta.body) as List;
-      if (resultados.isEmpty) {
-        if (mounted) {
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(SnackBar(content: Text(l10n.errorGeocodificacion)));
-        }
+      final resultados = (jsonDecode(respuesta.body) as List)
+          .cast<Map<String, dynamic>>();
+      if (!mounted) {
         return;
       }
-      final primero = resultados.first as Map<String, dynamic>;
-      _ubicacionLat = double.parse(primero['lat'] as String);
-      _ubicacionLng = double.parse(primero['lon'] as String);
+      if (resultados.isEmpty) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(l10n.errorGeocodificacion)));
+      }
+      setState(() => _sugerenciasDireccion = resultados);
     } catch (_) {
       if (mounted) {
         ScaffoldMessenger.of(
           context,
         ).showSnackBar(SnackBar(content: Text(l10n.errorGeocodificacion)));
       }
+    } finally {
+      if (mounted) {
+        setState(() => _buscandoDireccion = false);
+      }
     }
+  }
+
+  // Confirma una de las sugerencias como la ubicación del reporte. El orden
+  // importa: `_direccionConfirmada` se fija ANTES de tocar el controller,
+  // para que el listener de dispose() (que limpia la selección si el texto
+  // cambia) no se dispare en falso por el propio cambio de texto de acá.
+  void _seleccionarDireccion(Map<String, dynamic> resultado) {
+    final displayName = resultado['display_name'] as String;
+    setState(() {
+      _ubicacionLat = double.parse(resultado['lat'] as String);
+      _ubicacionLng = double.parse(resultado['lon'] as String);
+      _direccionConfirmada = displayName;
+      _direccionController.text = displayName;
+      _sugerenciasDireccion = [];
+    });
   }
 
   // Valida el formulario, sube la foto y guarda el reporte en Supabase.
@@ -248,13 +298,6 @@ class _FormularioReporteMascotaExtraviadaScreenState
     }
 
     setState(() => _guardando = true);
-
-    if (!_usarUbicacionActual) {
-      await _geocodificarDireccion();
-      if (!mounted) {
-        return;
-      }
-    }
 
     // Ubicación obligatoria (decisión del usuario, 2026-08-19): sin esto un
     // reporte no aparece en el mapa, que es el propósito central del
@@ -317,6 +360,12 @@ class _FormularioReporteMascotaExtraviadaScreenState
         mascotaFotoUrl: fotoUrl,
         ubicacionLat: _ubicacionLat,
         ubicacionLng: _ubicacionLng,
+        // Solo con dirección manual — con GPS no hay estos datos.
+        pais: _usarUbicacionActual ? null : _paisController.text.trim(),
+        ciudad: _usarUbicacionActual ? null : _ciudadController.text.trim(),
+        comuna: _usarUbicacionActual || _comunaController.text.trim().isEmpty
+            ? null
+            : _comunaController.text.trim(),
         recompensa: _esPerdido && _tieneRecompensa
             ? double.parse(_recompensaController.text.trim())
             : 0,
@@ -540,43 +589,95 @@ class _FormularioReporteMascotaExtraviadaScreenState
                         child: Text(l10n.obtenerUbicacionActual),
                       ),
               )
-            else
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Expanded(
-                    flex: 3,
-                    child: TextFormField(
-                      controller: _calleController,
-                      decoration: InputDecoration(labelText: l10n.campoCalle),
-                      validator: (valor) {
-                        if (!_usarUbicacionActual &&
-                            (valor == null || valor.trim().isEmpty)) {
-                          return l10n.errorCalleObligatoria;
-                        }
-                        return null;
-                      },
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    flex: 1,
-                    child: TextFormField(
-                      controller: _numeroController,
-                      decoration: InputDecoration(labelText: l10n.campoNumero),
-                      keyboardType: TextInputType.number,
-                    ),
-                  ),
-                ],
+            else ...[
+              TextFormField(
+                controller: _paisController,
+                decoration: InputDecoration(labelText: l10n.campoPais),
+                validator: (valor) {
+                  if (!_usarUbicacionActual &&
+                      (valor == null || valor.trim().isEmpty)) {
+                    return l10n.errorPaisObligatorio;
+                  }
+                  return null;
+                },
               ),
-            if (!_usarUbicacionActual) ...[
               const SizedBox(height: 12),
               TextFormField(
-                controller: _referenciaController,
+                controller: _ciudadController,
+                decoration: InputDecoration(labelText: l10n.campoCiudad),
+                validator: (valor) {
+                  if (!_usarUbicacionActual &&
+                      (valor == null || valor.trim().isEmpty)) {
+                    return l10n.errorCiudadObligatoria;
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 12),
+              TextFormField(
+                controller: _comunaController,
                 decoration: InputDecoration(
-                  labelText: l10n.campoReferenciaDireccion,
+                  labelText: l10n.campoComunaOpcional,
                 ),
               ),
+              const SizedBox(height: 12),
+              TextFormField(
+                controller: _direccionController,
+                decoration: InputDecoration(
+                  labelText: l10n.campoDireccion,
+                  suffixIcon: IconButton(
+                    icon: const Icon(Icons.help_outline),
+                    onPressed: () => showDialog<void>(
+                      context: context,
+                      builder: (context) => AlertDialog(
+                        content: Text(l10n.ayudaDireccionEstimada),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.of(context).pop(),
+                            child: Text(l10n.avisoMapaEntendido),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+                onFieldSubmitted: (_) => _buscarDireccion(),
+              ),
+              ListTile(
+                contentPadding: EdgeInsets.zero,
+                leading: Icon(
+                  _direccionConfirmada != null
+                      ? Icons.check_circle
+                      : Icons.location_on_outlined,
+                  color: _direccionConfirmada != null ? Colors.green : null,
+                ),
+                title: Text(_direccionConfirmada ?? l10n.sinUbicacionLabel),
+                trailing: _buscandoDireccion
+                    ? const SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : TextButton(
+                        onPressed: _buscarDireccion,
+                        child: Text(l10n.buscarDireccionBoton),
+                      ),
+              ),
+              if (_sugerenciasDireccion.isNotEmpty)
+                TarjetaClara(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      for (final resultado in _sugerenciasDireccion)
+                        ListTile(
+                          dense: true,
+                          leading: const Icon(Icons.location_on_outlined),
+                          title: Text(resultado['display_name'] as String),
+                          onTap: () => _seleccionarDireccion(resultado),
+                        ),
+                    ],
+                  ),
+                ),
             ],
             if (_esPerdido) ...[
               const SizedBox(height: 16),

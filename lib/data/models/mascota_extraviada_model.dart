@@ -9,6 +9,12 @@ class MascotaExtraviadaModel {
   final String? mascotaFotoUrl;
   final double? ubicacionLat;
   final double? ubicacionLng;
+  // País y ciudad de la dirección ingresada a mano (2026-08-24) — comuna es
+  // opcional, no todos los países la usan. Solo se llenan en el camino de
+  // dirección manual; con GPS quedan null.
+  final String? pais;
+  final String? ciudad;
+  final String? comuna;
   final double recompensa;
   // 'perdido' o 'encontrado' — qué clase de reporte es. No cambia nunca
   // después de creado (a diferencia de `resuelto`).
@@ -27,6 +33,9 @@ class MascotaExtraviadaModel {
     this.mascotaFotoUrl,
     this.ubicacionLat,
     this.ubicacionLng,
+    this.pais,
+    this.ciudad,
+    this.comuna,
     this.recompensa = 0,
     required this.tipo,
     this.resuelto = false,
@@ -50,6 +59,9 @@ class MascotaExtraviadaModel {
       ubicacionLng: map['ubicacion_lng'] != null
           ? (map['ubicacion_lng'] as num).toDouble()
           : null,
+      pais: map['pais'] as String?,
+      ciudad: map['ciudad'] as String?,
+      comuna: map['comuna'] as String?,
       recompensa: map['recompensa'] != null
           ? (map['recompensa'] as num).toDouble()
           : 0,
@@ -74,6 +86,9 @@ class MascotaExtraviadaModel {
       'mascota_foto_url': mascotaFotoUrl,
       'ubicacion_lat': ubicacionLat,
       'ubicacion_lng': ubicacionLng,
+      'pais': pais,
+      'ciudad': ciudad,
+      'comuna': comuna,
       'recompensa': recompensa,
       'tipo': tipo,
       'resuelto': resuelto,
@@ -93,6 +108,9 @@ class MascotaExtraviadaModel {
     String? mascotaFotoUrl,
     double? ubicacionLat,
     double? ubicacionLng,
+    String? pais,
+    String? ciudad,
+    String? comuna,
     double? recompensa,
     String? tipo,
     bool? resuelto,
@@ -109,6 +127,9 @@ class MascotaExtraviadaModel {
       mascotaFotoUrl: mascotaFotoUrl ?? this.mascotaFotoUrl,
       ubicacionLat: ubicacionLat ?? this.ubicacionLat,
       ubicacionLng: ubicacionLng ?? this.ubicacionLng,
+      pais: pais ?? this.pais,
+      ciudad: ciudad ?? this.ciudad,
+      comuna: comuna ?? this.comuna,
       recompensa: recompensa ?? this.recompensa,
       tipo: tipo ?? this.tipo,
       resuelto: resuelto ?? this.resuelto,

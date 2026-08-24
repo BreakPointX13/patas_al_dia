@@ -226,7 +226,17 @@ create table public.mascotas_extraviadas (
   resuelto boolean default false,
   contacto_emergencia text not null,
   descripcion text,
-  fecha_publicacion timestamptz default now()
+  fecha_publicacion timestamptz default now(),
+  -- País/ciudad obligatorios, comuna opcional (2026-08-24) — se piden a
+  -- mano en vez de derivarlos de la geocodificación: sin contexto de país,
+  -- Nominatim puede confundir una calle con otra igual de nombre en otro
+  -- país (caso real: "Alameda 1200" resolvió a Estados Unidos en vez de
+  -- Santiago). Se usan para afinar la búsqueda de dirección y quedan
+  -- guardados en el reporte. Comuna es opcional para no exigir un concepto
+  -- que no existe en todos los países (ver decisiones_arquitectura.md).
+  pais text,
+  ciudad text,
+  comuna text
 );
 
 alter table public.mascotas_extraviadas enable row level security;

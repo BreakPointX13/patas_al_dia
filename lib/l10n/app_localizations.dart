@@ -1675,8 +1675,14 @@ abstract class AppLocalizations {
   /// No description provided for @sinUbicacionLabel.
   ///
   /// In es, this message translates to:
-  /// **'Sin ubicación (opcional)'**
+  /// **'Sin ubicación'**
   String get sinUbicacionLabel;
+
+  /// No description provided for @ayudaDireccionEstimada.
+  ///
+  /// In es, this message translates to:
+  /// **'Puedes ingresar una dirección aproximada — el sector alcanza. Si prefieres, agrega los detalles exactos en la descripción.'**
+  String get ayudaDireccionEstimada;
 
   /// No description provided for @errorServicioUbicacionDeshabilitado.
   ///
@@ -1702,29 +1708,47 @@ abstract class AppLocalizations {
   /// **'No se pudo obtener la ubicación'**
   String get errorObtenerUbicacion;
 
-  /// No description provided for @campoCalle.
+  /// No description provided for @campoPais.
   ///
   /// In es, this message translates to:
-  /// **'Calle *'**
-  String get campoCalle;
+  /// **'País'**
+  String get campoPais;
 
-  /// No description provided for @errorCalleObligatoria.
+  /// No description provided for @errorPaisObligatorio.
   ///
   /// In es, this message translates to:
-  /// **'La calle es obligatoria'**
-  String get errorCalleObligatoria;
+  /// **'El país es obligatorio'**
+  String get errorPaisObligatorio;
 
-  /// No description provided for @campoNumero.
+  /// No description provided for @campoCiudad.
   ///
   /// In es, this message translates to:
-  /// **'Número'**
-  String get campoNumero;
+  /// **'Ciudad'**
+  String get campoCiudad;
 
-  /// No description provided for @campoReferenciaDireccion.
+  /// No description provided for @errorCiudadObligatoria.
   ///
   /// In es, this message translates to:
-  /// **'Referencia (depto, esquina, etc. — opcional)'**
-  String get campoReferenciaDireccion;
+  /// **'La ciudad es obligatoria'**
+  String get errorCiudadObligatoria;
+
+  /// No description provided for @campoComunaOpcional.
+  ///
+  /// In es, this message translates to:
+  /// **'Comuna (opcional)'**
+  String get campoComunaOpcional;
+
+  /// No description provided for @campoDireccion.
+  ///
+  /// In es, this message translates to:
+  /// **'Dirección'**
+  String get campoDireccion;
+
+  /// No description provided for @buscarDireccionBoton.
+  ///
+  /// In es, this message translates to:
+  /// **'Buscar dirección'**
+  String get buscarDireccionBoton;
 
   /// No description provided for @errorGeocodificacion.
   ///
@@ -1971,6 +1995,18 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'No hay reportes activos por ahora'**
   String get sinReportesActivos;
+
+  /// No description provided for @misReportesTitulo.
+  ///
+  /// In es, this message translates to:
+  /// **'Mis reportes'**
+  String get misReportesTitulo;
+
+  /// No description provided for @sinMisReportesActivos.
+  ///
+  /// In es, this message translates to:
+  /// **'No tienes reportes activos por ahora'**
+  String get sinMisReportesActivos;
 
   /// No description provided for @errorCargarReportes.
   ///
