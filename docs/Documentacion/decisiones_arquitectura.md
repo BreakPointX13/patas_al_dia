@@ -728,6 +728,27 @@ El resto de las mitigaciones de capas anteriores (controller persistente, valida
 
 ---
 
+## 2026-08-24 — Pantalla negra en release recién publicado en Play Store (AAPT2 acorta nombres de recursos, no es el shrinker)
+
+**El problema, reportado por dos testers reales y reproducido por el usuario mismo** desinstalando la app y volviendo a instalarla desde Play Store: al abrirla, se queda en el splash nativo (logo + fondo negro) y nunca llega a la UI de Flutter. No pasaba en ningún build de debug probado durante toda la sesión — el primer build de release real fue el que se subió a Play Console, así que el bug estuvo presente desde siempre sin que nadie lo viera hasta la publicación.
+
+**Diagnóstico:** un build de release real (`flutter build apk --release`, no debug) instalado por `adb install -r` y arrancado con `adb shell am start`, con `adb logcat` corriendo, mostró un `PlatformException(invalid_icon, ...)` disparado dentro de `NotificacionService.inicializar()` (llamado en `main()` antes de `runApp()`, sin try/catch — por eso el crash impide que la UI de Flutter arranque). `flutter_local_notifications` busca su ícono de notificación por nombre en tiempo de ejecución (`Resources.getIdentifier('ic_stat_patas', 'drawable', ...)`, ver `notificacion_service.dart`) — si ese nombre no coincide con el que tiene el recurso empaquetado en el APK, la búsqueda falla.
+
+Comparando con `unzip -l` los nombres de archivo reales dentro del `.apk` de debug contra el de release: en debug, `res/drawable-xxxhdpi-v4/ic_stat_patas.png`; en release, el archivo seguía estando (mismo tamaño, mismo contenido) pero bajo un nombre corto irreconocible tipo `res/0O.png`. **Primera hipótesis, incorrecta:** el shrinker de recursos de Android (activado por defecto en release) lo estaba renombrando/optimizando. Se probó, en orden, sin éxito:
+
+1. `res/raw/keep.xml` con `tools:keep="@drawable/ic_stat_patas"` — evita que el shrinker *elimine* el recurso por no verlo referenciado en código, pero no evita que le cambie el nombre (son dos comportamientos distintos del shrinker, confirmado con esta prueba).
+2. `isMinifyEnabled = false` / `isShrinkResources = false` explícitos en `android/app/build.gradle.kts` — sin efecto observable después de un build limpio.
+3. Investigando el propio código fuente del plugin de Flutter instalado (`FlutterPlugin.kt`/`FlutterPluginUtils.kt`): confirmado que el plugin de Flutter **fuerza** `isMinifyEnabled`/`isShrinkResources = true` en el build type `release`, sin importar lo que diga `build.gradle.kts` del proyecto — la única propiedad que ese plugin respeta para desactivarlo es la property de Gradle `shrink` (no un ajuste de AGP), seteada en `android/gradle.properties` (`shrink=false`). Se agregó, se hizo `flutter clean` + rebuild — **el nombre seguía acortado**, algo no encajaba con la lectura del código fuente.
+4. Para descartar que `flutter build`'s wrapper no estuviera pasando la property, se corrió `./gradlew assembleRelease -Pshrink=false` directo (sin pasar por `flutter build`) — build exitoso, pero **el nombre seguía acortado**.
+
+**La causa real, encontrada revisando `unzip -l` sobre el `.apk` completo, no solo el ícono:** *todos* los ~430 archivos bajo `res/` tenían nombres cortos (`res/-8.xml`, `res/0E.xml`, etc.), con o sin shrinking activado. No era el shrinker (que solo actúa sobre recursos que cree no usados) — es una optimización *aparte* de AAPT2, activa por defecto en cualquier build de release, que acorta los nombres de archivo de **todos** los recursos para bajar el tamaño del APK, sin relación con `minifyEnabled`/`shrinkResources`. Se desactiva con la property de Gradle `android.enableResourceOptimizations=false` (agregada a `android/gradle.properties`, junto a `shrink=false` que se dejó igual, ya que si en el futuro se agrega algún recurso realmente sin usar conviene seguir dejando que el shrinker lo saque). Confirmado con `unzip -l` que `ic_stat_patas.png` vuelve a aparecer con su nombre real bajo las 5 densidades (`hdpi`/`mdpi`/`xhdpi`/`xxhdpi`/`xxxhdpi`), y con `adb logcat` que la app abre sin la excepción y sin quedarse en el splash.
+
+**Por qué nadie lo vio antes de publicar:** todo el desarrollo y las pruebas de esta sesión (y de las anteriores) se hicieron con `flutter run`/`flutter build apk --debug`, donde ni el shrinker ni esta optimización de AAPT2 corren — el primer build de release genuino de todo el proyecto fue, sin saberlo, el que se subió a producción. Queda como aprendizaje para el futuro: antes de subir cualquier release nuevo a Play Console, probar primero un `flutter build apk --release` real en el dispositivo, no asumir que un debug limpio es garantía suficiente.
+
+**`versionCode` 5** — el primero con este arreglo. Los intentos 4 anteriores subidos a Play Console (`versionCode` 2-4, `patas_al_dia.app`) quedan con este bug; hay que resubir el `.aab` nuevo al track de Testing cerrado.
+
+---
+
 ## De aquí en adelante
 
 Cada vez que se tome una decisión de arquitectura nueva (enfoque, tecnología, estructura — no un simple fix o ajuste de código), se agrega una entrada acá con: fecha, la decisión, el porqué, y alternativas consideradas si las hubo.

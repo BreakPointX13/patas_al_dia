@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- flutter_local_notifications recibe el ícono como un String ('ic_stat_patas',
+     ver notificacion_service.dart) y lo busca por nombre en tiempo de
+     ejecución — el reductor de recursos de Android (solo corre en release)
+     no ve ninguna referencia directa en código y lo eliminaba del paquete,
+     dejando la app sin poder arrancar (crasheaba en main(), antes de
+     runApp()). Este archivo le dice explícitamente que no lo borre. -->
+<resources xmlns:tools="http://schemas.android.com/tools"
+    tools:keep="@drawable/ic_stat_patas" />

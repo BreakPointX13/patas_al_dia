@@ -53,6 +53,12 @@ android {
     buildTypes {
         release {
             signingConfig = signingConfigs.getByName("release")
+            // Redundante con `shrink=false` en gradle.properties (esa es la
+            // propiedad que el plugin de Flutter realmente respeta — ver el
+            // comentario ahí para el porqué), pero se deja explícito acá
+            // también por las dudas.
+            isMinifyEnabled = false
+            isShrinkResources = false
         }
     }
 }
