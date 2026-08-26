@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:patas_al_dia/l10n/app_localizations.dart';
+import 'package:patas_al_dia/presentation/screens/admin_moderacion_screen.dart';
 import 'package:patas_al_dia/presentation/screens/cambiar_contrasena_screen.dart';
 import 'package:patas_al_dia/presentation/screens/login_screen.dart';
 import 'package:patas_al_dia/presentation/screens/registro_screen.dart';
@@ -13,6 +14,7 @@ import 'package:patas_al_dia/providers/mascota_provider.dart';
 import 'package:patas_al_dia/providers/medicamento_evento_provider.dart';
 import 'package:patas_al_dia/providers/sync_provider.dart';
 import 'package:patas_al_dia/providers/usuario_provider.dart';
+import 'package:patas_al_dia/services/supabase_config.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 final _urlKoFi = Uri.parse('https://ko-fi.com/breakpointx');
@@ -389,6 +391,30 @@ class AjustesScreen extends ConsumerWidget {
               MaterialPageRoute(builder: (context) => const ReportarBugScreen()),
             ),
           ),
+          // Visible solo para el admin (2026-08-25, ver
+          // decisiones_arquitectura.md) — comparado contra el correo de la
+          // cuenta actual, no un rol en la base. La política RLS
+          // denuncias_reportes_leer_admin hace cumplir lo mismo del lado
+          // del servidor, así que esto es solo para no mostrarle el ítem a
+          // nadie más, no la protección real.
+          if (usuario?.email == correoAdmin) ...[
+            _encabezadoSeccion(
+              context,
+              Icons.admin_panel_settings_outlined,
+              l10n.moderacionTitulo,
+            ),
+            ListTile(
+              leading: const Icon(Icons.flag_outlined),
+              title: Text(l10n.moderacionTitulo),
+              subtitle: Text(l10n.moderacionSubtitulo),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () => Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => const AdminModeracionScreen(),
+                ),
+              ),
+            ),
+          ],
           _encabezadoSeccion(
             context,
             Icons.shield_outlined,

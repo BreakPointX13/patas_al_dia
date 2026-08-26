@@ -5,6 +5,19 @@ import 'package:patas_al_dia/data/models/mascota_extraviada_model.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:uuid/uuid.dart';
 
+// Un reporte denunciado, con cuántas denuncias tiene — solo para la pantalla
+// de moderación (ver obtenerReportesDenunciados más abajo). No es un
+// MascotaExtraviadaModel más porque el conteo no vive en esa tabla.
+class ReporteDenunciado {
+  final MascotaExtraviadaModel reporte;
+  final int cantidadDenuncias;
+
+  const ReporteDenunciado({
+    required this.reporte,
+    required this.cantidadDenuncias,
+  });
+}
+
 // Reportes de mascotas perdidas/encontradas — vive solo en Supabase, no en SQLite.
 class MascotaExtraviadaRepository {
   // Consigue un usuario de Supabase (real o anónimo) para poder publicar.
@@ -103,6 +116,44 @@ class MascotaExtraviadaRepository {
       }
     }
     await client.from('mascotas_extraviadas').delete().eq('id', reporte.id);
+  }
+
+  // Trae los reportes con al menos una denuncia, con su conteo — para la
+  // pantalla de moderación (2026-08-25, ver decisiones_arquitectura.md).
+  // Sin importar si ya están resueltos: un reporte denunciado por contenido
+  // abusivo sigue necesitando revisión aunque el dueño ya lo haya marcado
+  // como resuelto. `denuncias_reportes` solo es legible por el admin (ver
+  // política RLS denuncias_reportes_leer_admin) — para cualquier otro
+  // usuario, la primera consulta ya viene vacía, sin error.
+  Future<List<ReporteDenunciado>> obtenerReportesDenunciados() async {
+    final client = Supabase.instance.client;
+    final denuncias = await client
+        .from('denuncias_reportes')
+        .select('reporte_id');
+    if (denuncias.isEmpty) {
+      return [];
+    }
+    final conteos = <String, int>{};
+    for (final fila in denuncias) {
+      final id = fila['reporte_id'] as String;
+      conteos[id] = (conteos[id] ?? 0) + 1;
+    }
+    final maps = await client
+        .from('mascotas_extraviadas')
+        .select()
+        .inFilter('id', conteos.keys.toList());
+    final reportes = maps
+        .map(
+          (mapa) => ReporteDenunciado(
+            reporte: MascotaExtraviadaModel.fromMap(mapa),
+            cantidadDenuncias: conteos[mapa['id'] as String] ?? 0,
+          ),
+        )
+        .toList();
+    reportes.sort(
+      (a, b) => b.cantidadDenuncias.compareTo(a.cantidadDenuncias),
+    );
+    return reportes;
   }
 
   // Registra que un usuario denunció un reporte (contenido falso, abuso, etc.).

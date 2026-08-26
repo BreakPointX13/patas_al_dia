@@ -22,6 +22,18 @@ Este documento junta todo lo que quedó sin confirmar o sin resolver específica
 
 **Por qué no se hizo todavía:** requiere tocar código nativo específico de iOS (o un paquete como `path_provider`, que sí lo soporta), y no se pudo probar sin un dispositivo real. Queda pendiente para cuando se retome el trabajo de iOS.
 
-## 3. Nada del proyecto se probó en iOS todavía
+## 3. `permission_handler` necesita macros activadas en el Podfile (2026-08-25)
+
+**Contexto:** se agregó `permission_handler` (ver `selector_imagen.dart`) para pedir el permiso de cámara explícito y poder guiar al usuario a Ajustes si quedó denegado para siempre — arreglo de un bug real en Android (un tester tocaba "tomar foto" y no pasaba nada). En iOS, este paquete requiere activar por macro de preprocesador cada permiso que se use (`PERMISSION_CAMERA=1`, `PERMISSION_PHOTOS=1`) en el `Podfile` — si no se hace, los métodos de cámara/fotos del plugin lanzan `PermissionHandlerErrorCategory.defaultDenied` en tiempo de ejecución en vez de funcionar.
+
+**Por qué no se hizo todavía:** este proyecto no tiene un `ios/Podfile` generado (nunca se corrió `pod install`/`flutter build ios` — ver punto 3 más abajo), así que no hay archivo donde agregar las macros todavía. Queda pendiente para la primera vez que se retome trabajo real de iOS: agregar, dentro del `post_install` del Podfile, algo como:
+```ruby
+target.build_configurations.each do |config|
+  config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] ||= ['$(inherited)', 'PERMISSION_CAMERA=1', 'PERMISSION_PHOTOS=1']
+end
+```
+(ver la documentación oficial del paquete para la lista completa de macros disponibles).
+
+## 4. Nada del proyecto se probó en iOS todavía
 
 Todo lo construido hasta ahora (Agenda, notificaciones locales con `flutter_local_notifications`, selección de archivos con `file_picker`, apertura de archivos con `open_filex`, calendario con `table_calendar`) se escribió con soporte multiplataforma (regla #1 de `CLAUDE.md`), pero **cero probado en iOS real** — todas las pruebas de esta etapa del proyecto fueron en un Samsung Android físico. Antes de siquiera evaluar el lanzamiento en App Store, hace falta una pasada completa de pruebas en iOS (simulador como mínimo, dispositivo real idealmente) para encontrar lo que seguro no se ve desde acá.

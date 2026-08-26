@@ -143,6 +143,35 @@ class AppLocalizationsPt extends AppLocalizations {
   String get botonRestablecerContrasena => 'Redefinir senha';
 
   @override
+  String get contrasenaActualizadaAviso =>
+      'Sua senha foi atualizada com sucesso.';
+
+  @override
+  String get moderacionTitulo => 'Moderação';
+
+  @override
+  String get moderacionSubtitulo => 'Relatos denunciados por outros usuários';
+
+  @override
+  String get sinReportesDenunciados => 'Nenhum relato denunciado por enquanto.';
+
+  @override
+  String cantidadDenunciasLabel(Object n) {
+    return '$n denúncias';
+  }
+
+  @override
+  String get errorPermisoCamaraPermanente =>
+      'O Patas al Día precisa de permissão para usar a câmera. Ative nas configurações do seu celular.';
+
+  @override
+  String get errorPermisoFotosGenerico =>
+      'Não foi possível acessar a foto. Verifique as permissões do Patas al Día nas configurações do seu celular.';
+
+  @override
+  String get abrirAjustesBoton => 'Abrir configurações';
+
+  @override
   String get campoNuevaContrasena => 'Nova senha';
 
   @override
@@ -246,22 +275,22 @@ class AppLocalizationsPt extends AppLocalizations {
   String get campoEspecificaEspecie => 'Especifique a espécie';
 
   @override
-  String get campoRaza => 'Raça';
+  String get campoRaza => 'Raça (opcional)';
 
   @override
-  String get formCampoRut => 'Identificação do pet';
+  String get formCampoRut => 'Identificação do pet (opcional)';
 
   @override
-  String get campoNumeroChip => 'Número do chip';
+  String get campoNumeroChip => 'Número do chip (opcional)';
 
   @override
   String get campoSexo => 'Sexo';
 
   @override
-  String get campoColores => 'Cores';
+  String get campoColores => 'Cores (opcional)';
 
   @override
-  String get campoPesoKg => 'Peso (kg)';
+  String get campoPesoKg => 'Peso (kg, opcional)';
 
   @override
   String get errorPesoInvalido => 'Digite um peso válido';
@@ -644,7 +673,7 @@ class AppLocalizationsPt extends AppLocalizations {
   String get campoFechaProgramada => 'Data agendada';
 
   @override
-  String get campoObservaciones => 'Observações';
+  String get campoObservaciones => 'Observações (opcional)';
 
   @override
   String get sinObservaciones => 'Sem observações';
@@ -797,7 +826,7 @@ class AppLocalizationsPt extends AppLocalizations {
       'Por enquanto isso só fica salvo como informação, ainda não envia uma notificação.';
 
   @override
-  String get campoNotas => 'Notas';
+  String get campoNotas => 'Notas (opcional)';
 
   @override
   String get eligeFotoOPdf => 'Escolha uma foto ou um PDF';
@@ -934,7 +963,8 @@ class AppLocalizationsPt extends AppLocalizations {
   String get errorDescripcionObligatoria => 'A descrição é obrigatória';
 
   @override
-  String get reportePublicadoAviso => 'Registro publicado';
+  String get reporteAgradecimientoAviso =>
+      'Obrigado por reportar! Sua publicação já está visível no mapa para que a comunidade possa ajudar.';
 
   @override
   String get errorPublicarReporte =>

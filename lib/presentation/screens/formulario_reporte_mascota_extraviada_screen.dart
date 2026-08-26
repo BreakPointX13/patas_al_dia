@@ -14,6 +14,7 @@ import 'package:patas_al_dia/l10n/app_localizations.dart';
 import 'package:patas_al_dia/presentation/screens/formulario_mascota_screen.dart'
     show especiesDisponibles;
 import 'package:patas_al_dia/presentation/utils/etiquetas_localizadas.dart';
+import 'package:patas_al_dia/presentation/utils/selector_imagen.dart';
 import 'package:patas_al_dia/presentation/widgets/tarjeta_clara.dart';
 import 'package:patas_al_dia/providers/mascota_extraviada_provider.dart';
 
@@ -153,7 +154,9 @@ class _FormularioReporteMascotaExtraviadaScreenState
     // dispositivo), así que es la única que vale la pena comprimir por
     // costo de almacenamiento. 1600px/75% de calidad no se nota a simple
     // vista y baja el peso típico a unos cientos de KB.
-    final imagen = await _picker.pickImage(
+    final imagen = await elegirImagenConPermiso(
+      context,
+      _picker,
       source: opcion == 'camara' ? ImageSource.camera : ImageSource.gallery,
       maxWidth: 1600,
       imageQuality: 75,
@@ -382,9 +385,24 @@ class _FormularioReporteMascotaExtraviadaScreenState
       if (!mounted) {
         return;
       }
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(l10n.reportePublicadoAviso)));
+      // Diálogo, no SnackBar: se cierra esta pantalla enseguida después de
+      // esto y un SnackBar quedaría anclado a ella, sin llegar a verse
+      // (mismo motivo que en nueva_contrasena_screen.dart).
+      await showDialog<void>(
+        context: context,
+        builder: (context) => AlertDialog(
+          content: Text(l10n.reporteAgradecimientoAviso),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: Text(l10n.avisoMapaEntendido),
+            ),
+          ],
+        ),
+      );
+      if (!mounted) {
+        return;
+      }
       Navigator.of(context).pop();
     } on AuthException catch (e) {
       // Falla al crear/usar la sesión anónima de Supabase (ver

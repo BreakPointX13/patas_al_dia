@@ -26,3 +26,12 @@ const supabaseRedirectRecuperarContrasena = 'patasaldia://reset-password';
 // hacer que sirva HTML real).
 const supabaseRedirectConfirmarCorreo =
     'https://breakpointx13.github.io/PatasAlDiaWeb/';
+
+// Único admin de la app (2026-08-25, ver decisiones_arquitectura.md):
+// moderación del módulo Mapa (ver reportes denunciados, borrarlos) estaba
+// pensada para hacerse a mano desde el panel de Supabase — se movió a una
+// pantalla dentro de la app, visible solo para esta cuenta. Comparado contra
+// `usuario.email` (la cuenta registrada actual), no contra `auth.uid()` — no
+// hay tabla de roles, es un único admin fijo. Las políticas RLS del lado de
+// Supabase comparan este mismo correo vía `auth.jwt() ->> 'email'`.
+const correoAdmin = 'breakpointx.dev@gmail.com';

@@ -265,13 +265,13 @@ abstract class AppLocalizations {
   /// No description provided for @linkNoTenesCuenta.
   ///
   /// In es, this message translates to:
-  /// **'¿No tenés cuenta? Registrate'**
+  /// **'¿No tienes cuenta? Regístrate'**
   String get linkNoTenesCuenta;
 
   /// No description provided for @linkYaTenesCuenta.
   ///
   /// In es, this message translates to:
-  /// **'¿Ya tenés cuenta? Iniciá sesión'**
+  /// **'¿Ya tienes cuenta? Inicia sesión'**
   String get linkYaTenesCuenta;
 
   /// No description provided for @avisoRevisaCorreo.
@@ -313,7 +313,7 @@ abstract class AppLocalizations {
   /// No description provided for @registrarmeSubtitulo.
   ///
   /// In es, this message translates to:
-  /// **'Registrate para no perder tus datos'**
+  /// **'Regístrate para no perder tus datos'**
   String get registrarmeSubtitulo;
 
   /// No description provided for @linkOlvideContrasena.
@@ -351,6 +351,54 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Restablecer contraseña'**
   String get botonRestablecerContrasena;
+
+  /// No description provided for @contrasenaActualizadaAviso.
+  ///
+  /// In es, this message translates to:
+  /// **'Tu contraseña se actualizó correctamente.'**
+  String get contrasenaActualizadaAviso;
+
+  /// No description provided for @moderacionTitulo.
+  ///
+  /// In es, this message translates to:
+  /// **'Moderación'**
+  String get moderacionTitulo;
+
+  /// No description provided for @moderacionSubtitulo.
+  ///
+  /// In es, this message translates to:
+  /// **'Reportes denunciados por otros usuarios'**
+  String get moderacionSubtitulo;
+
+  /// No description provided for @sinReportesDenunciados.
+  ///
+  /// In es, this message translates to:
+  /// **'No hay reportes denunciados por ahora.'**
+  String get sinReportesDenunciados;
+
+  /// No description provided for @cantidadDenunciasLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'{n} denuncias'**
+  String cantidadDenunciasLabel(Object n);
+
+  /// No description provided for @errorPermisoCamaraPermanente.
+  ///
+  /// In es, this message translates to:
+  /// **'Patas al Día necesita permiso para usar la cámara. Actívalo desde los ajustes del teléfono.'**
+  String get errorPermisoCamaraPermanente;
+
+  /// No description provided for @errorPermisoFotosGenerico.
+  ///
+  /// In es, this message translates to:
+  /// **'No se pudo acceder a la foto. Revisa los permisos de Patas al Día desde los ajustes del teléfono.'**
+  String get errorPermisoFotosGenerico;
+
+  /// No description provided for @abrirAjustesBoton.
+  ///
+  /// In es, this message translates to:
+  /// **'Abrir ajustes'**
+  String get abrirAjustesBoton;
 
   /// No description provided for @campoNuevaContrasena.
   ///
@@ -553,19 +601,19 @@ abstract class AppLocalizations {
   /// No description provided for @campoRaza.
   ///
   /// In es, this message translates to:
-  /// **'Raza'**
+  /// **'Raza (opcional)'**
   String get campoRaza;
 
   /// No description provided for @formCampoRut.
   ///
   /// In es, this message translates to:
-  /// **'Rut de la mascota'**
+  /// **'Rut de la mascota (opcional)'**
   String get formCampoRut;
 
   /// No description provided for @campoNumeroChip.
   ///
   /// In es, this message translates to:
-  /// **'Número de chip'**
+  /// **'Número de chip (opcional)'**
   String get campoNumeroChip;
 
   /// No description provided for @campoSexo.
@@ -577,13 +625,13 @@ abstract class AppLocalizations {
   /// No description provided for @campoColores.
   ///
   /// In es, this message translates to:
-  /// **'Colores'**
+  /// **'Colores (opcional)'**
   String get campoColores;
 
   /// No description provided for @campoPesoKg.
   ///
   /// In es, this message translates to:
-  /// **'Peso (kg)'**
+  /// **'Peso (kg, opcional)'**
   String get campoPesoKg;
 
   /// No description provided for @errorPesoInvalido.
@@ -895,7 +943,7 @@ abstract class AppLocalizations {
   /// No description provided for @cerrarSesionContenidoRegistrado.
   ///
   /// In es, this message translates to:
-  /// **'Vas a cerrar tu sesión. Podés volver a iniciarla con tu correo y contraseña cuando quieras.'**
+  /// **'Vas a cerrar tu sesión. Puedes volver a iniciarla con tu correo y contraseña cuando quieras.'**
   String get cerrarSesionContenidoRegistrado;
 
   /// No description provided for @eliminarCuentaLabel.
@@ -1291,7 +1339,7 @@ abstract class AppLocalizations {
   /// No description provided for @campoObservaciones.
   ///
   /// In es, this message translates to:
-  /// **'Observaciones'**
+  /// **'Observaciones (opcional)'**
   String get campoObservaciones;
 
   /// No description provided for @sinObservaciones.
@@ -1579,7 +1627,7 @@ abstract class AppLocalizations {
   /// No description provided for @campoNotas.
   ///
   /// In es, this message translates to:
-  /// **'Notas'**
+  /// **'Notas (opcional)'**
   String get campoNotas;
 
   /// No description provided for @eligeFotoOPdf.
@@ -1828,11 +1876,11 @@ abstract class AppLocalizations {
   /// **'La descripción es obligatoria'**
   String get errorDescripcionObligatoria;
 
-  /// No description provided for @reportePublicadoAviso.
+  /// No description provided for @reporteAgradecimientoAviso.
   ///
   /// In es, this message translates to:
-  /// **'Reporte publicado'**
-  String get reportePublicadoAviso;
+  /// **'¡Gracias por reportarlo! Tu publicación ya está visible en el mapa para que la comunidad pueda ayudar.'**
+  String get reporteAgradecimientoAviso;
 
   /// No description provided for @errorPublicarReporte.
   ///

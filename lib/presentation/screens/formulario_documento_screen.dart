@@ -6,6 +6,7 @@ import 'package:uuid/uuid.dart';
 import 'package:patas_al_dia/data/models/documento_model.dart';
 import 'package:patas_al_dia/l10n/app_localizations.dart';
 import 'package:patas_al_dia/presentation/utils/etiquetas_localizadas.dart';
+import 'package:patas_al_dia/presentation/utils/selector_imagen.dart';
 import 'package:patas_al_dia/presentation/widgets/separador_seccion_ficha.dart';
 import 'package:patas_al_dia/providers/documento_provider.dart';
 import 'package:patas_al_dia/services/almacenamiento_local_service.dart';
@@ -118,14 +119,18 @@ class _FormularioDocumentoScreenState
       // fechas). El branch 'pdf' queda sin comprimir a propósito, no hay
       // paquete maduro de compresión de PDF para Flutter (investigado).
       case 'camara':
-        final foto = await _picker.pickImage(
+        final foto = await elegirImagenConPermiso(
+          context,
+          _picker,
           source: ImageSource.camera,
           maxWidth: 2000,
           imageQuality: 90,
         );
         rutaArchivo = foto?.path;
       case 'galeria':
-        final foto = await _picker.pickImage(
+        final foto = await elegirImagenConPermiso(
+          context,
+          _picker,
           source: ImageSource.gallery,
           maxWidth: 2000,
           imageQuality: 90,

@@ -749,6 +749,34 @@ Comparando con `unzip -l` los nombres de archivo reales dentro del `.apk` de deb
 
 ---
 
+## 2026-08-25 — Tanda de 7 arreglos reportados por testers de la Prueba cerrada
+
+Primera ronda de feedback real de los 12 testers de Play Store, juntada por el usuario. Siete puntos, resueltos en orden:
+
+1. **Sin confirmación al restablecer contraseña por correo.** `NuevaContrasenaScreen._restablecer()` navegaba a `NavegacionPrincipalScreen` justo después de mostrar un `SnackBar` — el `Scaffold` que lo alojaba desaparecía con la navegación antes de que el usuario llegara a verlo. Mismo patrón de bug que el punto 4. Arreglado con un `AlertDialog` (modal, no se puede perder) antes de navegar.
+
+2. **Barra de navegación cortada a la mitad en teléfonos con gestos.** `NavegacionPrincipalScreen` tenía `Container(height: 76, child: SafeArea(...))` — con navegación por gestos, `SafeArea` agrega su propio padding abajo *dentro* de esos 76px fijos, comiéndole espacio al contenido en vez de sumarse aparte. Se movió el alto fijo a un `SizedBox` adentro del `SafeArea`, para que el padding del gesto se sume por fuera.
+
+3. **No se pedía permiso de cámara/fotos.** Un tester tocaba "Tomar foto" y no pasaba nada. Causa: el permiso ya estaba denegado para siempre en su teléfono, y en ese estado Android no vuelve a mostrar su propio diálogo — la app no tenía forma de detectarlo ni de explicarle qué hacer. Se sumó `permission_handler` (única excepción a "dependencias mínimas" acá — `image_picker` ya pedía permisos por su cuenta, pero no exponía el estado "denegado para siempre" ni una forma de abrir Ajustes) en un helper nuevo, `selector_imagen.dart` (ver su `.md`), usado en los 7 puntos del proyecto donde se abre la cámara o la galería. Solo la cámara se gestiona con permiso explícito — la galería en Android 13+ usa el selector de fotos del sistema, que no necesita ningún permiso, así que pedirlo igual bloquearía sin necesidad a quien lo negara; ahí solo se atrapa el error si el selector clásico (Android 12 o anterior) lo necesita. Se agregaron `READ_MEDIA_IMAGES`/`READ_EXTERNAL_STORAGE` (`maxSdkVersion=32`) al manifest de Android para ese caso legado.
+
+4. **Sin mensaje de agradecimiento al publicar un reporte.** Mismo bug de fondo que el punto 1: `FormularioReporteMascotaExtraviadaScreen._publicarReporte()` mostraba un `SnackBar` y hacía `Navigator.pop()` en la misma línea siguiente — el `SnackBar` nunca llegaba a verse. Mismo arreglo: `AlertDialog` antes de cerrar la pantalla, con un texto más cálido que el aviso genérico anterior.
+
+5. **Faltaba marcar "(opcional)" en campos no obligatorios.** El proyecto ya tenía una convención para lo obligatorio (sufijo `*` en el label — `campoNombreObligatorio: "Nombre *"`), pero ninguna para lo opcional. Se agregó "(opcional)" al texto de los campos sin `validator` de obligatoriedad: raza, rut, número de chip, colores, peso, notas de documento, observaciones (evento/medicamento).
+
+6. **Las denuncias de reportes "no llegaban a ningún lado".** Diseño original (ver la entrada del 2026-08-19 más arriba): la moderación se pensó para revisarse a mano desde el Table Editor de Supabase, sin ninguna pantalla en la app — `denuncias_reportes` ni siquiera tenía una política de `select`. El usuario pidió tener esto dentro de la app.
+
+7. **Sin forma de borrar reportes ajenos desde la app.** Mismo diseño original: `mascotas_extraviadas_borrar_dueno` solo dejaba borrar al dueño (`usuario_id = auth.uid()`); el admin solo podía borrar la *foto* a mano desde Storage, no la fila.
+
+**Los puntos 6 y 7 se resolvieron juntos**, con una pantalla de moderación nueva (`AdminModeracionScreen`, ver su `.md`) accesible desde un ítem nuevo en `AjustesScreen`, visible solo para el correo del admin (`correoAdmin` en `supabase_config.dart`, fijo en el código — no hay tabla de roles, es un único admin). Cambios del lado de Supabase (aplicados en vivo vía `supabase db query --linked`, y reflejados en `TablaMaestraAppVetMovil1.sql`):
+- `mascotas_extraviadas_borrar_dueno` (política de `delete`) se amplió con `or (auth.jwt() ->> 'email') = 'breakpointx.dev@gmail.com'`.
+- `denuncias_reportes_leer_admin` (política de `select` nueva) — antes esta tabla no tenía ninguna, a propósito (ver entrada 2026-08-19).
+
+La pantalla trae los reportes denunciados sin filtrar por `resuelto` (uno denunciado por contenido abusivo sigue necesitando revisión aunque su dueño ya lo haya marcado como resuelto), agrupando y contando las denuncias en Dart en vez de sumar una vista de Postgres solo para esto — ver `adminModeracionScreen.md` para el detalle.
+
+**`versionCode` 6** — primera versión con estos 7 arreglos.
+
+---
+
 ## De aquí en adelante
 
 Cada vez que se tome una decisión de arquitectura nueva (enfoque, tecnología, estructura — no un simple fix o ajuste de código), se agrega una entrada acá con: fecha, la decisión, el porqué, y alternativas consideradas si las hubo.

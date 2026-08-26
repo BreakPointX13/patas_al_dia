@@ -1,6 +1,14 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
     <uses-permission android:name="android.permission.CAMERA" />
+    <!-- image_picker pide estos por su cuenta cuando el selector "clásico" de
+         galería los necesita (Android 12 o anterior) — el selector de fotos
+         nuevo de Android 13+ no necesita ningún permiso, así que
+         READ_MEDIA_IMAGES no se usa ahí, pero no está de más declararlo. -->
+    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
+    <uses-permission
+        android:name="android.permission.READ_EXTERNAL_STORAGE"
+        android:maxSdkVersion="32" />
     <!-- open_filex (usado para abrir documentos descargados) declara estos dos
          de forma genérica, sin que la app realmente los use — nunca se maneja
          video ni audio, solo imágenes y documentos. Se sacan para no pedir de

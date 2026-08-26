@@ -137,15 +137,24 @@ class _NavegacionPrincipalScreenState
           index: _indiceActual,
           children: List.generate(3, _construirPestana),
         ),
+        // Sin altura fija en este Container: en teléfonos con navegación por
+        // gestos, SafeArea agrega su propio padding abajo para no tapar la
+        // barra gestual del sistema — si el alto ya venía fijo en 76, ese
+        // padding le comía espacio al contenido en vez de sumarse aparte, y
+        // la barra se veía cortada a la mitad. Con el alto fijo movido
+        // adentro del SizedBox, el padding de SafeArea se suma por fuera:
+        // 76 + lo que haga falta según el teléfono.
         bottomNavigationBar: Container(
-          height: 76,
           color: const Color(0xFFE0812F),
           child: SafeArea(
             top: false,
-            child: Row(
-              children: List.generate(
-                _iconosDestino.length,
-                (indice) => _construirItemBarra(context, indice),
+            child: SizedBox(
+              height: 76,
+              child: Row(
+                children: List.generate(
+                  _iconosDestino.length,
+                  (indice) => _construirItemBarra(context, indice),
+                ),
               ),
             ),
           ),

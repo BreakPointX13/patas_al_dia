@@ -93,10 +93,10 @@ class AppLocalizationsEs extends AppLocalizations {
   String get errorContrasenasNoCoinciden => 'Las contraseñas no coinciden';
 
   @override
-  String get linkNoTenesCuenta => '¿No tenés cuenta? Registrate';
+  String get linkNoTenesCuenta => '¿No tienes cuenta? Regístrate';
 
   @override
-  String get linkYaTenesCuenta => '¿Ya tenés cuenta? Iniciá sesión';
+  String get linkYaTenesCuenta => '¿Ya tienes cuenta? Inicia sesión';
 
   @override
   String get avisoRevisaCorreo =>
@@ -120,7 +120,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get cuentaInvitadoLabel => 'Cuenta de invitado';
 
   @override
-  String get registrarmeSubtitulo => 'Registrate para no perder tus datos';
+  String get registrarmeSubtitulo => 'Regístrate para no perder tus datos';
 
   @override
   String get linkOlvideContrasena => '¿Olvidaste tu contraseña?';
@@ -141,6 +141,35 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get botonRestablecerContrasena => 'Restablecer contraseña';
+
+  @override
+  String get contrasenaActualizadaAviso =>
+      'Tu contraseña se actualizó correctamente.';
+
+  @override
+  String get moderacionTitulo => 'Moderación';
+
+  @override
+  String get moderacionSubtitulo => 'Reportes denunciados por otros usuarios';
+
+  @override
+  String get sinReportesDenunciados => 'No hay reportes denunciados por ahora.';
+
+  @override
+  String cantidadDenunciasLabel(Object n) {
+    return '$n denuncias';
+  }
+
+  @override
+  String get errorPermisoCamaraPermanente =>
+      'Patas al Día necesita permiso para usar la cámara. Actívalo desde los ajustes del teléfono.';
+
+  @override
+  String get errorPermisoFotosGenerico =>
+      'No se pudo acceder a la foto. Revisa los permisos de Patas al Día desde los ajustes del teléfono.';
+
+  @override
+  String get abrirAjustesBoton => 'Abrir ajustes';
 
   @override
   String get campoNuevaContrasena => 'Nueva contraseña';
@@ -247,22 +276,22 @@ class AppLocalizationsEs extends AppLocalizations {
   String get campoEspecificaEspecie => 'Especifica la especie';
 
   @override
-  String get campoRaza => 'Raza';
+  String get campoRaza => 'Raza (opcional)';
 
   @override
-  String get formCampoRut => 'Rut de la mascota';
+  String get formCampoRut => 'Rut de la mascota (opcional)';
 
   @override
-  String get campoNumeroChip => 'Número de chip';
+  String get campoNumeroChip => 'Número de chip (opcional)';
 
   @override
   String get campoSexo => 'Sexo';
 
   @override
-  String get campoColores => 'Colores';
+  String get campoColores => 'Colores (opcional)';
 
   @override
-  String get campoPesoKg => 'Peso (kg)';
+  String get campoPesoKg => 'Peso (kg, opcional)';
 
   @override
   String get errorPesoInvalido => 'Ingresa un peso válido';
@@ -429,7 +458,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get cerrarSesionContenidoRegistrado =>
-      'Vas a cerrar tu sesión. Podés volver a iniciarla con tu correo y contraseña cuando quieras.';
+      'Vas a cerrar tu sesión. Puedes volver a iniciarla con tu correo y contraseña cuando quieras.';
 
   @override
   String get eliminarCuentaLabel => 'Eliminar cuenta';
@@ -645,7 +674,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get campoFechaProgramada => 'Fecha programada';
 
   @override
-  String get campoObservaciones => 'Observaciones';
+  String get campoObservaciones => 'Observaciones (opcional)';
 
   @override
   String get sinObservaciones => 'Sin observaciones';
@@ -798,7 +827,7 @@ class AppLocalizationsEs extends AppLocalizations {
       'Por ahora solo queda guardado como dato, todavía no envía una notificación.';
 
   @override
-  String get campoNotas => 'Notas';
+  String get campoNotas => 'Notas (opcional)';
 
   @override
   String get eligeFotoOPdf => 'Elige una foto o un PDF';
@@ -934,7 +963,8 @@ class AppLocalizationsEs extends AppLocalizations {
   String get errorDescripcionObligatoria => 'La descripción es obligatoria';
 
   @override
-  String get reportePublicadoAviso => 'Reporte publicado';
+  String get reporteAgradecimientoAviso =>
+      '¡Gracias por reportarlo! Tu publicación ya está visible en el mapa para que la comunidad pueda ayudar.';
 
   @override
   String get errorPublicarReporte =>

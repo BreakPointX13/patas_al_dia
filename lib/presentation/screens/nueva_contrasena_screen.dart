@@ -49,6 +49,24 @@ class _NuevaContrasenaScreenState
       if (!mounted) {
         return;
       }
+      // Diálogo, no un SnackBar: se navega enseguida después de esto y un
+      // SnackBar quedaría anclado a esta pantalla (que está por
+      // desaparecer), así que nunca llegaría a verse.
+      await showDialog<void>(
+        context: context,
+        builder: (context) => AlertDialog(
+          content: Text(l10n.contrasenaActualizadaAviso),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: Text(l10n.avisoMapaEntendido),
+            ),
+          ],
+        ),
+      );
+      if (!mounted) {
+        return;
+      }
       Navigator.of(context, rootNavigator: true).pushAndRemoveUntil(
         MaterialPageRoute(
           builder: (context) => const NavegacionPrincipalScreen(),

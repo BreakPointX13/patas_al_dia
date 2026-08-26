@@ -254,9 +254,17 @@ create policy mascotas_extraviadas_actualizar_dueno
   using (usuario_id = auth.uid())
   with check (usuario_id = auth.uid());
 
+-- El dueño del reporte lo puede borrar, y también el admin (2026-08-25 — ver
+-- decisiones_arquitectura.md): la moderación de reportes denunciados pasó de
+-- hacerse a mano desde el panel de Supabase a una pantalla dentro de la app,
+-- así que el admin necesita poder borrar reportes ajenos vía RLS, no solo
+-- los propios. `correoAdmin` en supabase_config.dart tiene el mismo correo.
 create policy mascotas_extraviadas_borrar_dueno
   on public.mascotas_extraviadas for delete
-  using (usuario_id = auth.uid());
+  using (
+    usuario_id = auth.uid()
+    or (auth.jwt() ->> 'email') = 'breakpointx.dev@gmail.com'
+  );
 
 -- Límite anti-abuso: máximo 3 reportes ACTIVOS (sin resolver) por usuario
 -- al mismo tiempo, sin importar el tipo (decisión del usuario, 2026-08-19).
@@ -301,10 +309,10 @@ alter table public.mascotas_extraviadas
 -- 6. denuncias_reportes (moderación manual del módulo Mapa)
 -- =========================================================
 -- Sin motivo de texto libre a propósito (decisión del usuario,
--- 2026-08-19): alcanza con saber "quién denunció qué reporte" — el
--- desarrollador revisa el reporte denunciado directo desde el panel de
--- Supabase (ver decisiones_arquitectura.md, "Moderación de contenido").
--- Menos fricción para quien denuncia, sin restarle utilidad a la revisión.
+-- 2026-08-19): alcanza con saber "quién denunció qué reporte". Al principio
+-- pensada para revisarse a mano desde el panel de Supabase, pero
+-- (2026-08-25) se movió a una pantalla de moderación dentro de la app —
+-- menos fricción para quien denuncia, sin restarle utilidad a la revisión.
 create table public.denuncias_reportes (
   id uuid primary key,
   reporte_id uuid not null references public.mascotas_extraviadas (id) on delete cascade,
@@ -315,12 +323,15 @@ create table public.denuncias_reportes (
 
 alter table public.denuncias_reportes enable row level security;
 
--- Solo el desarrollador necesita LEER las denuncias (vía el panel de
--- Supabase, que no pasa por RLS) — ningún usuario de la app necesita
--- consultar esta tabla, así que no hace falta una política de "select".
 create policy denuncias_reportes_crear
   on public.denuncias_reportes for insert
   with check (usuario_id = auth.uid());
+
+-- Solo el admin necesita LEER las denuncias, para la pantalla de moderación
+-- dentro de la app (2026-08-25) — ningún otro usuario consulta esta tabla.
+create policy denuncias_reportes_leer_admin
+  on public.denuncias_reportes for select
+  using ((auth.jwt() ->> 'email') = 'breakpointx.dev@gmail.com');
 
 -- =========================================================
 -- 7. Storage: bucket fotos_reportes (fotos del módulo Mapa)

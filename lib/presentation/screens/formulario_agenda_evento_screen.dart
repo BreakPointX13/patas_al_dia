@@ -8,6 +8,7 @@ import 'package:patas_al_dia/data/models/documento_model.dart';
 import 'package:patas_al_dia/data/models/medicamento_evento_model.dart';
 import 'package:patas_al_dia/l10n/app_localizations.dart';
 import 'package:patas_al_dia/presentation/utils/etiquetas_localizadas.dart';
+import 'package:patas_al_dia/presentation/utils/selector_imagen.dart';
 import 'package:patas_al_dia/presentation/widgets/separador_seccion_ficha.dart';
 import 'package:patas_al_dia/providers/agenda_evento_provider.dart';
 import 'package:patas_al_dia/providers/documento_provider.dart';
@@ -410,14 +411,18 @@ class _FormularioAgendaEventoScreenState
       // Compresión suave, no la agresiva de la foto de reporte — ver
       // formulario_documento_screen.dart (mismo criterio, mismos valores).
       case 'camara':
-        final foto = await _picker.pickImage(
+        final foto = await elegirImagenConPermiso(
+          context,
+          _picker,
           source: ImageSource.camera,
           maxWidth: 2000,
           imageQuality: 90,
         );
         rutaArchivo = foto?.path;
       case 'galeria':
-        final foto = await _picker.pickImage(
+        final foto = await elegirImagenConPermiso(
+          context,
+          _picker,
           source: ImageSource.gallery,
           maxWidth: 2000,
           imageQuality: 90,

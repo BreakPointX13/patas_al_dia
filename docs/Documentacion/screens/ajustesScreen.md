@@ -263,3 +263,22 @@ ListTile(
 ```
 
 Pedido pendiente desde el 2026-08-18 (ver memoria de sesión `project_reportar_bug_pendiente`, ya resuelta), pospuesto explícitamente hasta tener Sync/Supabase en pie — ver `decisiones_arquitectura.md` y `reportarBugScreen.md`. Visible para **cualquier** usuario, invitado o registrado (a diferencia de "Cambiar contraseña"/"Sincronizar ahora", que son solo para registrados) — no hay ningún `if` de por medio antes de este `ListTile`, es la primera opción de la pantalla que no depende en absoluto de `usuario`.
+
+### 13. "Moderación" — sección visible solo para el admin (2026-08-25)
+
+```dart
+if (usuario?.email == correoAdmin) ...[
+  _encabezadoSeccion(context, Icons.admin_panel_settings_outlined, l10n.moderacionTitulo),
+  ListTile(
+    leading: const Icon(Icons.flag_outlined),
+    title: Text(l10n.moderacionTitulo),
+    subtitle: Text(l10n.moderacionSubtitulo),
+    trailing: const Icon(Icons.chevron_right),
+    onTap: () => Navigator.of(context).push(
+      MaterialPageRoute(builder: (context) => const AdminModeracionScreen()),
+    ),
+  ),
+],
+```
+
+Único ítem de toda la pantalla que se filtra por un correo específico (`correoAdmin`, en `supabase_config.dart`), no por `esInvitado`. Lleva a `AdminModeracionScreen` (ver `adminModeracionScreen.md`) — reemplaza el flujo anterior de revisar reportes denunciados a mano desde el panel de Supabase. La protección real no es este `if` (es solo para no mostrarle el ítem a nadie más) sino la política RLS `denuncias_reportes_leer_admin` del lado del servidor, que compara el mismo correo.

@@ -7,6 +7,7 @@ import 'package:patas_al_dia/providers/mascota_provider.dart';
 import 'package:patas_al_dia/providers/usuario_provider.dart';
 import 'dart:io';
 import 'package:image_picker/image_picker.dart';
+import 'package:patas_al_dia/presentation/utils/selector_imagen.dart';
 import 'package:patas_al_dia/presentation/widgets/separador_seccion_ficha.dart';
 import 'package:patas_al_dia/services/almacenamiento_local_service.dart';
 
@@ -65,7 +66,9 @@ class _FormularioMascotaScreenState
     // maxWidth/imageQuality (2026-08-20, Sync — ver decisiones_arquitectura.md):
     // es la única foto de mascota que ahora sube a Storage, mismo criterio
     // de compresión que ya usa la foto de reporte del módulo Mapa.
-    final imagen = await _picker.pickImage(
+    final imagen = await elegirImagenConPermiso(
+      context,
+      _picker,
       source: ImageSource.gallery,
       maxWidth: 1600,
       imageQuality: 75,

@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:patas_al_dia/l10n/app_localizations.dart';
+import 'package:patas_al_dia/presentation/utils/selector_imagen.dart';
 import 'package:patas_al_dia/services/reportar_bug_service.dart';
 
 // Formulario para reportar un bug: descripción + imagen opcional, por correo.
@@ -59,7 +60,9 @@ class _ReportarBugScreenState extends ConsumerState<ReportarBugScreen> {
 
     // Misma compresión que las fotos que ya viajan a la nube (foto de
     // mascota, foto de reporte) — esta también sale del dispositivo.
-    final foto = await _picker.pickImage(
+    final foto = await elegirImagenConPermiso(
+      context,
+      _picker,
       source: opcion == 'camara' ? ImageSource.camera : ImageSource.gallery,
       maxWidth: 1600,
       imageQuality: 75,

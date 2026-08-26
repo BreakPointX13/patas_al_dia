@@ -16,7 +16,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
 # In Windows, build-name is used as the major, minor, and patch parts
 # of the product and file versions while build-number is used as the build suffix.
-version: 1.0.0+5
+version: 1.0.0+6
 
 environment:
   sdk: ^3.11.5
@@ -36,6 +36,12 @@ dependencies:
   path: ^1.8.3
   uuid: ^4.2.1
   image_picker: ^1.1.2
+  # Solo para el permiso de cámara (2026-08-25): image_picker ya pide sus
+  # propios permisos por dentro, pero no expone si quedaron "denegados para
+  # siempre" ni una forma de abrir Ajustes — sin eso, un permiso ya denegado
+  # deja al usuario tocando el botón sin que pase nada, sin ninguna
+  # explicación (reportado por un tester). Ver selector_imagen.dart.
+  permission_handler: ^12.0.1
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
