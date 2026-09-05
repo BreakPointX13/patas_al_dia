@@ -90,6 +90,10 @@ class AppLocalizationsEn extends AppLocalizations {
       'Password must be at least 8 characters, with one uppercase letter and one number';
 
   @override
+  String get ayudaRequisitosContrasena =>
+      'At least 8 characters, with one uppercase letter and one number';
+
+  @override
   String get errorContrasenasNoCoinciden => 'Passwords don\'t match';
 
   @override

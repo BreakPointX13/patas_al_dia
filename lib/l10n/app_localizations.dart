@@ -256,6 +256,12 @@ abstract class AppLocalizations {
   /// **'La contraseña debe tener al menos 8 caracteres, una mayúscula y un número'**
   String get errorContrasenaCorta;
 
+  /// No description provided for @ayudaRequisitosContrasena.
+  ///
+  /// In es, this message translates to:
+  /// **'Mínimo 8 caracteres, con una mayúscula y un número'**
+  String get ayudaRequisitosContrasena;
+
   /// No description provided for @errorContrasenasNoCoinciden.
   ///
   /// In es, this message translates to:

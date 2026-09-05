@@ -31,6 +31,7 @@
   "errorEmailInvalido": "That email doesn't look valid",
   "errorContrasenaObligatoria": "Enter a password",
   "errorContrasenaCorta": "Password must be at least 8 characters, with one uppercase letter and one number",
+  "ayudaRequisitosContrasena": "At least 8 characters, with one uppercase letter and one number",
   "errorContrasenasNoCoinciden": "Passwords don't match",
   "linkNoTenesCuenta": "Don't have an account? Sign up",
   "linkYaTenesCuenta": "Already have an account? Sign in",

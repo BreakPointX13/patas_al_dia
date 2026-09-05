@@ -145,11 +145,14 @@ class _MyAppState extends ConsumerState<MyApp> with WidgetsBindingObserver {
       'oscuro' => ThemeMode.dark,
       _ => ThemeMode.system,
     };
-    final locale = switch (usuario?.idioma) {
+    // Sin usuario todavía (LoginScreen) usa lo elegido ahí mismo, si lo hubo
+    // — ver idiomaPendienteProvider.
+    final idioma = usuario?.idioma ?? ref.watch(idiomaPendienteProvider);
+    final locale = switch (idioma) {
       'es' => const Locale('es'),
       'en' => const Locale('en'),
       'pt' => const Locale('pt'),
-      _ => null, // 'sistema' (o sin usuario todavía) — sigue el del sistema
+      _ => null, // 'sistema' — sigue el del sistema operativo
     };
     return MaterialApp(
       navigatorKey: navigatorKey,

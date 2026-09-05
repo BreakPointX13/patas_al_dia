@@ -90,6 +90,10 @@ class AppLocalizationsEs extends AppLocalizations {
       'La contraseña debe tener al menos 8 caracteres, una mayúscula y un número';
 
   @override
+  String get ayudaRequisitosContrasena =>
+      'Mínimo 8 caracteres, con una mayúscula y un número';
+
+  @override
   String get errorContrasenasNoCoinciden => 'Las contraseñas no coinciden';
 
   @override

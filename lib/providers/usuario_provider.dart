@@ -8,6 +8,24 @@ final usuarioRepositoryProvider = Provider<UsuarioRepository>((ref) {
   return UsuarioRepository();
 });
 
+// Idioma elegido en LoginScreen antes de que exista un usuario (invitado o
+// registrado) al que guardárselo — no hay fila en la base todavía, así que
+// se guarda en memoria y se aplica recién cuando se crea esa fila (ver
+// crearUsuario/registrarUsuario/_activarSesionLocal). 'sistema' = sin
+// elección propia, sigue el idioma del sistema operativo (mismo criterio que
+// UsuarioModel.idioma).
+class IdiomaPendienteNotifier extends Notifier<String> {
+  @override
+  String build() => 'sistema';
+
+  void establecer(String idioma) => state = idioma;
+}
+
+final idiomaPendienteProvider =
+    NotifierProvider<IdiomaPendienteNotifier, String>(
+      IdiomaPendienteNotifier.new,
+    );
+
 // Guarda en memoria el usuario actual (invitado o registrado), o null si no hay sesión.
 class UsuarioNotifier extends Notifier<UsuarioModel?> {
   @override
@@ -76,7 +94,9 @@ class UsuarioNotifier extends Notifier<UsuarioModel?> {
         email: email,
       );
     } else {
-      final nuevo = UsuarioModel(id: nuevoId, email: email, esInvitado: false);
+      final nuevo = _conIdiomaPendiente(
+        UsuarioModel(id: nuevoId, email: email, esInvitado: false),
+      );
       await repo.crearUsuario(nuevo);
       state = nuevo;
     }
@@ -155,7 +175,9 @@ class UsuarioNotifier extends Notifier<UsuarioModel?> {
       await repo.actualizarUsuario(reactivado);
       state = reactivado;
     } else {
-      final nuevo = UsuarioModel(id: id, email: email, esInvitado: false);
+      final nuevo = _conIdiomaPendiente(
+        UsuarioModel(id: id, email: email, esInvitado: false),
+      );
       await repo.crearUsuario(nuevo);
       state = nuevo;
     }
@@ -163,9 +185,10 @@ class UsuarioNotifier extends Notifier<UsuarioModel?> {
 
   // Crea el usuario invitado inicial (primera vez que se abre la app).
   Future<void> crearUsuario(UsuarioModel usuario) async {
+    final aGuardar = _conIdiomaPendiente(usuario);
     final repo = ref.read(usuarioRepositoryProvider);
-    await repo.crearUsuario(usuario);
-    state = usuario;
+    await repo.crearUsuario(aGuardar);
+    state = aGuardar;
   }
 
   // Guarda cualquier cambio sobre el usuario actual (preferencias, sync, etc.).
@@ -194,9 +217,25 @@ class UsuarioNotifier extends Notifier<UsuarioModel?> {
   // Cambia el idioma de la app elegido en Ajustes.
   Future<void> actualizarIdioma(String idioma) async {
     if (state == null) {
+      // Todavía no hay usuario (LoginScreen, antes de elegir invitado,
+      // registrarse o iniciar sesión) — se guarda para aplicarlo apenas se
+      // cree esa fila.
+      ref.read(idiomaPendienteProvider.notifier).establecer(idioma);
       return;
     }
     await actualizarUsuario(state!.copyWith(idioma: idioma));
+  }
+
+  // Aplica el idioma elegido en LoginScreen (si lo hubo) a un usuario recién
+  // creado en este dispositivo. No se usa para reactivar una fila ya
+  // existente (login en un dispositivo de siempre, o invitado que ya tenía
+  // su propia preferencia) — esa preferencia guardada no debe pisarse con
+  // una elección hecha antes de identificarse.
+  UsuarioModel _conIdiomaPendiente(UsuarioModel usuario) {
+    final idiomaPendiente = ref.read(idiomaPendienteProvider);
+    return idiomaPendiente == 'sistema'
+        ? usuario
+        : usuario.copyWith(idioma: idiomaPendiente);
   }
 
   // Marca que el usuario ya vio el aviso inicial del módulo Mapa, para no repetirlo.

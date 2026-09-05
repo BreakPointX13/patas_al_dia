@@ -106,3 +106,27 @@ Future<void> _abrirPoliticaPrivacidad(BuildContext context) async {
 - **`Localizations.localeOf(context)`, no `usuario?.idioma`:** en `LoginScreen` puede no existir ningún `UsuarioModel` todavía (la primerísima vez que se abre la app, antes de "Continuar como invitado" o de iniciar sesión) — `usuarioProvider` sería `null` en ese caso, sin ningún idioma guardado del cual leer. `Localizations.localeOf(context)` en cambio siempre devuelve el idioma **efectivamente activo** en pantalla, resuelto por Flutter (según la preferencia guardada si ya existe un usuario, o según el idioma del sistema operativo si no) — es el mismo idioma que el usuario ya está viendo en el resto de esta pantalla, así que la política de privacidad que se abre siempre coincide.
 - **Visible en `LoginScreen`, no solo en `AjustesScreen`:** decisión explícita del usuario — al estar en la primera pantalla de la app, queda al alcance de cualquiera, incluso de alguien que todavía no creó ni una cuenta de invitado (relevante también para el requisito de Play Store de que la política de privacidad sea encontrable sin tener que registrarse primero).
 - **`url_launcher`, mismo patrón que "Aportes voluntarios"** (ver `ajustesScreen.md`, punto 3) — `LaunchMode.externalApplication`, abre en el navegador del sistema, no en un WebView embebido.
+
+### 7. `_selectorIdioma` (2026-09-05)
+
+```dart
+Widget _selectorIdioma(BuildContext context, WidgetRef ref) {
+  final l10n = AppLocalizations.of(context);
+  final idiomaActual = ref.watch(idiomaPendienteProvider);
+  final etiquetas = [l10n.idiomaSistemaLabel, 'ES', 'EN', 'PT'];
+  return PopupMenuButton<String>(
+    icon: const Icon(Icons.language),
+    tooltip: l10n.idiomaLabel,
+    initialValue: idiomaActual,
+    onSelected: (idioma) => ref.read(usuarioProvider.notifier).actualizarIdioma(idioma),
+    itemBuilder: (context) => [
+      for (var i = 0; i < _idiomas.length; i++)
+        PopupMenuItem(value: _idiomas[i], child: Text(etiquetas[i])),
+    ],
+  );
+}
+```
+
+Antes de esto, el idioma solo se podía cambiar desde `AjustesScreen` (ver ese `.md`, sección de idioma) — lo cual exigía tener ya un `UsuarioModel` (invitado o registrado). En `LoginScreen` no hay ninguno todavía, así que hacía falta otro camino. Se agregó este ícono (`Icons.language`, arriba a la derecha, dentro de un `Stack` sobre el `Column` centrado existente — ver el `build()` de esta pantalla) con el mismo menú de opciones que `AjustesScreen` (`_idiomas = ['sistema', 'es', 'en', 'pt']`, constante a nivel de archivo, mismo criterio de nombres nativos salvo "Sistema" que sí se traduce).
+
+**Reusa `actualizarIdioma()` sin ningún método nuevo** — ver `usuarioNotifier.md`, punto 7: ese método ya sabía qué hacer si `state != null` (caso `AjustesScreen`); se le agregó la rama `state == null` (caso acá) para que guarde la elección en `idiomaPendienteProvider` en memoria, aplicada recién cuando se crea el usuario (invitado, registro o login — ver `usuarioNotifier.md`, punto 13). El `initialValue: idiomaActual` (con `ref.watch`, no `ref.read`) hace que el menú abra marcada la opción ya elegida si el usuario vuelve a tocar el ícono, y que la pantalla entera se redibuje en el idioma nuevo apenas se elige (por `main.dart` reaccionando al mismo provider).

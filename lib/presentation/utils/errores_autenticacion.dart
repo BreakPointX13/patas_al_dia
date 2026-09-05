@@ -4,12 +4,15 @@ import 'package:patas_al_dia/l10n/app_localizations.dart';
 // Traduce los códigos de error más comunes de Supabase Auth (`AuthException`)
 // a un mensaje ya traducido — mismo criterio que el resto de la app, nunca
 // se le muestra al usuario el texto crudo en inglés que devuelve Supabase.
-// Códigos no reconocidos (o errores sin `AuthApiException.code`, ej. sin
-// conexión) caen al mensaje genérico. Compartido entre RegistroScreen e
-// IniciarSesionScreen — ver sus respectivos .md.
+// `code` vive en la clase base `AuthException` (no es exclusivo de
+// `AuthApiException`) — importa porque `registrarUsuario` (usuario_provider)
+// lanza un `AuthException` simple con `code: 'user_already_exists'`, no un
+// `AuthApiException`; filtrar por tipo acá lo descartaba siempre y el
+// usuario solo veía el mensaje genérico. Códigos no reconocidos (o errores
+// sin `code`, ej. sin conexión) caen al mensaje genérico. Compartido entre
+// RegistroScreen e IniciarSesionScreen — ver sus respectivos .md.
 String mensajeErrorAutenticacion(AppLocalizations l10n, AuthException e) {
-  final codigo = e is AuthApiException ? e.code : null;
-  switch (codigo) {
+  switch (e.code) {
     case 'invalid_credentials':
       return l10n.errorCredencialesInvalidas;
     case 'email_not_confirmed':

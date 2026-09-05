@@ -8,6 +8,10 @@ import 'package:patas_al_dia/presentation/screens/iniciar_sesion_screen.dart';
 import 'package:patas_al_dia/presentation/screens/navegacion_principal_screen.dart';
 import 'package:patas_al_dia/providers/usuario_provider.dart';
 
+// Mismo criterio que AjustesScreen (ver ese archivo) — nombre nativo de cada
+// idioma, salvo "Sistema" que es un concepto de interfaz y sí se traduce.
+const _idiomas = ['sistema', 'es', 'en', 'pt'];
+
 // Pantalla de bienvenida: iniciar sesión, registrarse o entrar como invitado.
 class LoginScreen extends ConsumerWidget {
   const LoginScreen({super.key});
@@ -51,51 +55,81 @@ class LoginScreen extends ConsumerWidget {
     );
   }
 
+  // Selector de idioma de LoginScreen — hace falta acá porque a esta altura
+  // (sin invitado ni cuenta todavía) no existe ningún usuario al que
+  // guardarle la preferencia en AjustesScreen; ver idiomaPendienteProvider en
+  // usuario_provider.dart, que lo aplica apenas se cree esa fila.
+  Widget _selectorIdioma(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
+    final idiomaActual = ref.watch(idiomaPendienteProvider);
+    final etiquetas = [l10n.idiomaSistemaLabel, 'ES', 'EN', 'PT'];
+    return PopupMenuButton<String>(
+      icon: const Icon(Icons.language),
+      tooltip: l10n.idiomaLabel,
+      initialValue: idiomaActual,
+      onSelected: (idioma) =>
+          ref.read(usuarioProvider.notifier).actualizarIdioma(idioma),
+      itemBuilder: (context) => [
+        for (var i = 0; i < _idiomas.length; i++)
+          PopupMenuItem(value: _idiomas[i], child: Text(etiquetas[i])),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
     return Scaffold(
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Image.asset(
-                'assets/images/logo_patas_al_dia.png',
-                width: 140,
-                height: 140,
+        child: Stack(
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Image.asset(
+                    'assets/images/logo_patas_al_dia.png',
+                    width: 140,
+                    height: 140,
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    l10n.appTitulo,
+                    style: Theme.of(context).textTheme.headlineMedium,
+                  ),
+                  const SizedBox(height: 8),
+                  Text(l10n.loginEslogan, textAlign: TextAlign.center),
+                  const SizedBox(height: 48),
+                  SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton(
+                      onPressed: () => _irAIniciarSesion(context),
+                      child: Text(l10n.loginIniciarSesion),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: () => _continuarComoInvitado(context, ref),
+                      child: Text(l10n.loginContinuarInvitado),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  TextButton(
+                    onPressed: () => _abrirPoliticaPrivacidad(context),
+                    child: Text(l10n.linkPoliticaPrivacidad),
+                  ),
+                ],
               ),
-              const SizedBox(height: 16),
-              Text(
-                l10n.appTitulo,
-                style: Theme.of(context).textTheme.headlineMedium,
-              ),
-              const SizedBox(height: 8),
-              Text(l10n.loginEslogan, textAlign: TextAlign.center),
-              const SizedBox(height: 48),
-              SizedBox(
-                width: double.infinity,
-                child: OutlinedButton(
-                  onPressed: () => _irAIniciarSesion(context),
-                  child: Text(l10n.loginIniciarSesion),
-                ),
-              ),
-              const SizedBox(height: 16),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: () => _continuarComoInvitado(context, ref),
-                  child: Text(l10n.loginContinuarInvitado),
-                ),
-              ),
-              const SizedBox(height: 16),
-              TextButton(
-                onPressed: () => _abrirPoliticaPrivacidad(context),
-                child: Text(l10n.linkPoliticaPrivacidad),
-              ),
-            ],
-          ),
+            ),
+            Positioned(
+              top: 0,
+              right: 0,
+              child: _selectorIdioma(context, ref),
+            ),
+          ],
         ),
       ),
     );

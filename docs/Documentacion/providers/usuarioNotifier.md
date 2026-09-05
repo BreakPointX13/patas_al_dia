@@ -46,13 +46,14 @@ El estado inicial es "todavía no hay usuario cargado" — a diferencia de los N
 
 ```dart
 Future<void> crearUsuario(UsuarioModel usuario) async {
+  final aGuardar = _conIdiomaPendiente(usuario);
   final repo = ref.read(usuarioRepositoryProvider);
-  await repo.crearUsuario(usuario);
-  state = usuario;
+  await repo.crearUsuario(aGuardar);
+  state = aGuardar;
 }
 ```
 
-Los dos siguen la misma estructura de tres pasos que ya conocemos (pedir repository → operar contra la base → actualizar `state`), pero el último paso es siempre un reemplazo directo (`state = usuario`), nunca una reconstrucción de lista.
+Los dos siguen la misma estructura de tres pasos que ya conocemos (pedir repository → operar contra la base → actualizar `state`), pero el último paso es siempre un reemplazo directo (`state = usuario`), nunca una reconstrucción de lista. Desde 2026-09-05, `crearUsuario` pasa por `_conIdiomaPendiente()` (ver punto 13) antes de guardar — es el método que usa `LoginScreen._continuarComoInvitado()`, así que es acá donde el idioma elegido en el selector de esa pantalla (si lo hubo) queda grabado en el invitado recién creado.
 
 `cargarUsuario(String id)` (`state = await repo.obtenerUsuarioPorId(id)`) existía acá también, pero se borró el 2026-08-21 por código muerto — nunca tuvo ningún llamador; el arranque de sesión siempre pasa por `cargarSesionActiva()` (punto 3) o por `_activarSesionLocal()` (login/registro/recuperación). El método del repository que usaba, `obtenerUsuarioPorId`, sigue en uso desde otro lado (`convertirAInvitadoRegistrado`), así que no se tocó. Ver `decisiones_arquitectura.md`.
 
@@ -138,9 +139,44 @@ Future<void> actualizarTema(String tema) async {
 
 Mismo patrón exacto que `actualizarEscalaTexto` — método de conveniencia sobre `actualizarUsuario`, para la preferencia de modo claro/oscuro/sistema. Ver `ajustesScreen.md` y `temaApp.md`.
 
-### 7. `actualizarIdioma(String idioma)` (2026-08-18)
+### 7. `actualizarIdioma(String idioma)` (2026-08-18, extendido 2026-09-05)
 
-Mismo patrón otra vez, esta vez para la preferencia de idioma (`'sistema'`/`'es'`/`'en'`/`'pt'`). Ver `sistemaIdiomas.md`.
+```dart
+Future<void> actualizarIdioma(String idioma) async {
+  if (state == null) {
+    ref.read(idiomaPendienteProvider.notifier).establecer(idioma);
+    return;
+  }
+  await actualizarUsuario(state!.copyWith(idioma: idioma));
+}
+```
+
+Mismo patrón que `actualizarEscalaTexto`/`actualizarTema` cuando ya hay usuario. La diferencia (2026-09-05): antes, con `state == null`, simplemente no hacía nada (`return` sin más) — eso hacía que el selector de idioma no pudiera existir en `LoginScreen`, porque ahí todavía no hay ningún usuario al que guardarle la preferencia. Ahora, en ese caso, la guarda en `idiomaPendienteProvider` (ver punto 13) para aplicarla apenas se cree la fila. Ver `sistemaIdiomas.md` y `loginScreen.md`.
+
+### 13. `idiomaPendienteProvider` / `_conIdiomaPendiente()` (2026-09-05)
+
+```dart
+class IdiomaPendienteNotifier extends Notifier<String> {
+  @override
+  String build() => 'sistema';
+
+  void establecer(String idioma) => state = idioma;
+}
+
+final idiomaPendienteProvider =
+    NotifierProvider<IdiomaPendienteNotifier, String>(IdiomaPendienteNotifier.new);
+
+UsuarioModel _conIdiomaPendiente(UsuarioModel usuario) {
+  final idiomaPendiente = ref.read(idiomaPendienteProvider);
+  return idiomaPendiente == 'sistema'
+      ? usuario
+      : usuario.copyWith(idioma: idiomaPendiente);
+}
+```
+
+Provider hermano de `usuarioProvider`, no parte de `UsuarioNotifier` — guarda en memoria (nunca en SQLite) el idioma elegido en `LoginScreen` antes de que exista cualquier fila de usuario. `_conIdiomaPendiente()` sí es un método privado de `UsuarioNotifier` (necesita `ref`), y se aplica solo en las tres ramas que **crean una fila nueva desde cero**: el `else` de `registrarUsuario` (punto 9), el `else` de `_activarSesionLocal` (punto 10 — dispositivo nuevo), y `crearUsuario` (invitado inicial, punto 2). Deliberadamente **no** se aplica cuando se reactiva una fila ya existente (invitado que ya tenía su propia preferencia, o cuenta que vuelve a iniciar sesión en el mismo dispositivo) — esa preferencia guardada gana siempre, no debe pisarse con una elección hecha antes de identificarse. `main.dart` lo usa como respaldo del `locale` de `MaterialApp` mientras `usuario` es `null` (`usuario?.idioma ?? ref.watch(idiomaPendienteProvider)`).
+
+Se implementó con un `Notifier<String>` en vez de `StateProvider` porque Riverpod 3.x (ver `pubspec.yaml`) eliminó los providers "legacy" (`StateProvider`, `ChangeNotifierProvider`, etc.) — todo estado mutable simple pasa por un `Notifier`, mismo criterio que ya usaba `usuarioProvider`.
 
 ### 8. `marcarAvisoMapaVisto()` (2026-08-19)
 
@@ -168,12 +204,14 @@ Future<void> registrarUsuario({required String email, required String password})
   if (state != null) {
     state = await repo.convertirAInvitadoRegistrado(invitadoActual: state!, nuevoId: nuevoId, email: email);
   } else {
-    final nuevo = UsuarioModel(id: nuevoId, email: email, esInvitado: false);
+    final nuevo = _conIdiomaPendiente(UsuarioModel(id: nuevoId, email: email, esInvitado: false));
     await repo.crearUsuario(nuevo);
     state = nuevo;
   }
 }
 ```
+
+(`_conIdiomaPendiente()` — ver punto 13 — envuelve el `else` desde 2026-09-05, para aplicar el idioma elegido en `LoginScreen` antes de tener cuenta. La rama `state != null` no lo necesita: ese invitado ya tenía su propia preferencia guardada.)
 
 Primer método del provider que orquesta Supabase Auth + SQLite local en el mismo lugar — hasta ahora todos hablaban solo de SQLite. Cubre las dos formas de llegar acá (ver `registroScreen.md`): con un invitado ya usando la app (`state != null`, se convierte conservando sus datos vía `convertirAInvitadoRegistrado`) o sin ningún usuario local todavía (`state == null`, se crea uno nuevo desde cero).
 
@@ -192,12 +230,14 @@ Future<void> iniciarSesion({required String email, required String password}) as
     await repo.actualizarUsuario(reactivado);
     state = reactivado;
   } else {
-    final nuevo = UsuarioModel(id: id, email: email, esInvitado: false);
+    final nuevo = _conIdiomaPendiente(UsuarioModel(id: id, email: email, esInvitado: false));
     await repo.crearUsuario(nuevo);
     state = nuevo;
   }
 }
 ```
+
+(Mismo agregado de 2026-09-05 que en `registrarUsuario` — `_conIdiomaPendiente()` solo en la rama "dispositivo nuevo"; el `existente` reactivado conserva su propio idioma guardado.)
 
 Como el id local es el mismo `auth.uid()` de Supabase (ver `convertirAInvitadoRegistrado`), buscar `existente` por ese id alcanza para distinguir dos casos: **mismo dispositivo de siempre** (ya había una fila local con ese id, solo estaba con `sesionActiva = false` — se reactiva tal cual, con todos sus datos intactos) o **dispositivo nuevo** (no hay fila local todavía — se crea una vacía). El segundo caso queda "vacío" a propósito: no hay Sync todavía, así que las mascotas que esa cuenta tenga guardadas en otro dispositivo no aparecen acá hasta que esa fase se implemente — ver `decisiones_arquitectura.md`.
 

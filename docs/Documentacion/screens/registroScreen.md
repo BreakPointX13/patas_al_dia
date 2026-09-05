@@ -59,5 +59,9 @@ Con "Confirm email" activado en el proyecto de Supabase (decisión existente del
 ### 3. Validadores de los tres campos
 
 - **Email:** obligatorio + regex simple (`^[^@\s]+@[^@\s]+\.[^@\s]+$`) — sin restringir a ningún dominio o país, mismo criterio que el resto de los campos de la app (ver memoria de sesión "Validación de campos: no cerrar puertas a extranjeros").
-- **Contraseña:** `validarContrasena` (ver `validadorContrasena.md`) — mínimo 8 caracteres, una mayúscula y un número (2026-08-20, reemplaza al "mínimo 6 caracteres" original). Configurado también del lado de Supabase, no solo acá.
+- **Contraseña:** `validarContrasena` (ver `validadorContrasena.md`) — mínimo 8 caracteres, una mayúscula y un número (2026-08-20, reemplaza al "mínimo 6 caracteres" original). Configurado también del lado de Supabase, no solo acá. **`helperText: l10n.ayudaRequisitosContrasena`** (2026-09-05) muestra estos requisitos siempre, bajo el campo — antes solo aparecían como mensaje de error después de fallar la validación; un tester señaló que, para cumplir con la regla 2 de `CLAUDE.md` (facilidad de uso), convenía mostrarlos de entrada.
 - **Confirmar contraseña:** debe ser igual a `_passwordController.text`.
+
+### 4. Bug arreglado (2026-09-05): "correo ya registrado" mostraba el mensaje genérico
+
+El `throw const AuthException('...', code: 'user_already_exists')` del punto 2 (ver `usuarioNotifier.md`, punto 9) siempre llegaba acá con su código intacto, pero `mensajeErrorAutenticacion` (ver `erroresAutenticacion.md`) lo descartaba por un chequeo de tipo de más (`e is AuthApiException`) — esa excepción es un `AuthException` simple, no un `AuthApiException`. El resultado visible en esta pantalla: registrarse con un correo ya usado mostraba `l10n.errorAutenticacionGenerico` ("Hubo un error...") en vez de `l10n.errorEmailYaRegistrado`. El arreglo fue en `erroresAutenticacion.md`, no en este archivo — `RegistroScreen` ya llamaba a `mensajeErrorAutenticacion` correctamente.

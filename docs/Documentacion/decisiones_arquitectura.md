@@ -777,6 +777,16 @@ La pantalla trae los reportes denunciados sin filtrar por `resuelto` (uno denunc
 
 ---
 
+## 2026-09-05 — Login: no distinguir "correo inexistente" de "contraseña incorrecta"
+
+Un tester pidió que, al iniciar sesión con un correo que nunca se registró, aparezca "no hay cuenta con ese correo" en vez del mensaje genérico. Evaluado y descartado por ahora.
+
+Supabase Auth no distingue los dos casos en su respuesta (`invalid_credentials` para ambos) — es una protección estándar contra enumeración de cuentas: sin esto, cualquiera podría probar una lista de correos contra el login y saber cuáles tienen cuenta en la app. La única forma de mostrar el mensaje específico sería una Edge Function propia (mismo patrón que `eliminar-cuenta`, con `SUPABASE_SERVICE_ROLE_KEY`) que consulte la API admin de Supabase antes de intentar el login — pero ese endpoint, aunque esté pensado para usarse solo desde el formulario de login, quedaría llamable por cualquiera, exactamente el mismo problema de enumeración que Supabase evita a propósito del otro lado. Se decidió no construirlo: el mensaje genérico ("Correo o contraseña incorrectos") se mantiene para ambos casos. Ver `erroresAutenticacion.md`.
+
+De paso, en la misma sesión se corrigió un bug real en `mensajeErrorAutenticacion` (no es una decisión de arquitectura, pero queda linkeado acá porque es el mismo archivo): el registro con un correo ya usado mostraba el mensaje genérico en vez de "correo ya registrado" porque la función solo leía `.code` cuando la excepción era exactamente `AuthApiException`, y el `throw` manual de `UsuarioNotifier.registrarUsuario` lanza un `AuthException` simple (la clase base, que también tiene `.code`). Ver el detalle completo en `erroresAutenticacion.md`, punto 1.
+
+---
+
 ## De aquí en adelante
 
 Cada vez que se tome una decisión de arquitectura nueva (enfoque, tecnología, estructura — no un simple fix o ajuste de código), se agrega una entrada acá con: fecha, la decisión, el porqué, y alternativas consideradas si las hubo.

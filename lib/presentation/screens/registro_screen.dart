@@ -123,7 +123,11 @@ class _RegistroScreenState extends ConsumerState<RegistroScreen> {
             TextFormField(
               controller: _passwordController,
               obscureText: true,
-              decoration: InputDecoration(labelText: l10n.campoContrasena),
+              decoration: InputDecoration(
+                labelText: l10n.campoContrasena,
+                helperText: l10n.ayudaRequisitosContrasena,
+                helperMaxLines: 2,
+              ),
               validator: (valor) => validarContrasena(l10n, valor),
             ),
             const SizedBox(height: 16),

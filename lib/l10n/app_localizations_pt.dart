@@ -90,6 +90,10 @@ class AppLocalizationsPt extends AppLocalizations {
       'A senha deve ter pelo menos 8 caracteres, uma maiúscula e um número';
 
   @override
+  String get ayudaRequisitosContrasena =>
+      'Mínimo de 8 caracteres, com uma maiúscula e um número';
+
+  @override
   String get errorContrasenasNoCoinciden => 'As senhas não coincidem';
 
   @override

@@ -34,6 +34,7 @@
   "errorEmailInvalido": "Ese correo no parece válido",
   "errorContrasenaObligatoria": "Ingresa una contraseña",
   "errorContrasenaCorta": "La contraseña debe tener al menos 8 caracteres, una mayúscula y un número",
+  "ayudaRequisitosContrasena": "Mínimo 8 caracteres, con una mayúscula y un número",
   "errorContrasenasNoCoinciden": "Las contraseñas no coinciden",
   "linkNoTenesCuenta": "¿No tienes cuenta? Regístrate",
   "linkYaTenesCuenta": "¿Ya tienes cuenta? Inicia sesión",
