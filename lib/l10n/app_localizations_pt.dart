@@ -165,6 +165,58 @@ class AppLocalizationsPt extends AppLocalizations {
   }
 
   @override
+  String get moderacionTabDenunciados => 'Denunciados';
+
+  @override
+  String get moderacionTabTodos => 'Todos';
+
+  @override
+  String get moderacionTabBloqueados => 'Bloqueados';
+
+  @override
+  String get bloquearAutorTooltip => 'Bloquear autor';
+
+  @override
+  String get bloquearUsuarioTitulo => 'Bloquear usuário';
+
+  @override
+  String get bloquearUsuarioContenido =>
+      'Não vai poder publicar novos registros no módulo Mapa. Você pode desbloquear depois na aba Bloqueados.';
+
+  @override
+  String get accionBloquear => 'Bloquear';
+
+  @override
+  String get usuarioBloqueadoAviso => 'Usuário bloqueado.';
+
+  @override
+  String get desbloquearUsuarioTitulo => 'Desbloquear usuário';
+
+  @override
+  String get desbloquearUsuarioContenido =>
+      'Vai poder voltar a publicar registros no módulo Mapa.';
+
+  @override
+  String get accionDesbloquear => 'Desbloquear';
+
+  @override
+  String get sinUsuariosBloqueados => 'Nenhum usuário bloqueado.';
+
+  @override
+  String usuarioBloqueadoIdLabel(Object id) {
+    return 'Usuário $id';
+  }
+
+  @override
+  String usuarioBloqueadoFechaLabel(Object fecha) {
+    return 'Bloqueado em $fecha';
+  }
+
+  @override
+  String get errorPublicarReporteBloqueado =>
+      'Você não pode publicar registros no momento. Entre em contato se achar que é um erro.';
+
+  @override
   String get errorPermisoCamaraPermanente =>
       'O Patas al Día precisa de permissão para usar a câmera. Ative nas configurações do seu celular.';
 
@@ -931,7 +983,7 @@ class AppLocalizationsPt extends AppLocalizations {
       'Falta a localização. Use sua localização atual ou digite um endereço válido.';
 
   @override
-  String get campoFotoObligatoria => 'Foto *';
+  String get campoFotoObligatoria => 'Adicionar foto *';
 
   @override
   String get errorFotoObligatoria => 'A foto é obrigatória';
@@ -987,7 +1039,7 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get avisoMapaContenido =>
-      'Este mapa é só para registrar pets perdidos ou encontrados. Não use para publicar anúncios, vendas ou conteúdo que não tenha relação com pets perdidos.\n\nSe você vir um registro que não corresponde, denuncie para que possamos revisar.';
+      'Este mapa é só para registrar pets perdidos ou encontrados. Não use para publicar anúncios, vendas ou conteúdo que não tenha relação com pets perdidos.\n\nSe você vir um registro que não corresponde, denuncie para que possamos revisar.\n\nO uso indevido deste módulo pode resultar na restrição desta função para sua conta.';
 
   @override
   String get avisoMapaEntendido => 'Entendi';

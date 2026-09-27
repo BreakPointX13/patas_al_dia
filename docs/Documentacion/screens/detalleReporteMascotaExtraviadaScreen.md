@@ -4,7 +4,7 @@
 
 `lib/presentation/screens/detalle_reporte_mascota_extraviada_screen.dart`
 
-Se abre al tocar un marcador del mapa en `MapaScreen`.
+Se abre al tocar un marcador del mapa en `MapaScreen`, o una fila en `AdminModeracionScreen` (2026-09-27, ver punto 6).
 
 ## 🎯 Propósito del Archivo
 
@@ -16,7 +16,7 @@ Muestra todos los datos de un reporte (foto, tipo, especie, recompensa si corres
 
 ### 🐾 En Nuestro Proyecto "Patas al día"
 
-Mismo patrón de guarda que `DetalleMascotaScreen`/`DetalleDocumentoScreen`: busca el reporte por id dentro de `mascotaExtraviadaProvider` en cada `build()` (reactivo — si se elimina mientras la pantalla está abierta, se entera solo), y si no lo encuentra, vuelve atrás en vez de crashear.
+Mismo patrón de guarda que `DetalleMascotaScreen`/`DetalleDocumentoScreen`: busca el reporte por id dentro de `mascotaExtraviadaProvider` en cada `build()` (reactivo — si se elimina mientras la pantalla está abierta, se entera solo), y si no lo encuentra, cae a `reporteInicial` (ver punto 6) antes de volver atrás — solo vuelve atrás si ninguno de los dos lo tiene.
 
 ---
 
@@ -54,3 +54,26 @@ if (reporte.mascotaFotoUrl != null)
 ```
 
 Se muestra arriba de todo, antes del `Chip` de tipo — es el dato más útil de un vistazo para reconocer a la mascota. Usa `Image.network` directo (no `FileImage`, la foto ya no es un archivo local en este punto — es la URL pública de Storage que devolvió `subirFoto()`, ver `mascotaExtraviada.repository.md`, punto 5b). El `if (reporte.mascotaFotoUrl != null)` no es una feature — la foto es obligatoria en el formulario desde esta misma fecha (ver `formularioReporteMascotaExtraviadaScreen.md`, punto 6), así que un reporte nuevo siempre la trae; el chequeo es solo para no crashear con algún reporte de prueba publicado antes de que la foto fuera obligatoria.
+
+### 6. `reporteInicial` — reporte visto sin pasar por `mascotaExtraviadaProvider` (2026-09-27)
+
+```dart
+final MascotaExtraviadaModel? reporteInicial;
+```
+
+Bug real reportado por un tester: `AdminModeracionScreen` navegaba acá pasando solo `reporteId`, igual que `MapaScreen` — pero esta pantalla busca el reporte dentro de `mascotaExtraviadaProvider` (ver punto anterior), que **solo carga reportes activos** (`resuelto = false`, vía `cargarReportesActivos()`). Un reporte denunciado-y-ya-resuelto (pestaña "Denunciados" del admin puede mostrar esos, ver `adminModeracionScreen.md`, punto 2), o cualquier reporte visto desde el panel sin haber abierto antes `MapaScreen` en esa sesión, nunca estaba en ese provider — la pantalla no encontraba nada y volvía atrás sola en silencio, sin ningún error visible, dejando al admin sin poder ver el detalle de nada que tocara desde moderación.
+
+Se agregó `reporteInicial` (opcional) como respaldo: `MapaScreen` sigue sin pasarlo (no lo necesita, su reporte siempre está en el provider); `AdminModeracionScreen` sí, porque ya tiene el `MascotaExtraviadaModel` completo en mano (viene de `obtenerReportesDenunciados()`/`obtenerReportesActivos()`, no hace falta volver a pedirlo). La búsqueda en el provider sigue siendo la fuente preferida (`reporte ??= widget.reporteInicial`) — si el reporte sí está ahí, se usa esa copia (reactiva a cambios), y `reporteInicial` solo entra cuando no lo está.
+
+**No cambia `esMio` ni las acciones condicionadas a eso (punto 2)** — un admin viendo el reporte de otra persona sigue sin ver "Marcar como resuelto"/"Eliminar" acá (ya tiene esas acciones en la lista de moderación misma). Fuera de alcance del pedido original ("poder ver el reporte al pincharlo"), no se tocó.
+
+### 7. `Navigator.of(context).pop(true)` en vez de `pop()` — segundo bug encontrado probando el punto 6 (2026-09-27)
+
+```dart
+await ref.read(mascotaExtraviadaProvider.notifier).eliminarReporte(reporte);
+if (mounted) {
+  Navigator.of(context).pop(true);
+}
+```
+
+Mismo cambio en `_eliminar()` y `_marcarComoResuelto()`. El admin podía llegar acá con `esMio == true` (viendo un reporte propio, ver punto 6) y borrarlo o marcarlo resuelto desde adentro del detalle — pero el `pop()` de antes no le avisaba nada a `AdminModeracionScreen`, que sigue con su propia copia en memoria del reporte (ver `adminModeracionScreen.md`, punto 1): la lista de moderación no se enteraba del cambio hasta salir y volver a entrar a esa pantalla. `MapaScreen` (el otro lugar desde donde se navega acá) sigue sin usar el valor del `pop` — no lo necesita, ya escucha `mascotaExtraviadaProvider` con `ref.watch` y se entera solo. `AdminModeracionScreen._abrirDetalle()` sí espera el resultado y, si es `true`, vuelve a pedir sus listas a Supabase — ver ese doc.

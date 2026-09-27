@@ -441,14 +441,18 @@ class _FormularioReporteMascotaExtraviadaScreenState
         return;
       }
       // P0001 es el código por defecto de un `raise exception` propio en
-      // Postgres — acá es el trigger de límite de reportes activos (ver
-      // TablaMaestraAppVetMovil1.sql). El mensaje que devuelve la base está
-      // fijo en español (no puede usar AppLocalizations), así que se
-      // reemplaza por uno propio ya traducido en vez de mostrar el texto
-      // crudo de Postgres.
-      final mensaje = e.code == 'P0001'
-          ? l10n.errorLimiteReportesActivos
-          : l10n.errorPublicarReporte;
+      // Postgres — acá es el trigger de límite de reportes activos. P0002
+      // es el código explícito que usa el trigger de usuario bloqueado
+      // (ver TablaMaestraAppVetMovil1.sql, distinto a propósito para poder
+      // diferenciarlos acá). El mensaje que devuelve la base está fijo en
+      // español (no puede usar AppLocalizations), así que se reemplaza por
+      // uno propio ya traducido en vez de mostrar el texto crudo de
+      // Postgres.
+      final mensaje = switch (e.code) {
+        'P0001' => l10n.errorLimiteReportesActivos,
+        'P0002' => l10n.errorPublicarReporteBloqueado,
+        _ => l10n.errorPublicarReporte,
+      };
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text(mensaje)));
@@ -491,20 +495,50 @@ class _FormularioReporteMascotaExtraviadaScreenState
                 onTap: _elegirFoto,
                 child: Column(
                   children: [
-                    CircleAvatar(
-                      radius: 48,
-                      backgroundImage: _fotoPath != null
-                          ? FileImage(File(_fotoPath!))
-                          : null,
-                      child: _fotoPath == null
-                          ? const Icon(Icons.pets, size: 48)
-                          : null,
+                    // Insignia de cámara superpuesta (2026-09-27, reportado
+                    // por un tester): sin ella, el círculo con Icons.pets se
+                    // leía como una foto de perfil ya puesta, no como una
+                    // acción pendiente — a pesar de ser obligatoria, pasaba
+                    // desapercibida. El texto de abajo pasa de "Foto *"
+                    // (lee como etiqueta de campo) a "Agregar foto *" (lee
+                    // como acción), en negrita y con el color de acento.
+                    Stack(
+                      children: [
+                        CircleAvatar(
+                          radius: 48,
+                          backgroundImage: _fotoPath != null
+                              ? FileImage(File(_fotoPath!))
+                              : null,
+                          child: _fotoPath == null
+                              ? const Icon(Icons.pets, size: 48)
+                              : null,
+                        ),
+                        Positioned(
+                          bottom: 0,
+                          right: 0,
+                          child: CircleAvatar(
+                            radius: 16,
+                            backgroundColor: Theme.of(
+                              context,
+                            ).colorScheme.primary,
+                            child: const Icon(
+                              Icons.camera_alt,
+                              size: 18,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                     const SizedBox(height: 8),
                     Text(
                       _fotoPath == null
                           ? l10n.campoFotoObligatoria
                           : l10n.fotoCambiar,
+                      style: TextStyle(
+                        fontWeight: FontWeight.w600,
+                        color: Theme.of(context).colorScheme.primary,
+                      ),
                     ),
                   ],
                 ),

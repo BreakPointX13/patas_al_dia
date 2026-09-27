@@ -17,9 +17,20 @@ import 'package:patas_al_dia/providers/mascota_extraviada_provider.dart';
 class DetalleReporteMascotaExtraviadaScreen extends ConsumerStatefulWidget {
   final String reporteId;
 
+  // Reporte ya en mano, para cuando quien navega acá no puede garantizar
+  // que esté en mascotaExtraviadaProvider (2026-09-27) — ese provider solo
+  // carga reportes activos (resuelto = false, ver cargarReportesActivos),
+  // así que un reporte denunciado-y-ya-resuelto, o cualquiera visto desde
+  // AdminModeracionScreen sin haber pasado antes por MapaScreen en esta
+  // sesión, no estaría ahí. Sin esto, build() nunca lo encontraba y la
+  // pantalla se cerraba sola (ver más abajo) — el admin no podía ver el
+  // detalle de nada que tocara desde el panel de moderación.
+  final MascotaExtraviadaModel? reporteInicial;
+
   const DetalleReporteMascotaExtraviadaScreen({
     super.key,
     required this.reporteId,
+    this.reporteInicial,
   });
 
   @override
@@ -89,7 +100,11 @@ class _DetalleReporteMascotaExtraviadaScreenState
         .read(mascotaExtraviadaProvider.notifier)
         .marcarComoResuelto(reporte);
     if (mounted) {
-      Navigator.of(context).pop();
+      // `true` (2026-09-27, ver detalleReporteMascotaExtraviadaScreen.md,
+      // punto 7): quien haya empujado esta pantalla (MapaScreen la ignora,
+      // AdminModeracionScreen la usa) se entera de que algo cambió y puede
+      // refrescar su propia lista sin esperar a que vuelva a abrirse sola.
+      Navigator.of(context).pop(true);
     }
   }
 
@@ -108,7 +123,7 @@ class _DetalleReporteMascotaExtraviadaScreenState
     }
     await ref.read(mascotaExtraviadaProvider.notifier).eliminarReporte(reporte);
     if (mounted) {
-      Navigator.of(context).pop();
+      Navigator.of(context).pop(true);
     }
   }
 
@@ -123,6 +138,7 @@ class _DetalleReporteMascotaExtraviadaScreenState
         break;
       }
     }
+    reporte ??= widget.reporteInicial;
     if (reporte == null) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted && Navigator.of(context).canPop()) {

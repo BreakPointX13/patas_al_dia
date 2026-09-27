@@ -124,6 +124,8 @@ _irAFormulario(mascota: resultado == _mascotaNoRegistrada ? null : resultado as 
 
 - **Si el usuario no tiene ninguna mascota registrada, el selector ni se muestra** — va directo al formulario con `mascota: null`, porque no habría nada entre qué elegir.
 
+**Bug real, reportado por un tester (2026-09-27): "bottom overflowed by 166 pixels".** El `showModalBottomSheet` original no pasaba `isScrollControlled: true`, y su lista de mascotas (`Column` con `mainAxisSize: MainAxisSize.min`, sin ningún `ListView`/scroll) no tenía forma de crecer más allá del alto por defecto de la hoja ni de hacer scroll — alguien con varias mascotas registradas desbordaba esa altura fija, y Flutter dibujaba el aviso de overflow (la franja amarilla/negra) en vez de mostrar la lista completa. Arreglado con `isScrollControlled: true` en el `showModalBottomSheet` más `Flexible(child: ListView(shrinkWrap: true, ...))` envolviendo las filas — la hoja ahora puede crecer hasta ocupar la pantalla si hace falta, y hace scroll en vez de desbordar. `_abrirOpcionesReportar()` (dos opciones fijas, "perdida"/"encontrada") no tiene este problema — nunca desborda, así que se dejó sin tocar.
+
 **`floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat`** (2026-08-19) — mismo patrón que el FAB de `HomeScreen`/`AgendaScreen` (ver `decisiones_arquitectura.md`, entrada del 2026-08-12): centrado abajo, no en la esquina inferior derecha por defecto de Material — pedido explícito del usuario para mantener consistencia visual entre las tres pestañas principales.
 
 ### 8. Tiles y atribución — ver `mapaTiles.md`

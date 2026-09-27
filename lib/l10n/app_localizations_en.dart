@@ -165,6 +165,58 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get moderacionTabDenunciados => 'Flagged';
+
+  @override
+  String get moderacionTabTodos => 'All';
+
+  @override
+  String get moderacionTabBloqueados => 'Blocked';
+
+  @override
+  String get bloquearAutorTooltip => 'Block author';
+
+  @override
+  String get bloquearUsuarioTitulo => 'Block user';
+
+  @override
+  String get bloquearUsuarioContenido =>
+      'They won\'t be able to publish new reports in the Map module. You can unblock them later from the Blocked tab.';
+
+  @override
+  String get accionBloquear => 'Block';
+
+  @override
+  String get usuarioBloqueadoAviso => 'User blocked.';
+
+  @override
+  String get desbloquearUsuarioTitulo => 'Unblock user';
+
+  @override
+  String get desbloquearUsuarioContenido =>
+      'They\'ll be able to publish reports in the Map module again.';
+
+  @override
+  String get accionDesbloquear => 'Unblock';
+
+  @override
+  String get sinUsuariosBloqueados => 'No blocked users.';
+
+  @override
+  String usuarioBloqueadoIdLabel(Object id) {
+    return 'User $id';
+  }
+
+  @override
+  String usuarioBloqueadoFechaLabel(Object fecha) {
+    return 'Blocked on $fecha';
+  }
+
+  @override
+  String get errorPublicarReporteBloqueado =>
+      'You can\'t publish reports right now. Contact us if you think this is a mistake.';
+
+  @override
   String get errorPermisoCamaraPermanente =>
       'Patas al Día needs permission to use the camera. Turn it on from your phone\'s settings.';
 
@@ -929,7 +981,7 @@ class AppLocalizationsEn extends AppLocalizations {
       'Location is missing. Use your current location or enter a valid address.';
 
   @override
-  String get campoFotoObligatoria => 'Photo *';
+  String get campoFotoObligatoria => 'Add photo *';
 
   @override
   String get errorFotoObligatoria => 'Photo is required';
@@ -984,7 +1036,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get avisoMapaContenido =>
-      'This map is only for reporting lost or found pets. Don\'t use it to post ads, sell things, or share content unrelated to lost pets.\n\nIf you see a report that doesn\'t belong, please report it so we can review it.';
+      'This map is only for reporting lost or found pets. Don\'t use it to post ads, sell things, or share content unrelated to lost pets.\n\nIf you see a report that doesn\'t belong, please report it so we can review it.\n\nMisusing this module may result in this feature being restricted for your account.';
 
   @override
   String get avisoMapaEntendido => 'Got it';

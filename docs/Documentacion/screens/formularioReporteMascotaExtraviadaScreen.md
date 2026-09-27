@@ -143,18 +143,20 @@ final usuarioIdSupabase = await repo.obtenerUsuarioIdSupabase();
 
 `obtenerUsuarioIdSupabase()` (ver `mascotaExtraviada.repository.md`) crea (o reutiliza) una sesión anónima de Supabase Auth — la primera vez que alguien publica un reporte en toda la vida de la app, no antes. El resultado (`auth.uid()`) es el que se guarda como `usuarioId` del reporte — **no** es el mismo id que `UsuarioModel.id` (el usuario local de SQLite, usado en Mascotas/Agenda/Documentos): son dos espacios de identidad separados por ahora (ver `decisiones_arquitectura.md`, entrada del 2026-08-18, "Arranca Supabase").
 
-### 5. `PostgrestException` — distinguir el límite de reportes de un error genérico
+### 5. `PostgrestException` — distinguir el límite de reportes, el bloqueo y un error genérico
 
 ```dart
 } on PostgrestException catch (e) {
-  final mensaje = e.code == 'P0001'
-      ? l10n.errorLimiteReportesActivos
-      : l10n.errorPublicarReporte;
+  final mensaje = switch (e.code) {
+    'P0001' => l10n.errorLimiteReportesActivos,
+    'P0002' => l10n.errorPublicarReporteBloqueado,
+    _ => l10n.errorPublicarReporte,
+  };
   ...
 }
 ```
 
-El trigger `limitar_reportes_activos()` (ver `TablaMaestraAppVetMovil1.sql`) rechaza el insert con un mensaje en español fijo, escrito en la base — no puede usar `AppLocalizations`, que solo existe en el lado de Flutter. En vez de mostrarle al usuario ese texto crudo (quedaría en español sin importar el idioma de la app), se detecta el código de error (`'P0001'`, el código por defecto de un `raise exception` de usuario en Postgres) y se muestra en su lugar un mensaje propio, ya traducido a los tres idiomas. Cualquier otro `PostgrestException` (por ejemplo, sin conexión) cae al mensaje genérico `errorPublicarReporte` — este es, además, el aviso "sin conexión" acordado con el usuario: reactivo (se muestra si la publicación falla), sin ningún paquete de detección de conectividad de por medio.
+Los triggers `limitar_reportes_activos()` y `bloquear_usuario_restringido()` (ver `TablaMaestraAppVetMovil1.sql`) rechazan el insert con un mensaje en español fijo, escrito en la base — no pueden usar `AppLocalizations`, que solo existe en el lado de Flutter. En vez de mostrarle al usuario ese texto crudo (quedaría en español sin importar el idioma de la app), se detecta el código de error y se muestra en su lugar un mensaje propio, ya traducido a los tres idiomas. `'P0001'` es el código por defecto de un `raise exception` de usuario en Postgres (límite de reportes); `'P0002'` (2026-09-27) es un código explícito, elegido a propósito distinto de `'P0001'` en el trigger de bloqueo (ver `mascotaExtraviada.repository.md`, punto 6) — sin eso, los dos casos serían indistinguibles acá y un usuario bloqueado vería por error el mensaje de "ya tenés el máximo de reportes". Cualquier otro `PostgrestException` (por ejemplo, sin conexión) cae al mensaje genérico `errorPublicarReporte` — este es, además, el aviso "sin conexión" acordado con el usuario: reactivo (se muestra si la publicación falla), sin ningún paquete de detección de conectividad de por medio.
 
 ### 5b. `on AuthException catch` — bug real encontrado en producción: el mensaje de "conexión" mentía (2026-08-19)
 
@@ -184,6 +186,8 @@ Decisión del usuario: la foto es obligatoria en todo reporte (antes iba a queda
 **Siempre se pide una foto nueva, incluso con mascota registrada:** aunque `widget.mascota` ya tenga `fotoUrl` (una ruta local del dispositivo, ver `mascota.repository.md`), **no se reutiliza** — decisión explícita del usuario. La foto del reporte debe reflejar cómo se ve/estaba la mascota justo antes de perderse o al encontrarla, no una foto de perfil vieja que puede no coincidir (pelaje distinto, un collar puesto que antes no tenía, etc.).
 
 **`_elegirFoto()` — mismo patrón cámara/galería que `formulario_documento_screen.dart`,** pero sin la opción PDF (acá no aplica). Guarda solo la ruta local en `_fotoPath`; la subida real a Storage ocurre recién al publicar, no al elegir la foto — evita subir archivos que después el usuario podría cancelar sin guardar.
+
+**Insignia de cámara + texto de acción (2026-09-27), bug real reportado por un tester: "no sale ningún botón con el texto de añadir, pasa desapercibido".** El círculo con `Icons.pets` (mismo patrón visual que la foto opcional de `formulario_mascota_screen.dart`) leía como una foto de perfil ya puesta, no como una acción pendiente — a pesar de ser obligatoria acá, a diferencia de la de mascota. Dos cambios, sin tocar `formulario_mascota_screen.dart` (ahí la foto es opcional, la sutileza es aceptable): un `Stack` con un `CircleAvatar` chico (ícono `Icons.camera_alt`, fondo del color de acento) superpuesto en la esquina inferior derecha del círculo grande, y el texto de abajo (`campoFotoObligatoria`) pasó de "Foto *" (lee como etiqueta de campo) a "Agregar foto *" (lee como acción), en negrita y con el color de acento — mismo texto reusado para el estado "obligatorio pendiente", no se agregó ninguna clave nueva.
 
 **`maxWidth: 1600, imageQuality: 75` en `pickImage` (2026-08-20):** sin esto, la foto se subía tal cual la entrega la cámara — 3 a 8 MB en un teléfono moderno, contra ~100-200 KB comprimida (medido en producción: una foto real bajó de varios MB a 117 KB). Es la única foto de todo el proyecto que sube a Supabase Storage (las de `formulario_mascota_screen.dart`/`formulario_documento_screen.dart` quedan solo en el dispositivo, nunca se suben a ningún lado) — es también la única que tiene un motivo de costo real para comprimirse. Se evaluó comprimir también las otras dos, pero se descartó: la foto de mascota es solo estética (bajo riesgo si se comprime, pero sin costo de nube que lo justifique) y la de documentos necesita legibilidad de texto (dosis, fechas) — comprimir de más ahí arriesgaría más de lo que ahorra, sin ningún costo de Storage de por medio que lo justifique. Ver `decisiones_arquitectura.md`.
 

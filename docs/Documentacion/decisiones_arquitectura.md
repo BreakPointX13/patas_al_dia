@@ -787,6 +787,65 @@ De paso, en la misma sesión se corrigió un bug real en `mensajeErrorAutenticac
 
 ---
 
+## 2026-09-27 — Módulo Mapa "cargando eternamente": proyecto de Supabase pausado + falta de timeout
+
+Reportado en la revisión final antes de producción: el módulo Mapa se quedaba con el spinner de carga para siempre. Diagnóstico en dos partes.
+
+**Causa inmediata:** el proyecto de Supabase (`wegffggssmddbcbpdujv.supabase.co`) dejó de resolver DNS (`NXDOMAIN`), el mismo síntoma que da un proyecto pausado por inactividad (indistinguible desde afuera de uno borrado, según reportes de la comunidad de Supabase — ver `project_lanzamiento_monetizacion` en memoria: se había hablado de esto hace ~3 semanas, con la política de "reactivarlo a mano cada 5-6 días" en vez de automatizar un heartbeat). Esto requiere que el usuario entre al dashboard de Supabase y restaure el proyecto — no es algo resoluble desde el código ni desde esta sesión.
+
+**Bug de código real, encontrado en el mismo diagnóstico (independiente de si el proyecto está pausado o no):** ninguna llamada a Supabase en `MascotaExtraviadaRepository` tenía timeout propio. `MapaScreen` y `AdminModeracionScreen` ya sabían mostrar un error/reintentar cuando la llamada fallaba, pero una llamada que **nunca falla ni se completa** (DNS que no responde, red mala) no le da a esas pantallas ninguna oportunidad de reaccionar — se quedan esperando para siempre. Se agregó `.timeout(Duration(seconds: 15))` a las ocho llamadas de red de ese archivo, para que cualquier corte de conexión futuro (no solo esta pausa puntual) se resuelva en segundos con el aviso de error ya existente, en vez de colgar la pantalla. Ver `mascotaExtraviada.repository.md`, punto 0.
+
+Este segundo punto valía la pena arreglarlo ya, en la revisión final antes de producción, aunque la causa de esta vez haya sido la pausa de Supabase — el mismo cuelgue puede repetirse con cualquier usuario real con mala señal, no solo con el proyecto pausado.
+
+---
+
+## 2026-09-27 — Tiles del mapa: CARTO empieza a exigir API key
+
+Encontrado en la revisión final antes de producción: el mapa mostraba un watermark grande de "API KEY REQUIRED" tapando cada tile, en vez del mapa real. Causa: CARTO cambió de política (anunciado fines de agosto de 2026, en vigencia desde el 23 de septiembre) — los basemaps gratis (Positron/Dark Matter, elegidos el 2026-08-19, ver la entrada de ese día) dejaron de aceptar requests anónimos.
+
+**Alternativas evaluadas, presentadas al usuario:**
+1. **Conseguir una API key gratis de CARTO** — mantiene el estilo ya elegido, sin costo, solo requiere una cuenta más (registro con correo, sin tarjeta, en `carto.com/basemaps/apikey`).
+2. **Volver a los tiles crudos de OpenStreetMap** (`tile.openstreetmap.org`) — cero fricción, pero es el estilo "feo" que ya se había descartado el 2026-08-19, y además choca con la política oficial de uso de OSM (no recomendada para apps de producción con tráfico real, sin tile server propio).
+3. **Migrar a otro proveedor con key** (Stadia Maps, MapTiler, Jawg) — mismo trade-off que la opción 1 (cuenta + key) sin ninguna ventaja clara sobre CARTO.
+
+**Decisión: opción 1.** El usuario registró la key en `carto.com/basemaps/apikey` y se agregó como `?key=...` a las URLs de `urlTilesSegunTema()` — ver `mapaTiles.md`, punto 1, para el detalle completo (incluye un primer intento fallido con una key de otra sección de la cuenta de CARTO, que no era la correcta). Plan gratis: 1M tiles/mes para uso comercial, 5M para no comercial — de sobra para el tamaño actual de la app.
+
+---
+
+## 2026-09-27 — Moderación del módulo Mapa: ver todos los reportes activos + bloquear usuarios
+
+Dos pedidos del usuario en la revisión final antes de producción, para dar más control sobre el módulo Mapa:
+
+**1. El admin puede actuar sobre cualquier reporte activo, no solo los denunciados.** `AdminModeracionScreen` pasó de una lista única a tres pestañas: "Denunciados" (comportamiento original), "Todos" (nueva — cualquier reporte activo) y "Bloqueados" (nueva, ver punto 2). No requirió cambios de esquema — `obtenerReportesActivos()` ya existía y la política de borrado ya incluía al admin; solo hizo falta la UI. Ver `adminModeracionScreen.md`.
+
+**2. Restringir usuarios que abusan del módulo.** Tabla nueva `usuarios_bloqueados_mapa` (solo `usuario_id` + fecha, sin motivo de texto libre — mismo criterio que `denuncias_reportes`; solo accesible por el admin vía RLS) más un trigger `before insert` en `mascotas_extraviadas` que rechaza publicar si el usuario está bloqueado, con un código de error propio (`P0002`, distinto del `P0001` que ya usaba el límite de 3 reportes activos, para poder mostrar el mensaje correcto en cada caso). Bloqueo manual, decidido por el admin desde el panel — no automático a partir de una cantidad de denuncias, para que una coordinación de denuncias de mala fe no bloquee a alguien sin que un humano lo revise primero. Ver `mascotaExtraviada.repository.md`, punto 6, y `TablaMaestraAppVetMovil1.sql`.
+
+**Limitación real, aceptada conscientemente:** el bloqueo es por `auth.uid()`, estable para un usuario registrado pero no para un invitado (sesión anónima) — desinstalar y reinstalar la app le da una identidad nueva, evadiendo el bloqueo. La alternativa (exigir cuenta registrada para publicar en Mapa) violaría la regla 2 de `CLAUDE.md` (ninguna función core debe requerir registro obligatorio), así que se descartó a propósito. El bloqueo sigue subiendo la fricción real para la mayoría de los casos, sin ser a prueba de balas.
+
+**3. Aviso previo actualizado.** `avisoMapaContenido` (los tres idiomas) suma una línea final advirtiendo que el mal uso del módulo puede resultar en la restricción de la función — para que la sanción no sea una sorpresa la primera vez que se aplica.
+
+---
+
+## 2026-09-27 — Cuatro bugs reales, probando el panel de moderación nuevo
+
+El usuario probó las tres pestañas de moderación (ver la entrada anterior del mismo día) y encontró cuatro problemas reales, los cuatro arreglados en la misma sesión:
+
+1. **Tocar una fila de reporte en moderación no hacía nada.** Solo los íconos de bloquear/eliminar respondían. Se agregó navegación a `DetalleReporteMascotaExtraviadaScreen` al tocar la fila — pero esa pantalla busca el reporte por id dentro de `mascotaExtraviadaProvider` (que solo carga reportes *activos*), así que un reporte denunciado-y-resuelto (o cualquiera visto sin haber abierto antes `MapaScreen` en esa sesión) no aparecía ahí y la pantalla se cerraba sola en silencio. Se agregó `reporteInicial` (parámetro opcional) como respaldo — ver `detalleReporteMascotaExtraviadaScreen.md`, punto 6.
+
+2. **Borrar un reporte desde moderación no lo sacaba del mapa** hasta cerrar y reabrir la app entera. Causa: `AdminModeracionScreen._eliminar` llamaba al repository directo, sin pasar por `mascotaExtraviadaProvider` (la copia en memoria que `MapaScreen` mira) — borraba bien de Supabase, pero esa copia local nunca se enteraba. Arreglado pasando por `mascotaExtraviadaProvider.notifier.eliminarReporte()`, que ya hacía las dos cosas correctamente. Ver `adminModeracionScreen.md`, punto 1e.
+
+3. **El botón de agregar foto, en el formulario de reporte, pasaba desapercibido** — un círculo con un ícono de pata y el texto "Foto *" se leía como una foto de perfil ya puesta, no como una acción obligatoria pendiente. Se agregó una insignia de cámara superpuesta y el texto pasó a "Agregar foto *", en negrita y con color de acento. Ver `formularioReporteMascotaExtraviadaScreen.md`.
+
+4. **Overflow visual ("bottom overflowed by 166 pixels") en el selector de mascota** al reportar una pérdida, con varias mascotas registradas — el `showModalBottomSheet` no tenía scroll ni `isScrollControlled`, así que la lista no entraba en el alto fijo por defecto de la hoja. Arreglado con `isScrollControlled: true` + `Flexible`/`ListView`. Ver `mapaScreen.md`, punto 7.
+
+Los puntos 1 y 2 son consecuencia directa de agregar las pestañas nuevas de moderación (código nuevo de esa misma sesión); los puntos 3 y 4 son bugs preexistentes que recién se notaron al usar más el módulo Mapa en esta ronda de pruebas.
+
+**Addendum, misma sesión:** después de probar los cuatro arreglos, el usuario encontró un quinto: la lista de reportes **de esta misma pantalla de moderación** tampoco se refrescaba al borrar (distinto del punto 2, que era sobre el mapa). Causa: `_eliminar()` reasignaba el `Future` guardado y confiaba en que `FutureBuilder` lo detectara solo — no era confiable. Se cambió todo el patrón de carga de esta pantalla, de `Future` reasignado + `FutureBuilder` a listas ya resueltas en el estado (`List<T>?`), actualizadas a mano en cada acción — ver `adminModeracionScreen.md`, punto 1.
+
+**Segundo addendum, misma sesión:** ese arreglo cubría el botón de eliminar de la lista, pero no borrar/marcar resuelto *desde adentro* del detalle del reporte (`DetalleReporteMascotaExtraviadaScreen`, alcanzable ahora desde la lista, ver punto 1f arriba) — ese `pop()` no le avisaba nada a la pantalla de atrás. Se cambió a `pop(true)` cuando pasa algo así, y `AdminModeracionScreen._abrirDetalle()` espera ese resultado para volver a pedir sus listas si hace falta. Ver `detalleReporteMascotaExtraviadaScreen.md`, punto 7, y `adminModeracionScreen.md`, punto 1f.
+
+---
+
 ## De aquí en adelante
 
 Cada vez que se tome una decisión de arquitectura nueva (enfoque, tecnología, estructura — no un simple fix o ajuste de código), se agrega una entrada acá con: fecha, la decisión, el porqué, y alternativas consideradas si las hubo.

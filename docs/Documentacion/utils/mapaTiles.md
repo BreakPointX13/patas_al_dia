@@ -17,15 +17,23 @@ Centraliza qué proveedor de teselas (tiles) usa cada `FlutterMap` de la app, y 
 ### 1. CARTO Positron/Dark Matter, en vez de los tiles crudos de OpenStreetMap (2026-08-19)
 
 ```dart
+const _cartoApiKey = 'cb1_3zzg_1_d8e00375eeb097e260802202';
+
 String urlTilesSegunTema(BuildContext context) {
   final esOscuro = Theme.of(context).brightness == Brightness.dark;
   return esOscuro
-      ? 'https://basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png'
-      : 'https://basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png';
+      ? 'https://basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png?key=$_cartoApiKey'
+      : 'https://basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png?key=$_cartoApiKey';
 }
 ```
 
-La primera versión del mapa usaba `tile.openstreetmap.org` directo — el estilo por defecto de OpenStreetMap, visualmente básico ("feo", palabras del usuario al probarlo). CARTO Basemaps ofrece varios estilos gratis y sin API key sobre los mismos datos de OpenStreetMap — Positron (claro, minimalista) y Dark Matter (oscuro) son explícitamente la pareja diseñada para verse coherente entre sí, uno pensado para cada tema. Se mantiene el mismo criterio de costo cero que ya llevó a elegir `flutter_map` por sobre `google_maps_flutter` (ver `decisiones_arquitectura.md`, "Mapa, punto 3").
+La primera versión del mapa usaba `tile.openstreetmap.org` directo — el estilo por defecto de OpenStreetMap, visualmente básico ("feo", palabras del usuario al probarlo). CARTO Basemaps ofrece varios estilos sobre los mismos datos de OpenStreetMap — Positron (claro, minimalista) y Dark Matter (oscuro) son explícitamente la pareja diseñada para verse coherente entre sí, uno pensado para cada tema. Se mantiene el mismo criterio de costo cero que ya llevó a elegir `flutter_map` por sobre `google_maps_flutter` (ver `decisiones_arquitectura.md`, "Mapa, punto 3").
+
+**`?key=...` (2026-09-27) — CARTO empezó a exigir API key.** Hasta esta fecha era "gratis y sin API key" — dejó de serlo: CARTO cambió de política (anunciado fines de agosto de 2026, en vigencia desde el 23 de septiembre) y ahora cualquier request anónimo a `basemaps.cartocdn.com` devuelve un tile con un watermark grande de "API KEY REQUIRED" tapando el mapa, en vez del tile real. Encontrado en la revisión final antes de producción (el usuario probó la app y vio el watermark). Se registró una key gratuita en `carto.com/basemaps/apikey` (solo correo, sin tarjeta) — plan gratis: 1M tiles/mes para uso comercial, 5M para no comercial, de sobra para el tamaño de esta app. Ver la entrada del 2026-09-27 en `decisiones_arquitectura.md` para las alternativas evaluadas (volver a tiles crudos de OSM, u otro proveedor con key) y por qué se descartaron.
+
+**La key no es secreta** — viaja como parámetro de query en cada request de tile, visible para cualquiera que inspeccione el tráfico de la app (igual que la URL/anon key de Supabase en `supabase_config.dart`). Por eso va hardcodeada como constante acá, sin ningún mecanismo de `.env`/secretos — no aporta nada esconderla en este caso.
+
+**Primer intento con una key que no funcionaba:** el usuario había copiado un token JWT de otra sección de su cuenta de CARTO (un token de plataforma/workspace general, no el específico del flujo de Basemaps) — devolvía el mismo watermark en vez del tile real, en cualquier coordenada. Se verificó pidiendo el tile directo por `curl` (no hace falta compilar la app entera para probar una URL) antes de darlo por bueno; la key correcta se consiguió recién desde `carto.com/basemaps/apikey` específicamente.
 
 **`Theme.of(context).brightness`, mismo patrón que el resto de la app:** ya existía este criterio para decidir colores según el tema (ver `_colorTextoSobreFondo` en `agenda_screen.dart`) — acá se aplica por primera vez a un recurso externo (una URL de tiles), no a un color propio. El mapa cambia de estilo solo, siguiendo la preferencia de tema que el usuario ya eligió en Ajustes (Sistema/Claro/Oscuro), sin que el módulo Mapa tenga que ofrecer su propio selector.
 

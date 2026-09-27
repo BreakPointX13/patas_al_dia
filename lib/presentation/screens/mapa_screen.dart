@@ -209,8 +209,17 @@ class _MapaScreenState extends ConsumerState<MapaScreen> {
       return;
     }
     final l10n = AppLocalizations.of(context);
+    // isScrollControlled + Flexible/ListView (2026-09-27, bug real
+    // reportado por un tester: "bottom overflowed by 166 pixels") — sin
+    // esto, la hoja se limitaba a su alto por defecto (una fracción fija de
+    // la pantalla) sin poder crecer ni hacer scroll, así que alguien con
+    // varias mascotas registradas no entraba en esa altura y Flutter
+    // dibujaba el aviso de overflow en vez de la lista completa. Mismo
+    // problema no se da en _abrirOpcionesReportar() (siempre 2 opciones
+    // fijas, nunca desborda), así que ese sheet se dejó como estaba.
     final resultado = await showModalBottomSheet<Object?>(
       context: context,
+      isScrollControlled: true,
       builder: (context) => SafeArea(
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -222,17 +231,25 @@ class _MapaScreenState extends ConsumerState<MapaScreen> {
                 style: Theme.of(context).textTheme.titleMedium,
               ),
             ),
-            for (final mascota in mascotas)
-              ListTile(
-                leading: const Icon(Icons.pets),
-                title: Text(mascota.nombre),
-                subtitle: Text(especieMostrar(context, mascota)),
-                onTap: () => Navigator.of(context).pop(mascota),
+            Flexible(
+              child: ListView(
+                shrinkWrap: true,
+                children: [
+                  for (final mascota in mascotas)
+                    ListTile(
+                      leading: const Icon(Icons.pets),
+                      title: Text(mascota.nombre),
+                      subtitle: Text(especieMostrar(context, mascota)),
+                      onTap: () => Navigator.of(context).pop(mascota),
+                    ),
+                  ListTile(
+                    leading: const Icon(Icons.add),
+                    title: Text(l10n.opcionMascotaNoRegistrada),
+                    onTap: () =>
+                        Navigator.of(context).pop(_mascotaNoRegistrada),
+                  ),
+                ],
               ),
-            ListTile(
-              leading: const Icon(Icons.add),
-              title: Text(l10n.opcionMascotaNoRegistrada),
-              onTap: () => Navigator.of(context).pop(_mascotaNoRegistrada),
             ),
           ],
         ),

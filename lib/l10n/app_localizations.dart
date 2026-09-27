@@ -388,6 +388,96 @@ abstract class AppLocalizations {
   /// **'{n} denuncias'**
   String cantidadDenunciasLabel(Object n);
 
+  /// No description provided for @moderacionTabDenunciados.
+  ///
+  /// In es, this message translates to:
+  /// **'Denunciados'**
+  String get moderacionTabDenunciados;
+
+  /// No description provided for @moderacionTabTodos.
+  ///
+  /// In es, this message translates to:
+  /// **'Todos'**
+  String get moderacionTabTodos;
+
+  /// No description provided for @moderacionTabBloqueados.
+  ///
+  /// In es, this message translates to:
+  /// **'Bloqueados'**
+  String get moderacionTabBloqueados;
+
+  /// No description provided for @bloquearAutorTooltip.
+  ///
+  /// In es, this message translates to:
+  /// **'Bloquear autor'**
+  String get bloquearAutorTooltip;
+
+  /// No description provided for @bloquearUsuarioTitulo.
+  ///
+  /// In es, this message translates to:
+  /// **'Bloquear usuario'**
+  String get bloquearUsuarioTitulo;
+
+  /// No description provided for @bloquearUsuarioContenido.
+  ///
+  /// In es, this message translates to:
+  /// **'No podrá publicar nuevos reportes en el módulo Mapa. Puedes desbloquearlo después desde la pestaña Bloqueados.'**
+  String get bloquearUsuarioContenido;
+
+  /// No description provided for @accionBloquear.
+  ///
+  /// In es, this message translates to:
+  /// **'Bloquear'**
+  String get accionBloquear;
+
+  /// No description provided for @usuarioBloqueadoAviso.
+  ///
+  /// In es, this message translates to:
+  /// **'Usuario bloqueado.'**
+  String get usuarioBloqueadoAviso;
+
+  /// No description provided for @desbloquearUsuarioTitulo.
+  ///
+  /// In es, this message translates to:
+  /// **'Desbloquear usuario'**
+  String get desbloquearUsuarioTitulo;
+
+  /// No description provided for @desbloquearUsuarioContenido.
+  ///
+  /// In es, this message translates to:
+  /// **'Podrá volver a publicar reportes en el módulo Mapa.'**
+  String get desbloquearUsuarioContenido;
+
+  /// No description provided for @accionDesbloquear.
+  ///
+  /// In es, this message translates to:
+  /// **'Desbloquear'**
+  String get accionDesbloquear;
+
+  /// No description provided for @sinUsuariosBloqueados.
+  ///
+  /// In es, this message translates to:
+  /// **'No hay usuarios bloqueados.'**
+  String get sinUsuariosBloqueados;
+
+  /// No description provided for @usuarioBloqueadoIdLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Usuario {id}'**
+  String usuarioBloqueadoIdLabel(Object id);
+
+  /// No description provided for @usuarioBloqueadoFechaLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Bloqueado el {fecha}'**
+  String usuarioBloqueadoFechaLabel(Object fecha);
+
+  /// No description provided for @errorPublicarReporteBloqueado.
+  ///
+  /// In es, this message translates to:
+  /// **'No puedes publicar reportes por el momento. Contáctanos si crees que es un error.'**
+  String get errorPublicarReporteBloqueado;
+
   /// No description provided for @errorPermisoCamaraPermanente.
   ///
   /// In es, this message translates to:
@@ -1819,7 +1909,7 @@ abstract class AppLocalizations {
   /// No description provided for @campoFotoObligatoria.
   ///
   /// In es, this message translates to:
-  /// **'Foto *'**
+  /// **'Agregar foto *'**
   String get campoFotoObligatoria;
 
   /// No description provided for @errorFotoObligatoria.
@@ -1915,7 +2005,7 @@ abstract class AppLocalizations {
   /// No description provided for @avisoMapaContenido.
   ///
   /// In es, this message translates to:
-  /// **'Este mapa es solo para reportar mascotas perdidas o encontradas. No lo uses para publicar anuncios, ventas ni contenido que no tenga que ver con mascotas perdidas.\n\nSi ves un reporte que no corresponde, puedes denunciarlo para que lo revisemos.'**
+  /// **'Este mapa es solo para reportar mascotas perdidas o encontradas. No lo uses para publicar anuncios, ventas ni contenido que no tenga que ver con mascotas perdidas.\n\nSi ves un reporte que no corresponde, puedes denunciarlo para que lo revisemos.\n\nEl mal uso de este módulo puede resultar en la restricción de esta función para tu cuenta.'**
   String get avisoMapaContenido;
 
   /// No description provided for @avisoMapaEntendido.

@@ -334,6 +334,58 @@ create policy denuncias_reportes_leer_admin
   using ((auth.jwt() ->> 'email') = 'breakpointx.dev@gmail.com');
 
 -- =========================================================
+-- 6b. usuarios_bloqueados_mapa (restringir el módulo Mapa por mal uso)
+-- =========================================================
+-- Bloqueo manual, decidido por el admin desde la pantalla de moderación
+-- (2026-09-27, ver decisiones_arquitectura.md) — no automático a partir de
+-- una cantidad de denuncias, para no bloquear a alguien por una
+-- coordinación de denuncias de mala fe sin que un humano lo revise primero.
+-- Referencia a auth.users (no a public.usuarios) porque un invitado que
+-- nunca sincronizó puede no tener fila ahí — mismo criterio que
+-- mascotas_extraviadas.usuario_id y denuncias_reportes.usuario_id. Sin
+-- motivo de texto libre, mismo criterio que denuncias_reportes.
+create table public.usuarios_bloqueados_mapa (
+  usuario_id uuid primary key references auth.users (id) on delete cascade,
+  fecha timestamptz default now()
+);
+
+alter table public.usuarios_bloqueados_mapa enable row level security;
+
+-- Solo el admin puede ver, crear o borrar bloqueos — ni siquiera el propio
+-- usuario bloqueado: no hay ninguna pantalla en la app que muestre "estás
+-- bloqueado", solo el mensaje de error al intentar publicar (ver el
+-- trigger más abajo).
+create policy usuarios_bloqueados_mapa_admin
+  on public.usuarios_bloqueados_mapa for all
+  using ((auth.jwt() ->> 'email') = 'breakpointx.dev@gmail.com')
+  with check ((auth.jwt() ->> 'email') = 'breakpointx.dev@gmail.com');
+
+-- Igual que el límite de 3 reportes activos (ver arriba): se aplica en la
+-- base con un trigger, no solo en la app, para que no se pueda saltar
+-- llamando a la API de Supabase directo. `errcode = 'P0002'` (distinto del
+-- 'P0001' por defecto que usa el trigger de límite de reportes) para que la
+-- app pueda distinguir los dos casos y mostrar el mensaje correcto — ver
+-- formularioReporteMascotaExtraviadaScreen.md.
+create or replace function public.bloquear_usuario_restringido()
+returns trigger as $$
+begin
+  if exists (
+    select 1 from public.usuarios_bloqueados_mapa
+    where usuario_id = new.usuario_id
+  ) then
+    raise exception 'Tu cuenta fue restringida de publicar en este módulo por uso indebido.'
+      using errcode = 'P0002';
+  end if;
+  return new;
+end;
+$$ language plpgsql;
+
+create trigger mascotas_extraviadas_bloquear_restringidos
+  before insert on public.mascotas_extraviadas
+  for each row
+  execute function public.bloquear_usuario_restringido();
+
+-- =========================================================
 -- 7. Storage: bucket fotos_reportes (fotos del módulo Mapa)
 -- =========================================================
 -- Foto obligatoria en el reporte (decisión del usuario, 2026-08-19) — se

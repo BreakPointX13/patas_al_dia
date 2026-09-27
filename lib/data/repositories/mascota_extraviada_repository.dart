@@ -18,6 +18,26 @@ class ReporteDenunciado {
   });
 }
 
+// Una fila de usuarios_bloqueados_mapa — solo para la pantalla de moderación
+// (pestaña "Bloqueados"). Sin más datos que el id y la fecha: un invitado
+// bloqueado no tiene ni email ni nombre que mostrar (ver bloquearUsuario).
+class UsuarioBloqueado {
+  final String usuarioId;
+  final DateTime fecha;
+
+  const UsuarioBloqueado({required this.usuarioId, required this.fecha});
+}
+
+// Sin esto, una llamada a Supabase que nunca responde (proyecto pausado,
+// sin señal, DNS que no contesta) se queda esperando indefinidamente — el
+// cliente de Supabase no trae ningún timeout propio. `MapaScreen` y
+// `AdminModeracionScreen` ya saben mostrar un error/reintentar cuando la
+// llamada falla (ver sus respectivos .md); lo que les faltaba era que
+// "colgada para siempre" contara como una falla. 15 segundos: de sobra para
+// una red mala real, poco para sentirse "eterno" (2026-09-27, ver
+// decisiones_arquitectura.md).
+const _timeoutRed = Duration(seconds: 15);
+
 // Reportes de mascotas perdidas/encontradas — vive solo en Supabase, no en SQLite.
 class MascotaExtraviadaRepository {
   // Consigue un usuario de Supabase (real o anónimo) para poder publicar.
@@ -32,7 +52,9 @@ class MascotaExtraviadaRepository {
     if (sesionActual != null) {
       return sesionActual.user.id;
     }
-    final respuesta = await client.auth.signInAnonymously();
+    final respuesta = await client.auth.signInAnonymously().timeout(
+      _timeoutRed,
+    );
     return respuesta.user!.id;
   }
 
@@ -54,7 +76,8 @@ class MascotaExtraviadaRepository {
     final rutaStorage = '$usuarioId/$reporteId.$extension';
     await client.storage
         .from('fotos_reportes')
-        .upload(rutaStorage, File(rutaLocal));
+        .upload(rutaStorage, File(rutaLocal))
+        .timeout(_timeoutRed);
     return client.storage.from('fotos_reportes').getPublicUrl(rutaStorage);
   }
 
@@ -64,7 +87,10 @@ class MascotaExtraviadaRepository {
   ) async {
     final client = Supabase.instance.client;
 
-    await client.from('mascotas_extraviadas').insert(reporte.toMap());
+    await client
+        .from('mascotas_extraviadas')
+        .insert(reporte.toMap())
+        .timeout(_timeoutRed);
 
     return reporte;
   }
@@ -76,7 +102,8 @@ class MascotaExtraviadaRepository {
         .from('mascotas_extraviadas')
         .select()
         .eq('resuelto', false)
-        .order('fecha_publicacion', ascending: false);
+        .order('fecha_publicacion', ascending: false)
+        .timeout(_timeoutRed);
 
     return maps.map(MascotaExtraviadaModel.fromMap).toList();
   }
@@ -89,7 +116,8 @@ class MascotaExtraviadaRepository {
         .from('mascotas_extraviadas')
         .update(reporte.toMap())
         .eq('id', reporte.id)
-        .select();
+        .select()
+        .timeout(_timeoutRed);
 
     return filasActualizadas.length;
   }
@@ -110,12 +138,19 @@ class MascotaExtraviadaRepository {
       try {
         final extension = reporte.mascotaFotoUrl!.split('.').last;
         final rutaStorage = '${reporte.usuarioId}/${reporte.id}.$extension';
-        await client.storage.from('fotos_reportes').remove([rutaStorage]);
+        await client.storage
+            .from('fotos_reportes')
+            .remove([rutaStorage])
+            .timeout(_timeoutRed);
       } catch (e) {
         debugPrint('DEBUG eliminarReporte: no se pudo borrar la foto del bucket: $e');
       }
     }
-    await client.from('mascotas_extraviadas').delete().eq('id', reporte.id);
+    await client
+        .from('mascotas_extraviadas')
+        .delete()
+        .eq('id', reporte.id)
+        .timeout(_timeoutRed);
   }
 
   // Trae los reportes con al menos una denuncia, con su conteo — para la
@@ -129,7 +164,8 @@ class MascotaExtraviadaRepository {
     final client = Supabase.instance.client;
     final denuncias = await client
         .from('denuncias_reportes')
-        .select('reporte_id');
+        .select('reporte_id')
+        .timeout(_timeoutRed);
     if (denuncias.isEmpty) {
       return [];
     }
@@ -141,7 +177,8 @@ class MascotaExtraviadaRepository {
     final maps = await client
         .from('mascotas_extraviadas')
         .select()
-        .inFilter('id', conteos.keys.toList());
+        .inFilter('id', conteos.keys.toList())
+        .timeout(_timeoutRed);
     final reportes = maps
         .map(
           (mapa) => ReporteDenunciado(
@@ -168,15 +205,61 @@ class MascotaExtraviadaRepository {
     final client = Supabase.instance.client;
     final usuarioId = await obtenerUsuarioIdSupabase();
     try {
-      await client.from('denuncias_reportes').insert({
-        'id': const Uuid().v4(),
-        'reporte_id': reporteId,
-        'usuario_id': usuarioId,
-      });
+      await client
+          .from('denuncias_reportes')
+          .insert({
+            'id': const Uuid().v4(),
+            'reporte_id': reporteId,
+            'usuario_id': usuarioId,
+          })
+          .timeout(_timeoutRed);
     } on PostgrestException catch (e) {
       if (e.code != '23505') {
         rethrow;
       }
     }
+  }
+
+  // Restringe a un usuario de publicar nuevos reportes (2026-09-27, ver
+  // decisiones_arquitectura.md) — acción manual del admin desde la pantalla
+  // de moderación, no automática por cantidad de denuncias. La política
+  // usuarios_bloqueados_mapa_admin (ver TablaMaestraAppVetMovil1.sql) exige
+  // que quien llama sea el admin; para cualquier otro usuario esto falla
+  // por RLS, no solo por no tener el botón en la UI.
+  Future<void> bloquearUsuario(String usuarioId) async {
+    final client = Supabase.instance.client;
+    await client
+        .from('usuarios_bloqueados_mapa')
+        .insert({'usuario_id': usuarioId})
+        .timeout(_timeoutRed);
+  }
+
+  // Levanta la restricción de un usuario.
+  Future<void> desbloquearUsuario(String usuarioId) async {
+    final client = Supabase.instance.client;
+    await client
+        .from('usuarios_bloqueados_mapa')
+        .delete()
+        .eq('usuario_id', usuarioId)
+        .timeout(_timeoutRed);
+  }
+
+  // Trae la lista de usuarios restringidos, más recientes primero — para la
+  // pestaña "Bloqueados" de la pantalla de moderación.
+  Future<List<UsuarioBloqueado>> obtenerUsuariosBloqueados() async {
+    final client = Supabase.instance.client;
+    final maps = await client
+        .from('usuarios_bloqueados_mapa')
+        .select()
+        .order('fecha', ascending: false)
+        .timeout(_timeoutRed);
+    return maps
+        .map(
+          (mapa) => UsuarioBloqueado(
+            usuarioId: mapa['usuario_id'] as String,
+            fecha: DateTime.parse(mapa['fecha'] as String),
+          ),
+        )
+        .toList();
   }
 }
