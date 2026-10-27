@@ -134,6 +134,8 @@ O Patas al Día é gratuito. Se for útil para você e quiser apoiar o desenvolv
 
 Las cuentas de desarrollador **personales** creadas después de noviembre de 2023 (aplica a esta cuenta, al ser nueva) no pueden publicar directo a producción — Google exige primero un test cerrado con **al menos 12 testers**, opt-in continuo durante **14 días seguidos**, antes de habilitar el pase a producción. No aplica a cuentas de organización ni a cuentas personales más viejas. Conviene ir consiguiendo los 12 testers (amigos, familia) apenas esté creada la cuenta, para no perder tiempo al final — ver [App testing requirements for new personal developer accounts](https://support.google.com/googleplay/android-developer/answer/14151465?hl=en).
 
+**Primer pedido de pase a producción rechazado (fecha de la primera ronda: 2026-08-25, `versionCode` 6).** Motivo textual de Google: "Testers were not engaged with your app during your closed test" + "You didn't follow testing best practices, which may include gathering and acting on user feedback through updates to your app". No fue un rechazo por bug ni por política — Google no vio actividad repartida en los 14 días ni una actualización publicada *durante* el ciclo (los 7 arreglos de esa ronda se subieron todos juntos, al final). Segunda ronda, con cronograma de 14 días y una actualización a mitad de camino: ver `PlanTesteoCerrado.md`.
+
 ## Formulario "Seguridad de los datos" (Data safety)
 
 Datos que la app recopila (usuarios registrados) y por qué:
