@@ -97,7 +97,7 @@ Implementado como parte de v1, no v2 (a diferencia de lo que decía una versión
 - `eliminar-cuenta` — borra la cuenta de Supabase Auth (requiere `SUPABASE_SERVICE_ROLE_KEY`, un secreto que no puede vivir en el cliente). Exige JWT válido, identifica a quién borrar por la sesión que llama, nunca por un parámetro.
 - `reportar-bug` — arma y manda un correo real (vía Resend, `RESEND_API_KEY` como secreto de Supabase) con la descripción y una imagen opcional. Sin JWT — un invitado también puede reportar un bug.
 
-**`PatasAlDiaWeb`** (`https://github.com/BreakPointX13/PatasAlDiaWeb`, repo público aparte, GitHub Pages) — política de privacidad y borrado de cuenta accesible sin la app instalada (es/en/pt), más la página de confirmación de correo. Existe aparte porque Supabase Storage no puede servir HTML real (`Content-Type: text/plain` forzado) y el repo principal es privado.
+**`PatasAlDiaWeb`** (`https://github.com/BreakPointX13/PatasAlDiaWeb`, repo público aparte, GitHub Pages) — política de privacidad y borrado de cuenta accesible sin la app instalada (es/en/pt), más la página de confirmación de correo. Existe aparte porque Supabase Storage no puede servir HTML real (`Content-Type: text/plain` forzado) — ambos repos son públicos (parte del portafolio), eso no es el motivo.
 
 ## Roadmap — pendiente, fuera de esta versión
 
